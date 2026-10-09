@@ -1,0 +1,2 @@
+Embodied AI is a local Unity experience where an assistant can speak, navigate, and discuss selected objects.
+Local processing means conversation requests are sent to the user's own Flask and Ollama services rather than a cloud language-model provider.
