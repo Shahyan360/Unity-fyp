@@ -277,7 +277,7 @@ public class ChatUIManager : MonoBehaviour
         {
             // Keep chat readable instead of shrinking the font after many messages.
             tmpChatOutput.enableAutoSizing = false;
-            tmpChatOutput.enableWordWrapping = true;
+            tmpChatOutput.textWrappingMode = TextWrappingModes.Normal;
             tmpChatOutput.overflowMode = TextOverflowModes.Overflow;
             tmpChatOutput.alignment = TextAlignmentOptions.TopLeft;
             tmpChatOutput.fontSize = 19f;
@@ -659,7 +659,7 @@ public class ChatUIManager : MonoBehaviour
         tmp.fontSize = fontSize;
         tmp.color = color;
         tmp.enableAutoSizing = false;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
         tmp.rectTransform.sizeDelta = new Vector2(3.2f, 1.1f);
         return tmp;
     }
