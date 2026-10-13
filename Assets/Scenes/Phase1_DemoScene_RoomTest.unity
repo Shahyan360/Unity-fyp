@@ -456,7 +456,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 412886542}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 942fe970874c0c9498653325eb46a208, type: 3}
+  m_Script: {fileID: 11500000, guid: 9edfbc459fca4a14cbb026acc9ea8175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectMetadata
   objectName: History Statue
@@ -1729,7 +1729,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1442408500}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 942fe970874c0c9498653325eb46a208, type: 3}
+  m_Script: {fileID: 11500000, guid: 9edfbc459fca4a14cbb026acc9ea8175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectMetadata
   objectName: Atom Model
@@ -2450,7 +2450,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1619684424}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 942fe970874c0c9498653325eb46a208, type: 3}
+  m_Script: {fileID: 11500000, guid: 9edfbc459fca4a14cbb026acc9ea8175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectMetadata
   objectName: Social Practice Board

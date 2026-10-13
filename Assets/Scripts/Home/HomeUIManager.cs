@@ -469,7 +469,7 @@ public class HomeUIManager : MonoBehaviour
         chatOutputText.fontSize = 22f;
         chatOutputText.lineSpacing = 5f;
         chatOutputText.paragraphSpacing = 6f;
-        chatOutputText.enableWordWrapping = true;
+        chatOutputText.textWrappingMode = TextWrappingModes.Normal;
         chatOutputText.overflowMode = TextOverflowModes.Overflow;
         chatOutputText.alignment = TextAlignmentOptions.TopLeft;
     }

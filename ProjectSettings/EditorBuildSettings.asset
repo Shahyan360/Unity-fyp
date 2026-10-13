@@ -5,9 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
+  - enabled: 1
+    path: Assets/Scenes/Classroom.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Cafestore.unity
+    guid: 7ae6963d412773a4ca6816db49db7119
+  - enabled: 1
+    path: Assets/Scenes/HistoricalPlace.unity
+    guid: d80505f0717534e4da70be25946a602d
   - enabled: 1
     path: Assets/Scenes/HomeScene.unity
     guid: f5b8b1709d6ef4d489a5466778b446b6
@@ -15,4 +21,5 @@ EditorBuildSettings:
     path: Assets/Scenes/Phase1_DemoScene.unity
     guid: 71a2469868c92ab43a414f350f9b3842
   m_configObjects:
+    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
