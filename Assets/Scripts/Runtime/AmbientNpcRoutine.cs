@@ -166,10 +166,39 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
         foreach (string keyword in keywords)
         {
-            AnimationClip clip = Array.Find(clips, item => item != null && item.name.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
-            if (clip == null || activeClip == clip.name) continue;
-            activeClip = clip.name;
-            animator.CrossFadeInFixedTime(clip.name, 0.24f, 0, 0f);
+            AnimationClip bestClip = null;
+            int bestScore = -1;
+
+            foreach (AnimationClip clip in clips)
+            {
+                if (clip == null) continue;
+                string lower = clip.name.ToLowerInvariant();
+                // Never play swimming or combat animations during ambient routine
+                if (lower.Contains("swim") || lower.Contains("death") || lower.Contains("pistol") || lower.Contains("sword") || lower.Contains("spell"))
+                    continue;
+
+                int score = -1;
+                if (lower.EndsWith(keyword + "_loop") || lower.EndsWith("|" + keyword + "_loop"))
+                    score = 100;
+                else if (lower.EndsWith(keyword) || lower.EndsWith("|" + keyword))
+                    score = 90;
+                else if (lower.Contains(keyword) && lower.Contains("loop"))
+                    score = 70;
+                else if (lower.Contains(keyword) && !lower.Contains("enter") && !lower.Contains("exit"))
+                    score = 50;
+                else if (lower.Contains(keyword))
+                    score = 20;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestClip = clip;
+                }
+            }
+
+            if (bestClip == null || activeClip == bestClip.name) continue;
+            activeClip = bestClip.name;
+            animator.CrossFadeInFixedTime(bestClip.name, 0.24f, 0, 0f);
             return;
         }
     }

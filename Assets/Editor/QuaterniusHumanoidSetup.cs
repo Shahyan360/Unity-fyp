@@ -72,17 +72,22 @@ internal static class QuaterniusHumanoidSetup
             Debug.LogWarning("Quaternius animation FBX imported but Unity did not expose any clips yet. Refresh the project after import to retry.");
             return null;
         }
-
         AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
         AnimatorStateMachine machine = controller.layers[0].stateMachine;
         AnimatorState idle = null;
+        AnimatorState fallbackIdle = null;
         foreach (AnimationClip clip in clips)
         {
             AnimatorState state = machine.AddState(clip.name);
             state.motion = clip;
             state.writeDefaultValues = true;
-            if (idle == null && clip.name.ToLowerInvariant().Contains("idle")) idle = state;
+            string clipLower = clip.name.ToLowerInvariant();
+            if (clipLower.EndsWith("idle_loop") || clipLower.EndsWith("|idle") || clipLower.Equals("idle"))
+                idle = state;
+            else if (fallbackIdle == null && clipLower.Contains("idle") && !clipLower.Contains("swim") && !clipLower.Contains("crouch"))
+                fallbackIdle = state;
         }
+        idle ??= fallbackIdle;
         if (idle == null) idle = machine.states[0].state;
         machine.defaultState = idle;
         EditorUtility.SetDirty(controller);

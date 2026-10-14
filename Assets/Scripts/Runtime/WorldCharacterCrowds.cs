@@ -54,6 +54,8 @@ public static class WorldCharacterCrowds
                 visual.transform.localRotation = Quaternion.identity;
                 visual.transform.localScale = Vector3.one * 0.84f;
                 foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true)) Object.Destroy(collider);
+                foreach (Rigidbody rb in visual.GetComponentsInChildren<Rigidbody>(true)) Object.Destroy(rb);
+                foreach (CharacterController cc in visual.GetComponentsInChildren<CharacterController>(true)) Object.Destroy(cc);
                 foreach (MonoBehaviour script in visual.GetComponentsInChildren<MonoBehaviour>(true))
                     script.enabled = false;
                 foreach (Animator animator in visual.GetComponentsInChildren<Animator>(true))
@@ -67,6 +69,16 @@ public static class WorldCharacterCrowds
         AmbientNpcRoutine routine = person.GetComponent<AmbientNpcRoutine>();
         if (routine == null) routine = person.AddComponent<AmbientNpcRoutine>();
         routine.Configure(role, wander, radius, seed);
+
+        // Keep these runtime-swapped humanoids' feet on the real floor instead of
+        // sinking into it when their NavMesh/seat height differs from the deck.
+        Transform npcVisual = person.transform.Find("NpcAssetVisual");
+        if (npcVisual != null)
+        {
+            CharacterGrounding grounding = person.GetComponent<CharacterGrounding>();
+            if (grounding == null) grounding = person.AddComponent<CharacterGrounding>();
+            grounding.Initialize(npcVisual);
+        }
     }
 
     private static void EnsureRomanCrowd()
@@ -117,6 +129,9 @@ public static class WorldCharacterCrowds
         select.height = 1.8f;
         select.radius = 0.36f;
         select.isTrigger = true;
+        CharacterGrounding grounding = visitor.GetComponent<CharacterGrounding>();
+        if (grounding == null) grounding = visitor.AddComponent<CharacterGrounding>();
+        grounding.Initialize(visual.transform);
         AmbientNpcRoutine routine = visitor.AddComponent<AmbientNpcRoutine>();
         routine.Configure("time-travel visitor", true, 2.8f, 1800 + id);
 

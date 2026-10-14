@@ -121,8 +121,9 @@ public sealed class AgentAnimator : MonoBehaviour
     private void LateUpdate()
     {
         if (motionRoot == null) return;
-        float wave = Mathf.Sin(Time.unscaledTime * 1.7f);
-        motionRoot.localPosition = motionRootRestPosition + Vector3.up * (0.018f + wave * 0.018f);
+        // Keep the visual root at its rest position — any vertical wave here
+        // fights with CharacterGrounding / NavMeshAgent and causes bobbing.
+        motionRoot.localPosition = motionRootRestPosition;
         bool acting = Time.unscaledTime < actionUntil || Time.unscaledTime < speakingUntil;
         float pulse = acting ? Mathf.Sin((actionUntil - Time.unscaledTime) * 4.2f) : 0f;
         if (head != null)
@@ -157,13 +158,37 @@ public sealed class AgentAnimator : MonoBehaviour
         };
         foreach (string keyword in keywords)
         {
+            AnimationClip bestClip = null;
+            int bestScore = -1;
+
             foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips)
             {
-                if (clip == null || clip.name.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) < 0 || activeClipState == clip.name) continue;
-                activeClipState = clip.name;
-                animator.CrossFadeInFixedTime(clip.name, 0.22f, 0, 0f);
-                return;
+                if (clip == null) continue;
+                string lower = clip.name.ToLowerInvariant();
+                if (lower.Contains("swim") || lower.Contains("death") || lower.Contains("crouch") || lower.Contains("pistol") || lower.Contains("sword") || lower.Contains("spell"))
+                    continue;
+
+                int score = -1;
+                if (lower.EndsWith(keyword + "_loop") || lower.EndsWith("|" + keyword + "_loop"))
+                    score = 100;
+                else if (lower.EndsWith(keyword) || lower.EndsWith("|" + keyword))
+                    score = 90;
+                else if (lower.Contains(keyword) && lower.Contains("loop"))
+                    score = 70;
+                else if (lower.Contains(keyword))
+                    score = 40;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestClip = clip;
+                }
             }
+
+            if (bestClip == null || activeClipState == bestClip.name) continue;
+            activeClipState = bestClip.name;
+            animator.CrossFadeInFixedTime(bestClip.name, 0.22f, 0, 0f);
+            return;
         }
     }
 

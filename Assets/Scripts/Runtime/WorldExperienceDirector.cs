@@ -303,11 +303,20 @@ public sealed class WorldExperienceDirector : MonoBehaviour
                 child.gameObject.layer = 0;
             }
             foreach (MonoBehaviour script in visual.GetComponentsInChildren<MonoBehaviour>(true)) script.enabled = false;
-            foreach (CharacterController controller in visual.GetComponentsInChildren<CharacterController>(true)) controller.enabled = false;
+            foreach (CharacterController controller in visual.GetComponentsInChildren<CharacterController>(true)) Destroy(controller);
+            foreach (Rigidbody rb in visual.GetComponentsInChildren<Rigidbody>(true)) Destroy(rb);
+            foreach (Collider col in visual.GetComponentsInChildren<Collider>(true)) Destroy(col);
             foreach (Animator animator in visual.GetComponentsInChildren<Animator>(true)) animator.enabled = true;
             foreach (Renderer placeholderRenderer in guide.GetComponents<Renderer>()) placeholderRenderer.enabled = false;
         }
         if (guide.GetComponent<AgentAnimator>() == null) guide.AddComponent<AgentAnimator>();
+
+        // The guide's feet rest on the real physics floor (independent of the
+        // NavMesh height), so the companion never sinks through the floor or
+        // floats above it while it follows the player.
+        CharacterGrounding guideGrounding = guide.GetComponent<CharacterGrounding>();
+        if (guideGrounding == null) guideGrounding = guide.AddComponent<CharacterGrounding>();
+        guideGrounding.Initialize(guide.transform.Find("LumenGuideVisual"));
 
         ObjectMetadata metadata = guide.GetComponent<ObjectMetadata>();
         if (metadata == null) metadata = guide.AddComponent<ObjectMetadata>();
@@ -785,11 +794,15 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             pitch = 0f;
         }
         GameObject player = new GameObject("WorldExplorer");
-        player.transform.SetPositionAndRotation(floorPosition + Vector3.up * 0.08f, Quaternion.Euler(0f, yaw, 0f));
+        player.transform.SetPositionAndRotation(floorPosition + Vector3.up * 0.12f, Quaternion.Euler(0f, yaw, 0f));
         CharacterController character = player.AddComponent<CharacterController>();
         character.height = 1.8f;
         character.radius = 0.32f;
         character.center = new Vector3(0f, 0.9f, 0f);
+        character.skinWidth = 0.04f;
+        character.slopeLimit = 50f;
+        character.stepOffset = 0.35f;
+        character.minMoveDistance = 0f;
 
         viewCamera.transform.SetParent(player.transform, true);
         viewCamera.transform.localPosition = new Vector3(0f, 1.62f, 0f);

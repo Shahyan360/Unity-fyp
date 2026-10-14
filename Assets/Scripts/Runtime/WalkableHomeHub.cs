@@ -170,11 +170,14 @@ public static class WalkableHomeHub
         view.transform.SetParent(null, true);
         view.transform.SetPositionAndRotation(Spawn + Vector3.up * 1.62f, Quaternion.identity);
         GameObject player = new GameObject("WorldExplorer");
-        player.transform.SetPositionAndRotation(Spawn, Quaternion.identity);
+        player.transform.SetPositionAndRotation(Spawn + Vector3.up * 0.08f, Quaternion.identity);
         CharacterController body = player.AddComponent<CharacterController>();
         body.height = 1.8f;
         body.radius = 0.32f;
         body.center = new Vector3(0f, 0.9f, 0f);
+        body.skinWidth = 0.04f;
+        body.slopeLimit = 50f;
+        body.stepOffset = 0.35f;
         view.transform.SetParent(player.transform, false);
         view.transform.localPosition = new Vector3(0f, 1.62f, 0f);
         view.transform.localRotation = Quaternion.identity;
@@ -247,6 +250,8 @@ public static class WalkableHomeHub
         foreach (Renderer renderer in guide.GetComponents<Renderer>()) renderer.enabled = false;
         foreach (Collider collider in guide.GetComponents<Collider>()) collider.enabled = false;
         foreach (NavMeshAgent navigation in guide.GetComponents<NavMeshAgent>()) navigation.enabled = false;
+        FloatingAgentIdle floating = guide.GetComponent<FloatingAgentIdle>();
+        if (floating != null) floating.enabled = false;
         if (guide.GetComponent<AgentAnimator>() == null) guide.AddComponent<AgentAnimator>();
         WalkableGuideFollower follower = guide.GetComponent<WalkableGuideFollower>();
         if (follower == null) follower = guide.AddComponent<WalkableGuideFollower>();

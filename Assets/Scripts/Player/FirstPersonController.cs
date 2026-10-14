@@ -99,12 +99,13 @@ public class FirstPersonController : MonoBehaviour
         Vector3 moveDirection = transform.right * moveX + transform.forward * moveZ;
         characterController.Move(moveDirection * moveSpeed * Time.deltaTime);
 
-        if (characterController.isGrounded && verticalVelocity < 0)
+        bool grounded = characterController.isGrounded || (verticalVelocity <= 0f && CheckGroundedFallback());
+        if (grounded && verticalVelocity < 0)
         {
-            verticalVelocity = -2f;
+            verticalVelocity = -0.5f;
         }
 
-        if (Input.GetButtonDown("Jump") && characterController.isGrounded)
+        if (Input.GetButtonDown("Jump") && grounded)
         {
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
@@ -122,13 +123,21 @@ public class FirstPersonController : MonoBehaviour
             return;
         }
 
-        if (characterController.isGrounded && verticalVelocity < 0)
+        bool grounded = characterController.isGrounded || (verticalVelocity <= 0f && CheckGroundedFallback());
+        if (grounded && verticalVelocity < 0)
         {
-            verticalVelocity = -2f;
+            verticalVelocity = -0.5f;
         }
 
         verticalVelocity += gravity * Time.deltaTime;
         characterController.Move(new Vector3(0f, verticalVelocity, 0f) * Time.deltaTime);
+    }
+
+    private bool CheckGroundedFallback()
+    {
+        if (characterController == null) return false;
+        Vector3 bottom = transform.position + characterController.center - Vector3.up * Mathf.Max(0.1f, characterController.height * 0.5f - characterController.radius);
+        return Physics.SphereCast(bottom + Vector3.up * 0.08f, Mathf.Max(0.1f, characterController.radius * 0.85f), Vector3.down, out _, 0.14f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 
     private void HandleMouseLook()

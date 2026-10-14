@@ -153,11 +153,12 @@ public sealed class CafeWalkController : MonoBehaviour
 
         moveInput = Vector2.ClampMagnitude(moveInput, 1f);
         Vector3 horizontal = (transform.right * moveInput.x + transform.forward * moveInput.y) * (sprint ? runSpeed : walkSpeed);
-        if (character.isGrounded && verticalSpeed < 0f) verticalSpeed = -1.5f;
-        verticalSpeed -= 20f * Time.deltaTime;
+        bool grounded = character.isGrounded || (verticalSpeed <= 0f && CheckGroundedFallback());
+        if (grounded && verticalSpeed < 0f) verticalSpeed = -0.5f;
+        verticalSpeed -= 9.81f * Time.deltaTime;
         character.Move((horizontal + Vector3.up * verticalSpeed) * Time.deltaTime);
 
-        if (character.isGrounded)
+        if (grounded)
         {
             lastSafeGroundPosition = transform.position;
             hasSafeGroundPosition = true;
@@ -190,6 +191,13 @@ public sealed class CafeWalkController : MonoBehaviour
         if (wasEnabled) character.enabled = true;
         groundPosition = found ? hit.point : reference;
         return found;
+    }
+
+    private bool CheckGroundedFallback()
+    {
+        if (character == null) return false;
+        Vector3 bottom = transform.position + character.center - Vector3.up * Mathf.Max(0.1f, character.height * 0.5f - character.radius);
+        return Physics.SphereCast(bottom + Vector3.up * 0.08f, Mathf.Max(0.1f, character.radius * 0.85f), Vector3.down, out _, 0.14f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 
     private static void SetCursorLocked(bool locked)
