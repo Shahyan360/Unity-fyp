@@ -371,22 +371,18 @@ namespace StarterAssets
 
         private void OnFootstep(AnimationEvent animationEvent)
         {
-            if (animationEvent.animatorClipInfo.weight > 0.5f)
-            {
-                if (FootstepAudioClips.Length > 0)
-                {
-                    var index = Random.Range(0, FootstepAudioClips.Length);
-                    AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.TransformPoint(_controller.center), FootstepAudioVolume);
-                }
-            }
+            if (animationEvent == null || FootstepAudioClips == null || FootstepAudioClips.Length == 0 || _controller == null) return;
+            if (animationEvent.animatorClipInfo.weight <= 0.5f) return;
+            var index = Random.Range(0, FootstepAudioClips.Length);
+            AudioClip clip = FootstepAudioClips[index];
+            if (clip != null) AudioSource.PlayClipAtPoint(clip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
         }
 
         private void OnLand(AnimationEvent animationEvent)
         {
-            if (animationEvent.animatorClipInfo.weight > 0.5f)
-            {
-                AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
-            }
+            if (animationEvent == null || LandingAudioClip == null || _controller == null) return;
+            if (animationEvent.animatorClipInfo.weight <= 0.5f) return;
+            AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
         }
     }
 }

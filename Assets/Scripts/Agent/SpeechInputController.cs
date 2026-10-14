@@ -1,7 +1,11 @@
 using UnityEngine;
+using System;
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using UnityEngine.Windows.Speech;
+#endif
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
@@ -12,6 +16,7 @@ public class SpeechInputController : MonoBehaviour
 {
     [SerializeField] private KeyCode pushToTalkKey = KeyCode.V;
     [SerializeField] private ChatUIManager chat;
+    [SerializeField] private HomeUIManager homeChat;
     [SerializeField] private bool enabledForThisBuild = true;
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
@@ -21,7 +26,8 @@ public class SpeechInputController : MonoBehaviour
 
     private void Awake()
     {
-        chat ??= FindFirstObjectByType<ChatUIManager>();
+        chat ??= FindAnyObjectByType<ChatUIManager>();
+        homeChat ??= FindAnyObjectByType<HomeUIManager>();
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         if (!enabledForThisBuild) return;
         recognizer = new DictationRecognizer();
@@ -34,17 +40,33 @@ public class SpeechInputController : MonoBehaviour
     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         if (!enabledForThisBuild || recognizer == null) return;
-        bool held = Input.GetKey(pushToTalkKey);
+        bool held = IsPushToTalkHeld();
         if (held && !wasHeld && recognizer.Status == SpeechSystemStatus.Stopped) recognizer.Start();
         if (!held && wasHeld && recognizer.Status == SpeechSystemStatus.Running) recognizer.Stop();
         wasHeld = held;
 #endif
     }
 
+    private bool IsPushToTalkHeld()
+    {
+#if ENABLE_INPUT_SYSTEM
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && Enum.TryParse(pushToTalkKey.ToString(), true, out Key key) && keyboard[key].isPressed;
+#elif ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetKey(pushToTalkKey);
+#else
+        return false;
+#endif
+    }
+
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     private void OnDictationResult(string text, ConfidenceLevel confidence)
     {
-        if (confidence != ConfidenceLevel.Rejected) chat?.SubmitVoiceTranscription(text);
+        if (confidence == ConfidenceLevel.Rejected) return;
+        chat ??= FindAnyObjectByType<ChatUIManager>();
+        homeChat ??= FindAnyObjectByType<HomeUIManager>();
+        if (chat != null) chat.SubmitVoiceTranscription(text);
+        else homeChat?.SubmitVoiceTranscription(text);
     }
 #endif
 

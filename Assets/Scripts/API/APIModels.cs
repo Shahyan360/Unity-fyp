@@ -21,6 +21,7 @@ public class ChatResponse
     public string action;
     public string intent;
     public string navigation_target;
+    public string next_scenario;
     public string session_id;
     public string scenario;
     public bool offline;

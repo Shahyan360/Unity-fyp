@@ -63,7 +63,7 @@ public sealed class ObjectMetadata : MonoBehaviour
     public static ObjectMetadata FindById(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        ObjectMetadata[] all = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        ObjectMetadata[] all = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Include);
         foreach (ObjectMetadata item in all)
             if (item != null && string.Equals(item.objectId, id, System.StringComparison.OrdinalIgnoreCase)) return item;
         return null;
@@ -73,7 +73,7 @@ public sealed class ObjectMetadata : MonoBehaviour
     {
         var results = new List<ObjectMetadata>();
         if (string.IsNullOrWhiteSpace(tag)) return results;
-        ObjectMetadata[] all = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        ObjectMetadata[] all = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Include);
         foreach (ObjectMetadata item in all)
             if (item != null && item.HasTag(tag)) results.Add(item);
         return results;

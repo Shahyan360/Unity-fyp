@@ -15,6 +15,7 @@ public sealed class ClassroomWaypointNavigator : MonoBehaviour
     private List<ClassroomWaypoint> activeRoute;
     private int nextRouteIndex;
     private bool navigating;
+    private float nextNavMeshRecovery;
 
     public bool IsNavigating => navigating;
     public string CurrentDestinationId => activeRoute != null && activeRoute.Count > 0 ? activeRoute[activeRoute.Count - 1].waypointId : string.Empty;
@@ -22,6 +23,7 @@ public sealed class ClassroomWaypointNavigator : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        ConfigureGroundFollowing();
         if (graph == null) graph = FindAnyObjectByType<ClassroomWaypointGraph>();
     }
 
@@ -30,14 +32,23 @@ public sealed class ClassroomWaypointNavigator : MonoBehaviour
         if (!autoStart) yield break;
         yield return null;
         if (agent == null || !agent.enabled) yield break;
-        if (!agent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 2f, agent.areaMask))
-            agent.Warp(hit.position);
+        RecoverToNavMesh();
         NavigateToWaypoint(autoStartDestination);
     }
 
     private void Update()
     {
-        if (!navigating || agent == null || agent.pathPending) return;
+        if (agent == null || !agent.enabled) return;
+        if (!agent.isOnNavMesh)
+        {
+            if (Time.time >= nextNavMeshRecovery)
+            {
+                nextNavMeshRecovery = Time.time + 0.75f;
+                RecoverToNavMesh();
+            }
+            return;
+        }
+        if (!navigating || agent.pathPending) return;
         if (agent.pathStatus == NavMeshPathStatus.PathInvalid) { navigating = false; return; }
         if (agent.remainingDistance > agent.stoppingDistance + 0.1f) return;
         if (activeRoute != null && nextRouteIndex < activeRoute.Count)
@@ -82,5 +93,21 @@ public sealed class ClassroomWaypointNavigator : MonoBehaviour
         navigating = false;
         activeRoute = null;
         if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+    }
+
+    private void ConfigureGroundFollowing()
+    {
+        if (agent == null) return;
+        agent.updatePosition = true;
+        agent.updateRotation = true;
+        agent.updateUpAxis = true;
+        agent.baseOffset = 0f;
+    }
+
+    private bool RecoverToNavMesh()
+    {
+        if (agent == null || !agent.enabled || agent.isOnNavMesh) return agent != null && agent.isOnNavMesh;
+        if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 4f, agent.areaMask)) return false;
+        return agent.Warp(hit.position);
     }
 }

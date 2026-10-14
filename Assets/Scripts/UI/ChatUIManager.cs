@@ -36,31 +36,33 @@ public class ChatUIManager : MonoBehaviour
     [Header("Navigation")]
     [SerializeField] private Button backButton;
     [SerializeField] private bool createBackButtonOnStart = true;
-    [SerializeField] private string homeSceneName = "HomeScene 1";
+    [SerializeField] private string homeSceneName = "HomeScene";
 
     private bool isWaitingForResponse;
     private readonly List<string> chatLines = new List<string>();
+    private ObjectMetadata explicitResponseSpeaker;
+    private ObjectMetadata pendingResponseSpeaker;
 
     private void Awake()
     {
         if (aiClient == null)
         {
-            aiClient = FindObjectOfType<AIClient>();
+            aiClient = FindAnyObjectByType<AIClient>();
         }
 
         if (appConfig == null)
         {
-            appConfig = FindObjectOfType<AppConfig>();
+            appConfig = FindAnyObjectByType<AppConfig>();
         }
 
         if (objectRaycaster == null)
         {
-            objectRaycaster = FindObjectOfType<ObjectRaycaster>();
+            objectRaycaster = FindAnyObjectByType<ObjectRaycaster>();
         }
 
         if (agentResponseHandler == null)
         {
-            agentResponseHandler = FindObjectOfType<AgentResponseHandler>();
+            agentResponseHandler = FindAnyObjectByType<AgentResponseHandler>();
         }
 
         if (chatScrollRect == null && tmpChatOutput != null)
@@ -121,7 +123,41 @@ public class ChatUIManager : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene(homeSceneName);
+        ScenarioTransitionService.LoadHome(homeSceneName);
+    }
+
+    /// <summary>Disables the old shared demo props and duplicate back button when authored worlds provide their own navigation.</summary>
+    public void ConfigureUnifiedWorldExperience()
+    {
+        buildSupervisorShowcaseOnStart = false;
+        createBackButtonOnStart = false;
+    }
+
+    /// <summary>Connects this scene's generated chat card to the local AI, gaze context, and UI controls.</summary>
+    public void ConfigureRuntimeChat(AIClient client, AppConfig config, ObjectRaycaster gaze, TMP_InputField input,
+        Button send, TMP_Text transcript, TMP_Text status, ScrollRect scroll)
+    {
+        aiClient = client;
+        appConfig = config;
+        objectRaycaster = gaze;
+        tmpInputField = input;
+        legacyInputField = null;
+        sendButton = send;
+        tmpChatOutput = transcript;
+        legacyChatOutput = null;
+        tmpStatusText = status;
+        chatScrollRect = scroll;
+        applyDemoVisualPolishOnStart = false;
+        buildSupervisorShowcaseOnStart = false;
+        createBackButtonOnStart = false;
+        ConfigureChatText();
+        SetupRuntimeChatScrollRect();
+        if (sendButton != null)
+        {
+            sendButton.onClick.RemoveListener(SendCurrentMessage);
+            sendButton.onClick.AddListener(SendCurrentMessage);
+        }
+        if (tmpInputField != null) tmpInputField.onSubmit.AddListener(_ => SendCurrentMessage());
     }
 
     public void SendCurrentMessage()
@@ -145,6 +181,8 @@ public class ChatUIManager : MonoBehaviour
         }
 
         ObjectMetadata currentObject = objectRaycaster != null ? objectRaycaster.CurrentObject : null;
+        pendingResponseSpeaker = explicitResponseSpeaker != null ? explicitResponseSpeaker : currentObject;
+        explicitResponseSpeaker = null;
         string objectName = currentObject != null ? currentObject.GetDisplayName() : "";
         string objectDescription = currentObject != null ? currentObject.description : "";
         string scenario = GetScenario(currentObject);
@@ -194,7 +232,22 @@ public class ChatUIManager : MonoBehaviour
             return appConfig.defaultScenario;
         }
 
-        return "academic_tutor";
+        return ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);
+    }
+
+    /// <summary>Submits a contextual prompt from an in-world interaction control.</summary>
+    public void SubmitWorldPrompt(string prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt)) return;
+        if (tmpInputField != null) tmpInputField.text = prompt;
+        else if (legacyInputField != null) legacyInputField.text = prompt;
+        SendCurrentMessage();
+    }
+
+    public void SubmitWorldPrompt(string prompt, ObjectMetadata responseSpeaker)
+    {
+        explicitResponseSpeaker = responseSpeaker;
+        SubmitWorldPrompt(prompt);
     }
 
     private void HandleChatSuccess(ChatResponse response)
@@ -204,12 +257,19 @@ public class ChatUIManager : MonoBehaviour
 
         if (agentResponseHandler != null)
         {
-            agentResponseHandler.HandleResponse(response);
+            agentResponseHandler.HandleResponse(response, pendingResponseSpeaker);
         }
+        else if (!string.IsNullOrWhiteSpace(response.next_scenario))
+        {
+            ScenarioTransitionService.LoadScenario(response.next_scenario);
+        }
+        pendingResponseSpeaker = null;
     }
 
     private void HandleChatError(string errorMessage)
     {
+        pendingResponseSpeaker = null;
+        explicitResponseSpeaker = null;
         SetLoadingState(false);
         SetStatus(errorMessage);
         AppendChatLine($"System: {errorMessage}");
@@ -311,8 +371,12 @@ public class ChatUIManager : MonoBehaviour
     private void InitializeChatOutput()
     {
         chatLines.Clear();
-        chatLines.Add("System: Phase 1 demo ready.");
-        chatLines.Add("Assistant: Look at an object, ask a question, and I will answer using the selected scenario.");
+        string scene = SceneManager.GetActiveScene().name;
+        string introduction = scene == "HistoricalPlace" ? "Welcome to Ancient Rome. Look at a landmark and ask your guide what it reveals."
+            : scene == "Cafestore" ? "Welcome to the café. Meet a guest, practise conversation, or place a practice order."
+            : "Welcome to the learning studio. Ask about an exhibit, or ask to see a model.";
+        chatLines.Add("Assistant: " + introduction);
+        chatLines.Add("System: Local guide ready.");
 
         string chatText = string.Join("\n", chatLines) + "\n";
 
@@ -328,7 +392,7 @@ public class ChatUIManager : MonoBehaviour
         Canvas canvas = GetComponentInParent<Canvas>();
         if (canvas == null)
         {
-            canvas = FindFirstObjectByType<Canvas>();
+            canvas = FindAnyObjectByType<Canvas>();
         }
 
         if (canvas == null)
@@ -471,7 +535,10 @@ public class ChatUIManager : MonoBehaviour
         }
 
         TMP_Text headerText = headerObject.GetComponent<TMP_Text>();
-        headerText.text = "Embodied AI - Phase 1 Interactive Demo";
+        string scene = SceneManager.GetActiveScene().name;
+        headerText.text = scene == "HistoricalPlace" ? "ANCIENT ROME  ·  A CITY TO EXPLORE"
+            : scene == "Cafestore" ? "THE CORNER TABLE  ·  A PLACE TO PRACTISE"
+            : "CLASSROOM  ·  IDEAS YOU CAN EXPLORE";
         headerText.fontSize = 30f;
         headerText.fontStyle = FontStyles.Bold;
         headerText.enableAutoSizing = false;
@@ -489,7 +556,7 @@ public class ChatUIManager : MonoBehaviour
             Canvas canvas = GetComponentInParent<Canvas>();
             if (canvas == null)
             {
-                canvas = FindFirstObjectByType<Canvas>();
+                canvas = FindAnyObjectByType<Canvas>();
             }
 
             if (canvas != null)
@@ -545,6 +612,25 @@ public class ChatUIManager : MonoBehaviour
         textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferredHeight);
     }
 
+    private void SetupRuntimeChatScrollRect()
+    {
+        if (tmpChatOutput == null || chatScrollRect == null) return;
+        RectTransform content = tmpChatOutput.rectTransform;
+        RectTransform viewport = chatScrollRect.viewport;
+        if (viewport == null) viewport = content.parent as RectTransform;
+        chatScrollRect.viewport = viewport;
+        chatScrollRect.content = content;
+        chatScrollRect.horizontal = false;
+        chatScrollRect.vertical = true;
+        chatScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        chatScrollRect.scrollSensitivity = 24f;
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = new Vector2(0f, 1f);
+        content.pivot = new Vector2(0f, 1f);
+        content.anchoredPosition = new Vector2(chatPadding, -chatPadding);
+        ResizeChatOutput();
+    }
+
     private void BuildSupervisorShowcase()
     {
         if (GameObject.Find("Phase1SupervisorShowcase") != null)
@@ -589,7 +675,7 @@ public class ChatUIManager : MonoBehaviour
 
     private void StyleMetadataObjects(Material academicMat, Material historyMat, Material socialMat)
     {
-        ObjectMetadata[] metadataObjects = FindObjectsOfType<ObjectMetadata>();
+        ObjectMetadata[] metadataObjects = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Exclude);
         foreach (ObjectMetadata metadata in metadataObjects)
         {
             Material material = academicMat;

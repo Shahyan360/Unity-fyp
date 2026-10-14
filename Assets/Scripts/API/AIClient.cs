@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 
 public class AIClient : MonoBehaviour
 {
+    private static string sharedSessionId;
     [Header("Configuration")]
     [SerializeField] private AppConfig appConfig;
 
@@ -30,9 +31,10 @@ public class AIClient : MonoBehaviour
 
     private void Awake()
     {
+        SessionId = sharedSessionId;
         if (appConfig == null)
         {
-            appConfig = FindFirstObjectByType<AppConfig>();
+            appConfig = FindAnyObjectByType<AppConfig>();
         }
 
         EmbodiedExperienceBootstrap.Ensure(this);
@@ -111,6 +113,7 @@ public class AIClient : MonoBehaviour
                 if (!string.IsNullOrWhiteSpace(response.session_id))
                 {
                     SessionId = response.session_id;
+                    sharedSessionId = response.session_id;
                 }
 
                 onSuccess?.Invoke(response);

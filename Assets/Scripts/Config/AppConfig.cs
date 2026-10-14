@@ -3,15 +3,15 @@ using UnityEngine;
 public class AppConfig : MonoBehaviour
 {
     private const string SelectedScenarioKey = "SelectedScenario";
-    private const string AcademicTutorScenario = "academic_tutor";
-    private const string HistoricalGuideScenario = "historical_guide";
-    private const string SocialCoachScenario = "social_coach";
+    private const string AcademicTutorScenario = "classroom";
+    private const string HistoricalGuideScenario = "ancient_rome";
+    private const string SocialCoachScenario = "cafe";
 
     [Header("Backend")]
     public string backendUrl = "http://127.0.0.1:5000";
 
     [Header("Scenario")]
-    public string defaultScenario = "academic_tutor";
+    public string defaultScenario = "classroom";
 
     private void Awake()
     {
@@ -26,7 +26,7 @@ public class AppConfig : MonoBehaviour
 
             if (IsValidScenario(savedScenario))
             {
-                defaultScenario = savedScenario;
+                defaultScenario = ScenarioRuntimeManager.NormalizeScenario(savedScenario);
             }
             else
             {
@@ -46,6 +46,10 @@ public class AppConfig : MonoBehaviour
     {
         return scenario == AcademicTutorScenario
             || scenario == HistoricalGuideScenario
-            || scenario == SocialCoachScenario;
+            || scenario == SocialCoachScenario
+            || scenario == "academic_tutor"
+            || scenario == "historical_guide"
+            || scenario == "social_coach"
+            || scenario == "museum";
     }
 }

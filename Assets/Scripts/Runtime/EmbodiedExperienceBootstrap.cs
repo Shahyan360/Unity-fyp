@@ -29,7 +29,7 @@ public static class EmbodiedExperienceBootstrap
             }
         }
 
-        if (Object.FindFirstObjectByType<SocialCoachingController>() == null)
+        if (Object.FindAnyObjectByType<SocialCoachingController>() == null)
         {
             client.gameObject.AddComponent<SocialCoachingController>();
         }

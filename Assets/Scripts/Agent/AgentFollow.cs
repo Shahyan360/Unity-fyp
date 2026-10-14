@@ -15,15 +15,37 @@ public class AgentFollow : MonoBehaviour
 
     private NavMeshAgent navMeshAgent;
     private float nextRepathTime;
+    private float nextNavMeshRecovery;
 
     private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        ConfigureGroundFollowing();
+    }
+
+    private void Start()
+    {
+        RecoverToNavMesh();
     }
 
     private void Update()
     {
-        if (player == null || navMeshAgent == null)
+        if (navMeshAgent == null || !navMeshAgent.enabled)
+        {
+            return;
+        }
+
+        if (!navMeshAgent.isOnNavMesh)
+        {
+            if (Time.time >= nextNavMeshRecovery)
+            {
+                nextNavMeshRecovery = Time.time + 0.75f;
+                RecoverToNavMesh();
+            }
+            return;
+        }
+
+        if (player == null)
         {
             return;
         }
@@ -45,5 +67,21 @@ public class AgentFollow : MonoBehaviour
             navMeshAgent.isStopped = true;
             navMeshAgent.ResetPath();
         }
+    }
+
+    private void ConfigureGroundFollowing()
+    {
+        if (navMeshAgent == null) return;
+        navMeshAgent.updatePosition = true;
+        navMeshAgent.updateRotation = true;
+        navMeshAgent.updateUpAxis = true;
+        navMeshAgent.baseOffset = 0f;
+    }
+
+    private bool RecoverToNavMesh()
+    {
+        if (navMeshAgent == null || !navMeshAgent.enabled || navMeshAgent.isOnNavMesh) return navMeshAgent != null && navMeshAgent.isOnNavMesh;
+        if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 4f, navMeshAgent.areaMask)) return false;
+        return navMeshAgent.Warp(hit.position);
     }
 }

@@ -8,9 +8,9 @@ using UnityEngine.UI;
 public class HomeUIManager : MonoBehaviour
 {
     private const string SelectedScenarioKey = "SelectedScenario";
-    private const string AcademicTutorScenario = "academic_tutor";
-    private const string HistoricalGuideScenario = "historical_guide";
-    private const string SocialCoachScenario = "social_coach";
+    private const string AcademicTutorScenario = "classroom";
+    private const string HistoricalGuideScenario = "ancient_rome";
+    private const string SocialCoachScenario = "cafe";
 
     [Header("Backend Chat")]
     public AIClient aiClient;
@@ -24,6 +24,7 @@ public class HomeUIManager : MonoBehaviour
     public TMP_Text welcomeText;
     public TMP_Text chatOutputText;
     public TMP_Text selectedPersonalityText;
+    public bool autoManageChatLayout = true;
 
     [Header("Chat Scrolling")]
     public ScrollRect chatScrollRect;
@@ -63,11 +64,13 @@ public class HomeUIManager : MonoBehaviour
         EnsureBackendServices();
         SetExplorePanel(false);
         UpdateSelectedPersonalityLabel();
-        ConfigureChatText();
-
-        SetupChatScrolling();
+        if (autoManageChatLayout)
+        {
+            ConfigureChatText();
+            SetupChatScrolling();
+        }
         InitializeChatOutput();
-        StartCoroutine(RefreshChatLayoutNextFrame());
+        if (autoManageChatLayout) StartCoroutine(RefreshChatLayoutNextFrame());
 
         if (welcomeText != null)
         {
@@ -76,6 +79,7 @@ public class HomeUIManager : MonoBehaviour
 
         if (sendButton != null)
         {
+            sendButton.onClick.RemoveListener(SendLocalMessage);
             sendButton.onClick.AddListener(SendLocalMessage);
         }
 
@@ -202,6 +206,13 @@ public class HomeUIManager : MonoBehaviour
             "Great question! Answer normally here for general questions. If your question needs a specific scenario, select one from Explore to begin your embodied AI experience.");
     }
 
+    public void SubmitVoiceTranscription(string transcription)
+    {
+        if (string.IsNullOrWhiteSpace(transcription) || isWaitingForBackend || userInputField == null) return;
+        userInputField.text = transcription.Trim();
+        SendLocalMessage();
+    }
+
     private void SendMessageToBackend(string userMessage)
     {
         // The Home screen should behave like a normal AI assistant.
@@ -217,7 +228,7 @@ public class HomeUIManager : MonoBehaviour
             sendButton.interactable = false;
         }
 
-        AddAssistantMessage("Thinking...");
+        AddAssistantMessage("Lumen is thinking on-device…");
 
         StartCoroutine(aiClient.SendChatMessage(
             userMessage,
@@ -239,6 +250,18 @@ public class HomeUIManager : MonoBehaviour
         }
 
         AddAssistantMessage(response.response);
+        AgentResponseHandler responseHandler = FindAnyObjectByType<AgentResponseHandler>();
+        if (responseHandler != null)
+        {
+            responseHandler.HandleResponse(response);
+            return;
+        }
+
+        AgentAnimator animator = FindAnyObjectByType<AgentAnimator>();
+        if (animator != null) animator.ApplyResponseTags(response.action, response.emotion);
+        SpeechOutputController voice = FindAnyObjectByType<SpeechOutputController>();
+        if (voice != null) voice.Speak(response.response);
+        if (!string.IsNullOrWhiteSpace(response.next_scenario)) ScenarioTransitionService.LoadScenario(response.next_scenario);
     }
 
     private void HandleBackendError(string errorMessage)
@@ -256,7 +279,7 @@ public class HomeUIManager : MonoBehaviour
 
     private void RemoveLastThinkingMessage()
     {
-        if (chatLines.Count > 0 && chatLines[chatLines.Count - 1] == "Assistant: Thinking...")
+        if (chatLines.Count > 0 && chatLines[chatLines.Count - 1] == "Assistant: Lumen is thinking on-device…")
         {
             chatLines.RemoveAt(chatLines.Count - 1);
         }
@@ -298,7 +321,7 @@ public class HomeUIManager : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene(demoSceneName);
+        ScenarioTransitionService.LoadScenario(PlayerPrefs.GetString(SelectedScenarioKey, AcademicTutorScenario));
     }
 
     private void UpdateSelectedPersonalityLabel()
@@ -322,12 +345,12 @@ public class HomeUIManager : MonoBehaviour
     {
         if (appConfig == null)
         {
-            appConfig = FindFirstObjectByType<AppConfig>();
+            appConfig = FindAnyObjectByType<AppConfig>();
         }
 
         if (aiClient == null)
         {
-            aiClient = FindFirstObjectByType<AIClient>();
+            aiClient = FindAnyObjectByType<AIClient>();
         }
 
         if ((appConfig == null || aiClient == null) && useBackendChat)
@@ -361,19 +384,24 @@ public class HomeUIManager : MonoBehaviour
 
     private string DetectScenarioFromMessage(string lowerMessage)
     {
-        if (lowerMessage.Contains("academic") || lowerMessage.Contains("tutor") || lowerMessage.Contains("study"))
+        if (lowerMessage.Contains("class") || lowerMessage.Contains("academic") || lowerMessage.Contains("tutor") || lowerMessage.Contains("study"))
         {
             return AcademicTutorScenario;
         }
 
-        if (lowerMessage.Contains("history") || lowerMessage.Contains("historical") || lowerMessage.Contains("guide"))
+        if (lowerMessage.Contains("rome") || lowerMessage.Contains("history") || lowerMessage.Contains("historical") || lowerMessage.Contains("guide"))
         {
             return HistoricalGuideScenario;
         }
 
-        if (lowerMessage.Contains("social") || lowerMessage.Contains("coach") || lowerMessage.Contains("conversation"))
+        if (lowerMessage.Contains("cafe") || lowerMessage.Contains("café") || lowerMessage.Contains("coffee") || lowerMessage.Contains("social") || lowerMessage.Contains("coach") || lowerMessage.Contains("conversation"))
         {
             return SocialCoachScenario;
+        }
+
+        if (lowerMessage.Contains("museum") || lowerMessage.Contains("gallery") || lowerMessage.Contains("artifact"))
+        {
+            return "museum";
         }
 
         return "";
@@ -390,9 +418,9 @@ public class HomeUIManager : MonoBehaviour
 
     private bool IsValidScenario(string scenario)
     {
-        return scenario == AcademicTutorScenario
-            || scenario == HistoricalGuideScenario
-            || scenario == SocialCoachScenario;
+        return scenario == AcademicTutorScenario || scenario == "academic_tutor"
+            || scenario == HistoricalGuideScenario || scenario == "historical_guide"
+            || scenario == SocialCoachScenario || scenario == "social_coach" || scenario == "museum";
     }
 
     private string GetScenarioDisplayName(string scenario)
@@ -400,11 +428,16 @@ public class HomeUIManager : MonoBehaviour
         switch (scenario)
         {
             case AcademicTutorScenario:
+            case "academic_tutor":
                 return "Academic Tutor";
             case HistoricalGuideScenario:
+            case "historical_guide":
                 return "Historical Guide";
             case SocialCoachScenario:
+            case "social_coach":
                 return "Social Coach";
+            case "museum":
+                return "Museum of Human Ideas";
             default:
                 return "Academic Tutor";
         }
@@ -435,7 +468,7 @@ public class HomeUIManager : MonoBehaviour
         }
 
         chatOutputText.text = string.Join("\n", chatLines) + "\n";
-        ResizeChatTextToContent();
+        if (autoManageChatLayout) ResizeChatTextToContent();
 
         if (chatScrollRect != null && autoScrollToLatestMessage)
         {
@@ -451,10 +484,10 @@ public class HomeUIManager : MonoBehaviour
         }
 
         chatLines.Clear();
-        chatLines.Add("Assistant: Hello! I am your virtual assistant.");
-        chatLines.Add("Assistant: Choose a scenario from Explore or ask me anything to begin.");
+        chatLines.Add("Guide: Welcome. I can take you to Ancient Rome, open the Classroom, visit the Museum, or bring you into the Café.");
+        chatLines.Add("Guide: Ask me a question, or choose a world above to begin.");
         chatOutputText.text = string.Join("\n", chatLines) + "\n";
-        ResizeChatTextToContent();
+        if (autoManageChatLayout) ResizeChatTextToContent();
     }
 
     private void ConfigureChatText()
