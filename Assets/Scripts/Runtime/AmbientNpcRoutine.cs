@@ -60,6 +60,8 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         if (player != null) StartCoroutine(FacePlayerBriefly(player));
     }
 
+    public void HoldConversation(){if(activity=="talk"){actionUntil=Mathf.Max(actionUntil,Time.time+.3f);nextDecision=actionUntil;}}
+
     public void ReactToOrder(bool ready = false)
     {
         activity = ready ? "serve" : "work";

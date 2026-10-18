@@ -213,8 +213,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         Rect(topBar.rectTransform, new Vector2(0.025f, 0.925f), new Vector2(0.975f, 0.985f), Vector2.zero, Vector2.zero);
         CreateText(topBar.transform, "Brand", "LUMEN   /   A LITTLE WORLD OF BIG IDEAS", 19, new Color(0.74f, 0.94f, 0.91f), FontStyles.Bold,
             new Vector2(0.025f, 0.10f), new Vector2(0.48f, 0.90f), TextAlignmentOptions.Left);
-        CreateText(topBar.transform, "LocalBadge", "YOUR GUIDE IS HERE  ·  HOLD V TO TALK", 13, new Color(0.47f, 0.78f, 0.75f), FontStyles.Bold,
-            new Vector2(0.52f, 0.10f), new Vector2(0.975f, 0.90f), TextAlignmentOptions.Right);
+        CreateText(topBar.transform, "LocalBadge", "M / MICROPHONE", 13, new Color(0.47f, 0.78f, 0.75f), FontStyles.Bold,
+            new Vector2(0.81f, 0.10f), new Vector2(0.975f, 0.90f), TextAlignmentOptions.Right);
 
         Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.13f, 0.94f), true);
         Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.455f, 0.265f), Vector2.zero, Vector2.zero);
@@ -815,8 +815,10 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             {
                 if (guest == null || !guest.name.StartsWith("CafeGuest_", System.StringComparison.OrdinalIgnoreCase)) continue;
                 if (guest.parent != null && guest.parent.name.StartsWith("CafeGuest_", System.StringComparison.OrdinalIgnoreCase)) continue;
-                string guestLabel = guest.name.Replace("CafeGuest_", "Guest ").Replace('_', ' ');
-                AddPersonMetadata(guest.gameObject, guestLabel, "A café guest in this conversation-practice scene. Try a relaxed greeting, ask about their day, or share a little about yourself.", "cafe, person, conversation, guest, social-practice");
+                string code=guest.name.ToLowerInvariant();
+                string guestLabel=code.Contains("man_01")?"Alex":code.Contains("woman_02")?"Nora":code.Contains("man_03")?"Sam":code.Contains("woman_04")?"Lina":code.Contains("woman_05")?"Zoe":code.Contains("man_06")?"Omar":"Cafe guest";
+                string interest=guestLabel=="Alex"?"reading and a quiet coffee":guestLabel=="Nora"?"learning new things":guestLabel=="Sam"?"design and creative projects":guestLabel=="Lina"?"books and writing":guestLabel=="Zoe"?"music": "studying and taking a short break";
+                AddPersonMetadata(guest.gameObject,guestLabel,"A fictional cafe guest interested in "+interest+". Be a natural conversation partner with brief replies. You are not the barista or the visitor helper; do not take orders. Respect a visitor who prefers a quiet or brief exchange.","cafe, person, conversation, guest, social-practice");
             }
             GameObject counter = GameObject.Find("Counter_Top");
             if (counter != null) AddPersonMetadata(counter, "Order Counter", "Browse the practice menu and place an order for pickup or table service. This experience does not charge money.", "cafe, order, menu, counter");

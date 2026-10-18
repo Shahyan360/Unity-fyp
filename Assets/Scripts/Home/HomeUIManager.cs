@@ -71,6 +71,7 @@ public class HomeUIManager : MonoBehaviour
         else if(liveOutputLine<chatLines.Count)chatLines[liveOutputLine]=label+": "+text;
         if(chatOutputText!=null)chatOutputText.text=string.Join("\n",chatLines)+"\n";
     }
+    public void ResetLiveTurn(){liveInputLine=liveOutputLine=-1;}
     public void FinishLiveReply(ChatResponse response){ShowLiveOutput(response.response);liveInputLine=liveOutputLine=-1;}
 
     private void Start()

@@ -48,9 +48,10 @@ public sealed class SpeechInputController:MonoBehaviour
         yield return new WaitForSecondsRealtime(1);
         BuildControl();if(listening)StartMicrophone();else state="Microphone off";
     }
-    public void ToggleListening()
+    public void ToggleListening(){SetListening(!listening);}
+    public void SetListening(bool value)
     {
-        listening=!listening;PlayerPrefs.SetInt("Lumen.VoiceEnabled",listening?1:0);PlayerPrefs.Save();
+        listening=value;PlayerPrefs.SetInt("Lumen.VoiceEnabled",listening?1:0);PlayerPrefs.Save();
         if(listening)StartMicrophone();else{StopMicrophone();state="Microphone off";}
     }
     public void SelectMicrophone(string name)

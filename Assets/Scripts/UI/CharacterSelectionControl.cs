@@ -16,7 +16,7 @@ public sealed class CharacterSelectionControl:MonoBehaviour
         string selected=PlayerPrefs.GetString(key,CharacterWardrobe.Default(scene));
         label.text="CHANGE GUIDE / "+CharacterWardrobe.Label(selected);
         var menu=new GameObject("Guide choices",typeof(RectTransform),typeof(Image));menu.transform.SetParent(canvas.transform,false);
-        var mr=(RectTransform)menu.transform;mr.anchorMin=new Vector2(.57f,.54f);mr.anchorMax=new Vector2(.79f,.915f);mr.offsetMin=mr.offsetMax=Vector2.zero;
+        var mr=(RectTransform)menu.transform;mr.anchorMin=new Vector2(.57f,.46f);mr.anchorMax=new Vector2(.79f,.855f);mr.offsetMin=mr.offsetMax=Vector2.zero;
         menu.GetComponent<Image>().color=new Color(.035f,.07f,.09f,.98f);
         for(int i=0;i<CharacterWardrobe.Styles.Length;i++)
         {
@@ -36,7 +36,7 @@ public sealed class CharacterSelectionControl:MonoBehaviour
         var helper=Instantiate(go,canvas.transform);helper.name="Return to helper";
         var hr=(RectTransform)helper.transform;hr.anchorMin=new Vector2(.57f,.865f);hr.anchorMax=new Vector2(.77f,.915f);
         helper.GetComponentInChildren<TMP_Text>().text="TALK TO MY HELPER";
-        helper.GetComponent<Button>().onClick.RemoveAllListeners();helper.GetComponent<Button>().onClick.AddListener(()=>GeminiLiveConversation.Instance?.SelectPartner(null));
+        helper.GetComponent<Button>().onClick.RemoveAllListeners();helper.GetComponent<Button>().onClick.AddListener(()=>{var live=GeminiLiveConversation.Instance;if(live!=null){if(live.Partner!=null)live.SelectPartner(null);else if(!live.Ready)live.Reconnect();}});
         helper.AddComponent<ConversationPartnerLabel>();
     }
 }

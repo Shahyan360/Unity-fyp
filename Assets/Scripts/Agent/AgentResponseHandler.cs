@@ -60,13 +60,13 @@ public class AgentResponseHandler : MonoBehaviour
         if (identity != null && companionController != null)
             companionController.AttendToVisitor(Mathf.Clamp(response.response.Length * .07f + 2f, 3f, 30f));
 
-        if (agentAnimator != null)
+        if (agentAnimator != null && !response.spoken_stream)
         {
             agentAnimator.ApplyResponseTags(response.action, response.emotion);
             if (!response.spoken_stream) agentAnimator.SpeakFor(Mathf.Clamp(response.response.Length * 0.055f, 1.8f, 14f));
         }
 
-        if (responseSpeaker != null)
+        if (responseSpeaker != null && !response.spoken_stream)
         {
             AmbientNpcRoutine speakerRoutine = responseSpeaker.GetComponent<AmbientNpcRoutine>() ?? responseSpeaker.GetComponentInParent<AmbientNpcRoutine>();
             if (speakerRoutine != null)

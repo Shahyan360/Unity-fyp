@@ -16,7 +16,7 @@ public static class WorldDestination
             string label=item.GetDisplayName().ToLowerInvariant();
             if(!label.Contains(query)&&!query.Contains(label))continue;
             if(label.Contains("walls")||label.Contains("waypoint"))continue;
-            for(int i=0;i<17;i++)
+            for(int i=0;i<(item.category=="Destination"?1:17);i++)
             {
                 float angle=(i-1)*Mathf.PI/4;float radius=i==0?0:i<9?1.6f:3f;
                 var candidate=item.transform.position+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius);

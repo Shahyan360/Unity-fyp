@@ -16,6 +16,7 @@ public sealed class CharacterFacialAnimation : MonoBehaviour
     private readonly float[] samples = new float[256];
     private readonly float[] values = new float[8];
     private AudioSource speech;
+    private Func<float> nativeLevel;
     private float nextBlink;
     private float blinkStarted = -10f;
     private float expressionUntil;
@@ -65,8 +66,8 @@ public sealed class CharacterFacialAnimation : MonoBehaviour
         expressionUntil = Time.unscaledTime + 9f;
     }
 
-    public void BeginSpeech(AudioSource source) { speech = source; }
-    public void EndSpeech() { speech = null; amplitude = 0f; }
+    public void BeginSpeech(AudioSource source,Func<float> level=null) { speech = source;nativeLevel=level; }
+    public void EndSpeech() { speech = null;nativeLevel=null; amplitude = 0f; }
 
     private void LateUpdate()
     {
@@ -81,7 +82,8 @@ public sealed class CharacterFacialAnimation : MonoBehaviour
             speech.GetOutputData(samples, 0);
             float square = 0f;
             for (int i = 0; i < samples.Length; i++) square += samples[i] * samples[i];
-            targetAmplitude = Mathf.Clamp01((Mathf.Sqrt(square / samples.Length) - 0.006f) * 11f);
+            float level=nativeLevel!=null?nativeLevel():Mathf.Sqrt(square / samples.Length);
+            targetAmplitude = Mathf.Clamp01((level - 0.006f) * 11f);
         }
         amplitude = Mathf.Lerp(amplitude, targetAmplitude, step);
         values[0] = amplitude * 72f;

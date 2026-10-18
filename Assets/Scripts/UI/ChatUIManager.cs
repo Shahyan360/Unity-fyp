@@ -49,7 +49,8 @@ public class ChatUIManager : MonoBehaviour
         if(liveUserLine<0){AppendChatLine("You: "+text);liveUserLine=chatLines.Count-1;}
         else if(liveUserLine<chatLines.Count)chatLines[liveUserLine]="You: "+text;
     }
-    public void ShowLiveOutput(string text){ShowStreamingText(text);}
+    public void ResetLiveTurn(){liveUserLine=-1;streamingLine=-1;pendingResponseSpeaker=null;}
+    public void ShowLiveOutput(string text){pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;ShowStreamingText(text);}
     public void FinishLiveReply(ChatResponse response){liveUserLine=-1;pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;HandleChatSuccess(response);}
     public bool IsWaitingForResponse => isWaitingForResponse;
     public event System.Action<ChatResponse> ResponseReceived;
@@ -259,7 +260,7 @@ public class ChatUIManager : MonoBehaviour
     {
         if(aiClient!=null)aiClient.CancelRequest();
         FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
-        SetLoadingState(false);streamingLine=-1;
+        SetLoadingState(false);ResetLiveTurn();
     }
     private void ShowStreamingText(string text)
     {
@@ -304,6 +305,7 @@ public class ChatUIManager : MonoBehaviour
 
     private void HandleChatSuccess(ChatResponse response)
     {
+        if(response.spoken_stream)pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;
         if(streamingLine>=0&&streamingLine<chatLines.Count)chatLines.RemoveAt(streamingLine);streamingLine=-1;
         SetLoadingState(false);
         string speakerName = pendingResponseSpeaker != null && pendingResponseSpeaker.category == "Person"

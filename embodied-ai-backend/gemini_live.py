@@ -3,6 +3,7 @@ import asyncio
 import json
 import os
 import hashlib
+from urllib.parse import urlsplit
 from personas import select_persona
 
 
@@ -18,22 +19,56 @@ def api_key():
     return (key or "").strip()
 
 
-def voices_for_person(speaker, object_name=""):
+NPC_VOICES = ("Kore", "Leda", "Zephyr", "Schedar", "Algenib", "Rasalgethi", "Algieba", "Despina", "Gacrux", "Laomedeia", "Pulcherrima", "Sulafat")
+
+
+class LiveTurn:
+    """Tool-only server boundaries do not complete the visitor's conversational reply."""
+    def __init__(self):
+        self.spoken = ""
+        self.heard = ""
+        self.has_audio = False
+        self.pending = set()
+
+    def interrupt(self):
+        self.spoken = ""
+        self.heard = ""
+        self.has_audio = False
+
+    def finish(self):
+        if self.pending or not (self.spoken.strip() or self.has_audio):
+            return None
+        value = self.spoken
+        self.interrupt()
+        return value
+
+
+def allowed_origin(origin):
+    if not origin:
+        return True  # Native Unity WebSocket sends no Origin.
+    try:
+        parsed = urlsplit(origin)
+        return parsed.scheme in {"http", "https"} and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    except ValueError:
+        return False
+
+
+def voices_for_person(speaker, object_name="", requested=""):
     voices={"kai":"Puck","orion":"Charon","theo":"Iapetus","aurelius":"Fenrir","lucius":"Orus","maya":"Aoede"}
     if not object_name:return voices.get(speaker,"Puck")
     # Stable across sessions/processes, independent of Python randomized hash.
-    options=["Kore","Leda","Zephyr","Fenrir","Orus","Iapetus","Charon"]
-    return options[int(hashlib.sha256((speaker+object_name).encode()).hexdigest()[:8],16)%len(options)]
+    if requested in NPC_VOICES:
+        return requested
+    return NPC_VOICES[int(hashlib.sha256((speaker+object_name).encode()).hexdigest()[:8],16)%len(NPC_VOICES)]
 
 
-def live_config(scenario, speaker, object_name="", object_description=""):
+def live_config(scenario, speaker, object_name="", object_description="", voice_name="", people=()):
     persona = select_persona(scenario, speaker, object_name, object_description)
     if object_name:
         persona.update(name=object_name, role="local conversation partner", direction=f"You are {object_name}. Ground your fictional role in this supplied scene description: {object_description[:800]}. Respond as this person, never as the visitor helper. Baristas may handle simulated orders; guests do not.")
     elif scenario == "cafe":
         persona["direction"] += " You are the visitor companion and supportive friend, NOT the barista or shop employee. This cafe is a voluntary social rehearsal space. First ask whether they want relaxed exploration or social practice. Suggest one small step at a time: approach the counter, greet the barista, order, or introduce themselves to a guest. Respect refusals; never diagnose introversion or speak on the visitor behalf. The actual addressed barista or guest responds as themselves."
-    voice = voices_for_person(speaker, object_name)
-    voices = {"kai": "Puck", "orion": "Charon", "theo": "Iapetus", "aurelius": "Fenrir", "lucius": "Orus", "maya": "Aoede"}
+    voice = voices_for_person(speaker, object_name, voice_name)
     return {
         "response_modalities": ["AUDIO"],
         "input_audio_transcription": {}, "output_audio_transcription": {},
@@ -41,6 +76,7 @@ def live_config(scenario, speaker, object_name="", object_description=""):
         "system_instruction": (
             f"You are {persona['name']}, {persona['role']}, a fictional virtual character in an interactive Unity experience. "
             f"Active scenario: {scenario}. {persona['direction']} Your manner: {persona['style']}. "
+            f"People currently present and available for conversation: {', '.join(str(p)[:100] for p in people[:20])}. "
             "Speak directly and naturally, usually one or two short sentences. Listen to follow-ups and corrections, "
             "remember what the visitor actually said, and let them interrupt. Do not repeat introductions or canned praise. "
             "Respond when addressed or when speech relates to our conversation; ignore background conversations, TV, and your own speaker echo. "
@@ -80,7 +116,7 @@ def register_live(app):
     @sock.route("/live")
     def live_socket(ws):
         origin = request.headers.get("Origin", "")
-        if origin and origin.split("/")[2].split(":")[0] not in {"localhost", "127.0.0.1", "[::1]"}:
+        if not allowed_origin(origin):
             ws.close(); return
         key = api_key()
         def send(event, **values):
@@ -95,7 +131,7 @@ def register_live(app):
             if scenario not in {"general_assistant", "ancient_rome", "museum", "classroom", "cafe"}:
                 scenario = "general_assistant"
             speaker = str(setup.get("speaker_id", "kai"))[:40]
-            asyncio.run(bridge(ws, send, key, scenario, speaker, str(setup.get("object_name", ""))[:100], str(setup.get("object_description", ""))[:1000]))
+            asyncio.run(bridge(ws, send, key, scenario, speaker, str(setup.get("object_name", ""))[:100], str(setup.get("object_description", ""))[:1000], str(setup.get("voice_name", "")), setup.get("people", []) if isinstance(setup.get("people"), list) else []))
         except ConnectionClosed:
             pass
         except Exception as exc:
@@ -107,16 +143,17 @@ def register_live(app):
                 pass
 
 
-async def bridge(ws, send, key, scenario, speaker, object_name="", object_description=""):
+async def bridge(ws, send, key, scenario, speaker, object_name="", object_description="", voice_name="", people=()):
     from google import genai
     from google.genai import types
     from simple_websocket import ConnectionClosed
     client = genai.Client(api_key=key, http_options={"api_version": "v1beta"})
     try:
         async with client.aio.live.connect(model=os.getenv("GEMINI_LIVE_MODEL", "gemini-3.8-live"),
-                                           config=live_config(scenario, speaker, object_name, object_description)) as session:
-            send("ready", speaker=speaker, scenario=scenario)
-            pending_calls = set()
+                                           config=live_config(scenario, speaker, object_name, object_description, voice_name, people)) as session:
+            send("ready", speaker=speaker, scenario=scenario, voice=voices_for_person(speaker, object_name, voice_name))
+            turn = LiveTurn()
+            pending_calls = turn.pending
 
             async def receive_unity():
                 while True:
@@ -141,29 +178,9 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
                                 id=value["id"], name=value["name"], response={"ok": bool(value.get("ok")), "result": str(value.get("text", ""))[:500]}))
 
             async def receive_gemini():
-                spoken = ""
-                heard = ""
                 while True:
                     async for message in session.receive():
-                        content = message.server_content
-                        if content:
-                            if content.interrupted:
-                                send("interrupted")
-                                spoken = ""
-                            if content.input_transcription and content.input_transcription.text:
-                                heard += content.input_transcription.text
-                                send("input_text", text=heard)
-                            if content.output_transcription and content.output_transcription.text:
-                                spoken += content.output_transcription.text
-                                send("output_text", text=spoken)
-                            if content.model_turn:
-                                for part in content.model_turn.parts or []:
-                                    if part.inline_data and part.inline_data.data:
-                                        ws.send(part.inline_data.data)
-                            if content.turn_complete:
-                                send("turn_complete", text=spoken)
-                                spoken = ""
-                                heard = ""
+                        # A tool call may share a message with turn_complete. Register it first.
                         if message.tool_call:
                             for call in message.tool_call.function_calls:
                                 if call.name not in {"move_character", "change_world", "show_model", "talk_to_person"}:
@@ -171,6 +188,26 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
                                 pending_calls.add(call.id)
                                 send("command", id=call.id, name=call.name,
                                      command=str(call.args.get("command", "")), scenario=str(call.args.get("scenario", "")))
+                        content = message.server_content
+                        if content:
+                            if content.interrupted:
+                                send("interrupted")
+                                turn.interrupt()
+                            if content.input_transcription and content.input_transcription.text:
+                                turn.heard += content.input_transcription.text
+                                send("input_text", text=turn.heard)
+                            if content.output_transcription and content.output_transcription.text:
+                                turn.spoken += content.output_transcription.text
+                                send("output_text", text=turn.spoken)
+                            if content.model_turn:
+                                for part in content.model_turn.parts or []:
+                                    if part.inline_data and part.inline_data.data:
+                                        turn.has_audio = True
+                                        ws.send(part.inline_data.data)
+                            if content.turn_complete:
+                                reply = turn.finish()
+                                if reply is not None:
+                                    send("turn_complete", text=reply)
                         if message.tool_call_cancellation:
                             for identifier in message.tool_call_cancellation.ids:
                                 pending_calls.discard(identifier)

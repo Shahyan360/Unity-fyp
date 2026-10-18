@@ -116,12 +116,12 @@ public sealed class AgentAnimator : MonoBehaviour
         if(ambientRoutine!=null&&ambientRoutine.enabled)ambientRoutine.ReactToConversation(seconds);
     }
 
-    public void BeginSpeech(AudioSource source)
+    public void BeginSpeech(AudioSource source,System.Func<float> nativeLevel=null)
     {
         speech = source;
         speakingUntil = 0f;
         listening = false;
-        if (face != null) face.BeginSpeech(source);
+        if (face != null) face.BeginSpeech(source,nativeLevel);
         if(ambientRoutine!=null&&ambientRoutine.enabled)ambientRoutine.ReactToConversation(source!=null&&source.clip!=null?source.clip.length:4.2f);
     }
 
@@ -141,7 +141,7 @@ public sealed class AgentAnimator : MonoBehaviour
             ? navigationAgent.velocity.magnitude : Time.deltaTime > 0.0001f ? delta.magnitude / Time.deltaTime : 0f;
         previousPosition = transform.position;
         speed = Mathf.Lerp(speed, Mathf.Min(measuredSpeed, 6f), 1f - Mathf.Exp(-Time.deltaTime * 10f));
-        if(ambientRoutine!=null&&ambientRoutine.enabled)return; // Routine owns body clips; this component owns speech/face/gaze.
+        if(ambientRoutine!=null&&ambientRoutine.enabled){if(speech!=null&&speech.isPlaying)ambientRoutine.HoldConversation();return;} // Routine owns body clips; this component owns speech/face/gaze.
         if (animator == null || animator.runtimeAnimatorController == null) return;
         if (hasSpeed) animator.SetFloat("Speed", speed);
         if (hasMotionSpeed) animator.SetFloat("MotionSpeed", Mathf.Clamp01(speed / 1.4f));

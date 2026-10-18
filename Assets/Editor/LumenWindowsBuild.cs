@@ -44,6 +44,11 @@ public static class LumenWindowsBuild
         BuildInto("D:/LumenProject/Builds/Windows-Characters-2026-10-18");
     }
 
+    public static void BuildConversationUpgrade()
+    {
+        BuildInto("D:/LumenProject/Builds/Windows-Interaction-2026-10-19");
+    }
+
     private static void BuildInto(string output)
     {
         if(EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play Mode before building.");

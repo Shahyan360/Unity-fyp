@@ -5,6 +5,7 @@ using UnityEngine;
 /// <summary>Builds clear, readable, explorable science exhibits from Unity primitives when Classroom loads.</summary>
 public static class ClassroomLearningExhibit
 {
+    public static string ActiveDescription {get;private set;}="";
     private static Transform root;
     private static Transform hostRoot;
     private static Transform activeModelRoot;
@@ -77,6 +78,18 @@ public static class ClassroomLearningExhibit
             default: BuildPlanet(station, topic); break;
         }
         root = hostRoot;
+        var guide=Object.FindAnyObjectByType<ScenarioCharacterIdentity>();
+        if(guide!=null&&Vector3.Distance(guide.transform.position,station)<1.7f)
+        {
+            var nav=guide.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            Vector3 offset=Camera.main!=null?Camera.main.transform.right:Vector3.right;offset.y=0;
+            if(nav!=null&&nav.enabled&&nav.isOnNavMesh&&UnityEngine.AI.NavMesh.SamplePosition(station+offset.normalized*2.2f,out var safe,1.5f,UnityEngine.AI.NavMesh.AllAreas))nav.Warp(safe.position);
+        }
+        if(guide!=null)
+        {
+            Vector3 side=Camera.main!=null?Camera.main.transform.right:Vector3.right;side.y=0;
+            guide.GetComponent<AgentCompanionController>()?.TryVoiceDestination(station+side.normalized*2.2f);
+        }
         return true;
     }
 
@@ -548,7 +561,10 @@ public static class ClassroomLearningExhibit
         pedestal.transform.position = floorPosition + Vector3.up * 0.40f;
         pedestal.transform.localScale = new Vector3(2.2f, 0.4f, 2.2f);
         pedestal.GetComponent<Renderer>().sharedMaterial = deepBlue;
+        pedestal.GetComponent<Collider>().enabled=false;
         Object.Destroy(pedestal.GetComponent<Collider>());
+        var solid=pedestal.AddComponent<BoxCollider>();solid.size=new Vector3(.9f,2,.9f);
+        var obstacle=pedestal.AddComponent<UnityEngine.AI.NavMeshObstacle>();obstacle.carving=true;obstacle.shape=UnityEngine.AI.NavMeshObstacleShape.Box;obstacle.size=solid.size;
 
         GameObject exhibit = new GameObject(rootName);
         exhibit.transform.SetParent(root, false);
@@ -560,6 +576,7 @@ public static class ClassroomLearningExhibit
         metadata.category = category;
         metadata.descriptionSummary = description;
         metadata.description = description;
+        ActiveDescription=description;
         metadata.contextualTags = tags;
         metadata.scenario = "classroom";
         metadata.isInteractable = true;
