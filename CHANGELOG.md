@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-16 — Approved Roman city restoration, first implementation slice
+
+- Removed the rejected Roman-gallery override and restored the authored full-sized city, forum, temples, shops and amphitheatre as the playable Rome route.
+- Created and inspected a full-sized Blender market stall and a 120-arch retrofit for the retained amphitheatre. Integrated four stalls with counter/post collision and navigation carving. Replaced obsolete black opening rectangles with actual stone arches.
+- Retired primitive crowd spawning; reused eight imported humanoid visitors as an explicitly interim population pending Roman clothing.
+- Inspected actual Unity city/market captures, tested real movement against the stall counter, observed Marcus navigation, and confirmed a clear current runtime Console. Full environment plan and exact continuation checkpoint saved in Docs/AI/ApprovedEnvironmentPlan.md and PROJECT_PROGRESS.md. Museum redesign and broader city finishing remain pending.
+
+## 2026-10-16 — Compact museum and Roman visual pass
+
+- Added a small classical museum entrance with a level doorway, planted reflecting pools, original stone urns, copper pediment roof and lamps. Retained museum exhibits and added original fossil impressions and a Roman tabletop display.
+- Replaced the runtime outdoor Roman prototype view with a 12 × 10 m exhibition gallery, reusing Marcus, the existing temple study and new Blender-authored city miniature/pottery cabinet. Preserved the authored city on disk and excluded its hidden landmarks from guide navigation.
+- Inspected all four new Blender renders and real Unity Game View captures. Verified fresh scene routes, conversation open/hide, café menu, classroom dust fix, player collision and Marcus navigation to the new Forum exhibit. Final runtime Console ground truth was clear; this does not validate a new standalone build.
+- Archived four unreferenced duplicate/demo scenes with metadata and SHA-256 receipts before removing them. New references, editable art, captures and archives are consolidated in D:/LumenProject. Ollama/backend work is deferred per user direction.
+
+## 2026-10-16 — Recovered character/Blender integration and runtime verification
+
+- Confirmed the interrupted character and prop builders completed; preserved the three Rocketbox host prefabs and Blender collection rather than recreating them. Added provenance and retained source/render artifacts on D.
+- Exercised Home, Classroom, Café, Rome and museum scene routes in Play Mode, Unity-to-Flask persona chat, requested Solar System/Rosetta Stone behavior, and the café add/place/prepare/collect button flow. Backend: 37 tests passed in 8.95 seconds.
+- Corrected imported-character component cleanup, conversational facing, speaking-status overflow, Home font glyph, café lighting/menu contrast/modal layering and quick-prompt readability. Reduced oversized classroom dust. Added explicit session reset/background operation for repeated Editor runs.
+- Recorded actual speech, jaw and blink motion for Ada, Maya and Marcus; measured stationary foot support and moving Maya NavMesh/foot alignment. Confirmed upper-deck placement/following; full stair climb and mouse-look locking remain unverified. Reports/screenshots: D:/LumenArtifacts/Verification.
+- Started a Windows build on D with all existing enabled scenes. Consult PROJECT_PROGRESS.md and the build-result artifact for its current verdict; no release-complete claim is implied.
+- Created PROJECT_PROGRESS.md as the authoritative resume log, with pending product work, current defects, tool paths and exact next actions.
+
 ## 2026-10-14 — Grounding safety net + full verification pass
 
 - **Priority 1 (grounding): added a new, purely-additive `Assets/Scripts/Runtime/GroundingGuard.cs`.** It is a scene-wide, once-per-second watchdog that only ever lifts an object back up when it has fallen more than 2.5 m below its real floor (raycast/physics, falling back to the baked NavMesh). It never pushes anything down and never touches objects that are already grounded, so it cannot affect normal walking, stairs, the café upper floor, or the guide/crowd NavMeshAgents. It installs itself automatically in every scene and logs each recovery.

@@ -25,6 +25,16 @@ public sealed class WorldExperienceDirector : MonoBehaviour
     private TMP_Text hubPortalPrompt;
     private ChatUIManager chatManager;
     private CafeOrderExperience cafeOrders;
+    private HomeScenarioPanel scenarioPanel;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSession()
+    {
+        SceneManager.sceneLoaded -= InstallForScene;
+        listening = false;
+        // Local speech and scene transitions continue when another desktop app is focused.
+        Application.runInBackground = true;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Register()
@@ -59,6 +69,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         if (IsHomeScene(scene.name))
         {
             BuildHomeHub();
+            WorldPresentationQuality.Ensure(scene.name);
+            BlenderWorldCollection.Install(scene.name);
             return;
         }
 
@@ -81,6 +93,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             EnrichSceneObjects("Museum");
             EnsureWorldMovement("Museum");
             ConsumePendingExhibit("museum");
+            WorldPresentationQuality.Ensure("Museum");
+            BlenderWorldCollection.Install("Museum");
             return;
         }
 
@@ -91,9 +105,13 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             BuildWorldHud(scene.name);
             EnrichSceneObjects(scene.name);
             WorldCharacterCrowds.Ensure(scene.name);
+            if(scene.name=="Cafestore")CafeVisualFinishing.Install();
+            if (scene.name == "HistoricalPlace") RomanCityVisualUpgrade.Install();
             if (scene.name == "Classroom") ClassroomLearningExhibit.Ensure();
             if (scene.name == "HistoricalPlace" || scene.name == "Classroom") EnsureWorldMovement(scene.name);
             if (scene.name == "Classroom") ConsumePendingExhibit("classroom");
+            WorldPresentationQuality.Ensure(scene.name);
+            if (scene.name != "HistoricalPlace") BlenderWorldCollection.Install(scene.name);
         }
     }
 
@@ -105,6 +123,18 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         RenderSettings.ambientSkyColor = new Color(0.60f, 0.69f, 0.78f);
         RenderSettings.ambientEquatorColor = new Color(0.61f, 0.59f, 0.53f);
         RenderSettings.ambientGroundColor = new Color(0.31f, 0.30f, 0.28f);
+        GameObject dustObject = GameObject.Find("Dust");
+        ParticleSystem dust = dustObject != null ? dustObject.GetComponent<ParticleSystem>() : null;
+        if (dust != null)
+        {
+            // The authored effect reads as large square snowflakes at eye level.
+            var main = dust.main;
+            main.startSize = .014f;
+            main.startColor = new Color(.9f, .86f, .75f, .12f);
+            main.maxParticles = 45;
+            var emission = dust.emission;
+            emission.rateOverTime = 3f;
+        }
         if (GameObject.Find("Classroom soft daylight") != null) return;
         GameObject lightObject = new GameObject("Classroom soft daylight");
         Light daylight = lightObject.AddComponent<Light>();
@@ -162,6 +192,14 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         }
 
         WalkableHomeHub.Ensure();
+        Material homeGalaxy = Resources.Load<Material>("LumenGalaxySky");
+        if (homeGalaxy != null) RenderSettings.skybox = homeGalaxy;
+        Camera homeCamera = Camera.main;
+        if (homeCamera != null)
+        {
+            homeCamera.clearFlags = homeGalaxy != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
+            homeCamera.backgroundColor = new Color(0.012f, 0.022f, 0.065f);
+        }
         EnsureHomeAssistantServices();
         EnsureEventSystem();
         canvas = CreateCanvas("LumenWalkableHubHUD", 250);
@@ -171,41 +209,52 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         // visitors can either wander to a portal or jump straight into a world.
         PositionHomeGuide();
 
-        Image topBar = CreateImage(root, "AtriumTopBar", new Color(1f, 0.96f, 0.84f, 0.92f), true);
+        Image topBar = CreateImage(root, "AtriumTopBar", new Color(0.035f, 0.07f, 0.13f, 0.91f), true);
         Rect(topBar.rectTransform, new Vector2(0.025f, 0.925f), new Vector2(0.975f, 0.985f), Vector2.zero, Vector2.zero);
-        CreateText(topBar.transform, "Brand", "LUMEN   /   A LITTLE WORLD OF BIG IDEAS", 19, new Color(0.13f, 0.25f, 0.17f), FontStyles.Bold,
+        CreateText(topBar.transform, "Brand", "LUMEN   /   A LITTLE WORLD OF BIG IDEAS", 19, new Color(0.74f, 0.94f, 0.91f), FontStyles.Bold,
             new Vector2(0.025f, 0.10f), new Vector2(0.48f, 0.90f), TextAlignmentOptions.Left);
-        CreateText(topBar.transform, "LocalBadge", "YOUR GUIDE IS HERE  ·  HOLD V TO TALK", 13, new Color(0.32f, 0.51f, 0.28f), FontStyles.Bold,
+        CreateText(topBar.transform, "LocalBadge", "YOUR GUIDE IS HERE  ·  HOLD V TO TALK", 13, new Color(0.47f, 0.78f, 0.75f), FontStyles.Bold,
             new Vector2(0.52f, 0.10f), new Vector2(0.975f, 0.90f), TextAlignmentOptions.Right);
 
-        Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(1f, 0.96f, 0.85f, 0.95f), true);
-        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.425f, 0.285f), Vector2.zero, Vector2.zero);
-        CreateText(guidePanel.transform, "GuidePromptTitle", "Come explore with me!", 22, new Color(0.78f, 0.29f, 0.20f), FontStyles.Bold,
+        Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.13f, 0.94f), true);
+        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.455f, 0.265f), Vector2.zero, Vector2.zero);
+        CreateText(guidePanel.transform, "GuidePromptTitle", "LUMEN  /  YOUR GUIDE", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
             new Vector2(0.045f, 0.77f), new Vector2(0.95f, 0.97f), TextAlignmentOptions.Left);
-        CreateText(guidePanel.transform, "GuidePromptIdeas", "Wander anywhere, ask a question, or tell me what sounds fun.", 14, new Color(0.35f, 0.39f, 0.30f), FontStyles.Normal,
+        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask anything. I’ll help you find a place to begin.", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
             new Vector2(0.045f, 0.59f), new Vector2(0.95f, 0.79f), TextAlignmentOptions.Left);
-        targetText = CreateText(guidePanel.transform, "GuideConversation", "Hi! I’m Lumen. Follow a flower trail to the Forum, classroom, café, or museum — or we can just chat.", 15, new Color(0.16f, 0.22f, 0.17f), FontStyles.Normal,
+        targetText = CreateText(guidePanel.transform, "GuideConversation", "Hi! I’m Lumen. What are you curious about?", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
             new Vector2(0.045f, 0.30f), new Vector2(0.95f, 0.60f), TextAlignmentOptions.Left);
 
         TMP_InputField input = CreateInput(guidePanel.transform,
             new Vector2(0.045f, 0.07f), new Vector2(0.72f, 0.28f), "Ask your guide...");
         Button send = CreateButton(guidePanel.transform, "SendMessage", "LET'S GO", new Color(0.99f, 0.65f, 0.36f),
             new Vector2(0.74f, 0.07f), new Vector2(0.955f, 0.28f), true);
-        hubPortalPrompt = CreateText(root, "PortalInteractionPrompt", "WASD WANDER  ·  RIGHT-CLICK TO LOOK  ·  E EXPLORE  ·  1–4 VISIT A WORLD",
-            12, new Color(0.18f, 0.26f, 0.18f), FontStyles.Bold,
+        hubPortalPrompt = CreateText(root, "PortalInteractionPrompt", string.Empty,
+            12, new Color(0.62f, 0.89f, 0.84f), FontStyles.Bold,
             new Vector2(0.025f, 0.875f), new Vector2(0.975f, 0.915f), TextAlignmentOptions.Center);
         WalkableHomeHub.BindPrompt(hubPortalPrompt);
-        CreateText(root, "VoiceControls", "SAY ANYTHING — LUMEN'S LISTENING", 12, new Color(0.20f, 0.28f, 0.19f), FontStyles.Bold,
+        CreateText(root, "VoiceControls", "WASD MOVE  ·  RIGHT-CLICK LOOK  ·  M TOGGLE MIC  ·  V PUSH TO TALK", 12, new Color(0.55f, 0.73f, 0.76f), FontStyles.Bold,
             new Vector2(0.66f, 0.035f), new Vector2(0.975f, 0.075f), TextAlignmentOptions.Right);
 
-        Image adventureHeader = CreateImage(root, "AdventureHeader", new Color(0.045f, 0.075f, 0.10f, 0.78f), true);
-        Rect(adventureHeader.rectTransform, new Vector2(0.025f, 0.805f), new Vector2(0.665f, 0.865f), Vector2.zero, Vector2.zero);
-        CreateText(adventureHeader.transform, "AdventureHeadline", "PICK A WORLD. FOLLOW YOUR CURIOSITY.", 19, Paper, FontStyles.Bold,
-            new Vector2(0.035f, 0.10f), new Vector2(0.965f, 0.90f), TextAlignmentOptions.Center);
-        BuildWorldCard(root, 0, "01", "Ancient Rome", "Walk the Forum, meet its people, and uncover the city's stories.", "HISTORY", new Color(0.97f, 0.42f, 0.30f), "ancient_rome");
-        BuildWorldCard(root, 1, "02", "Classroom", "Bring science, nature, and big questions to life in 3D.", "DISCOVER", new Color(0.27f, 0.72f, 0.95f), "classroom");
-        BuildWorldCard(root, 2, "03", "Café", "Meet a barista, practise a chat, and place a pretend order.", "SOCIAL", new Color(0.28f, 0.81f, 0.57f), "cafe");
-        BuildWorldCard(root, 3, "04", "Museum", "Meet real objects from history, science, and human ingenuity.", "ARTIFACTS", new Color(0.69f, 0.56f, 0.96f), "museum");
+        Button revealWorlds = CreateButton(root, "RevealWorlds", "WORLDS  /  CHOOSE YOUR NEXT DISCOVERY", new Color(0.36f, 0.75f, 0.79f, 0.96f),
+            new Vector2(0.025f, 0.805f), new Vector2(0.665f, 0.865f), true);
+        scenarioPanel = canvas.gameObject.AddComponent<HomeScenarioPanel>();
+        GameObject panelObject = new GameObject("ScenarioRevealPanel", typeof(RectTransform), typeof(CanvasGroup));
+        panelObject.transform.SetParent(root, false);
+        RectTransform panelRect = panelObject.GetComponent<RectTransform>();
+        Rect(panelRect, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        CanvasGroup panelGroup = panelObject.GetComponent<CanvasGroup>();
+        panelGroup.ignoreParentGroups = true;
+        Image panelBacking = CreateImage(panelObject.transform, "ScenarioPanelBacking", new Color(0.025f, 0.05f, 0.10f, 0.93f), true);
+        Rect(panelBacking.rectTransform, new Vector2(0.025f, 0.295f), new Vector2(0.665f, 0.865f), Vector2.zero, Vector2.zero);
+        CreateText(panelObject.transform, "AdventureHeadline", "PICK A WORLD  /  FOLLOW YOUR CURIOSITY", 18, new Color(0.82f, 0.95f, 0.92f), FontStyles.Bold,
+            new Vector2(0.055f, 0.805f), new Vector2(0.635f, 0.846f), TextAlignmentOptions.Center);
+        scenarioPanel.Initialize(panelRect, revealWorlds);
+        revealWorlds.transform.SetAsLastSibling();
+        BuildWorldCard(panelObject.transform, 0, "01", "Ancient Rome", "Walk the Forum, meet its people, and uncover the city's stories.", "HISTORY", new Color(0.97f, 0.42f, 0.30f), "ancient_rome");
+        BuildWorldCard(panelObject.transform, 1, "02", "Classroom", "Bring science, nature, and big questions to life in 3D.", "DISCOVER", new Color(0.27f, 0.72f, 0.95f), "classroom");
+        BuildWorldCard(panelObject.transform, 2, "03", "Café", "Meet a barista, practise a chat, and place a pretend order.", "SOCIAL", new Color(0.28f, 0.81f, 0.57f), "cafe");
+        BuildWorldCard(panelObject.transform, 3, "04", "Museum", "Meet real objects from history, science, and human ingenuity.", "ARTIFACTS", new Color(0.69f, 0.56f, 0.96f), "museum");
 
         HomeUIManager home = FindAnyObjectByType<HomeUIManager>();
         if (home == null)
@@ -226,12 +275,19 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             targetText.lineSpacing = 2f;
             send.onClick.RemoveListener(home.SendLocalMessage);
             send.onClick.AddListener(home.SendLocalMessage);
+            send.onClick.AddListener(scenarioPanel.Reveal);
             input.onSubmit.AddListener(_ => SubmitHomeMessage(home));
+            input.onSelect.AddListener(_ => scenarioPanel.Reveal());
+            input.onValueChanged.AddListener(value => {
+                if (!string.IsNullOrWhiteSpace(value)) scenarioPanel.Reveal();
+            });
         }
         // The authored home canvas can leave one of its hidden input fields
         // selected in the EventSystem. Clear that stale selection so keyboard
         // navigation is live immediately; clicking the new chat field reselects it.
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        // Enter the existing walkable portal garden directly; no opaque opening overlay.
+        CharacterSelectionControl.Install(canvas,"HomeScene");
     }
 
     private static void SubmitHomeMessage(HomeUIManager home)
@@ -287,25 +343,22 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
         if (guide.transform.Find("LumenGuideVisual") == null)
         {
-            GameObject prefab = Resources.Load<GameObject>("LumenGuide/RobotKyle");
-#if UNITY_EDITOR
-            if (prefab == null)
-                prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/UnityTechnologies/SpaceRobotKyle/Prefabs/RobotKyle.prefab");
-#endif
+            GameObject prefab = Resources.Load<GameObject>("ScenarioCharacters/Marcus");
             GameObject visual = prefab != null ? Instantiate(prefab, guide.transform) : CreateFallbackGuide(guide.transform);
             visual.name = "LumenGuideVisual";
             visual.transform.localPosition = Vector3.zero;
             visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = Vector3.one * 0.72f;
+            visual.transform.localScale = Vector3.one;
             foreach (Transform child in visual.GetComponentsInChildren<Transform>(true))
             {
                 child.gameObject.tag = "Untagged";
                 child.gameObject.layer = 0;
             }
             foreach (MonoBehaviour script in visual.GetComponentsInChildren<MonoBehaviour>(true)) script.enabled = false;
-            foreach (CharacterController controller in visual.GetComponentsInChildren<CharacterController>(true)) Destroy(controller);
+            foreach (CharacterController controller in visual.GetComponentsInChildren<CharacterController>(true)) controller.enabled = false;
             foreach (Rigidbody rb in visual.GetComponentsInChildren<Rigidbody>(true)) Destroy(rb);
-            foreach (Collider col in visual.GetComponentsInChildren<Collider>(true)) Destroy(col);
+            // Disabled controller dependencies remain until the old visual is replaced.
+            foreach (Collider col in visual.GetComponentsInChildren<Collider>(true)) col.enabled = false;
             foreach (Animator animator in visual.GetComponentsInChildren<Animator>(true)) animator.enabled = true;
             foreach (Renderer placeholderRenderer in guide.GetComponents<Renderer>()) placeholderRenderer.enabled = false;
         }
@@ -329,6 +382,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         metadata.isInteractable = true;
         metadata.interactionHint = "Press E to talk to your guide";
         metadata.scenario = sceneName == "Cafestore" ? "cafe" : sceneName == "HistoricalPlace" ? "ancient_rome" : sceneName == "Museum" ? "museum" : "classroom";
+        ScenarioCharacterIdentity.InstallOnGuide(guide, sceneName);
     }
 
     private static GameObject CreateFallbackGuide(Transform parent)
@@ -443,7 +497,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         float bottom = row == 0 ? 0.568f : 0.331f;
         Image card = CreateImage(parent, "WorldCard_" + scenario, new Color(0.055f, 0.085f, 0.12f, 0.94f), true);
         card.raycastTarget = true;
-        Rect(card.rectTransform, new Vector2(left, bottom), new Vector2(left + cardWidth, bottom + cardHeight), Vector2.zero, Vector2.zero);
+        Rect(card.rectTransform, new Vector2(left, bottom - 0.02f), new Vector2(left + cardWidth, bottom + cardHeight - 0.02f), Vector2.zero, Vector2.zero);
         Outline outline = card.gameObject.AddComponent<Outline>();
         outline.effectColor = new Color(accent.r, accent.g, accent.b, 0.78f);
         outline.effectDistance = new Vector2(2f, -2f);
@@ -458,6 +512,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             else ScenarioTransitionService.LoadScenario(selected);
         });
         button.gameObject.AddComponent<HubCardHover>();
+        if (scenarioPanel != null) scenarioPanel.RegisterCard(card.rectTransform);
 
         Image illustration = CreateImage(card.transform, "IllustrationWash", new Color(accent.r, accent.g, accent.b, 0.18f), true);
         illustration.raycastTarget = false;
@@ -528,13 +583,15 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         chatManager = FindAnyObjectByType<ChatUIManager>();
         canvas = CreateCanvas("WorldExperienceHUD", 190);
         Transform root = canvas.transform;
-        if (chatManager == null) CreateRuntimeChat(root);
-        else chatManager.ConfigureUnifiedWorldExperience();
+        if (chatManager != null) chatManager.HideLegacyPresentation();
+        CreateRuntimeChat(root);
         Image bar = CreateImage(root, "WorldNavigationBar", new Color(0.035f, 0.055f, 0.09f, 0.88f), true);
         Rect(bar.rectTransform, new Vector2(0.79f, 0.91f), new Vector2(0.975f, 0.985f), Vector2.zero, Vector2.zero);
         Button back = CreateButton(bar.transform, "ReturnToHub", "‹  WORLDS", new Color(0.97f, 0.72f, 0.43f),
             new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f), true);
         back.onClick.AddListener(() => ScenarioTransitionService.LoadHome());
+        WorldVisitControls.Install(canvas, sceneName);
+        CharacterSelectionControl.Install(canvas,sceneName);
 
         Image interaction = CreateImage(root, "InteractionPrompt", new Color(0.035f, 0.055f, 0.09f, 0.88f), true);
         Rect(interaction.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.37f, 0.15f), Vector2.zero, Vector2.zero);
@@ -595,8 +652,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         string welcome = isMuseum ? "Walk through the Museum of Human Ideas"
             : scene == "HistoricalPlace" ? "Explore Rome together"
             : scene == "Cafestore" ? "Talk, order, and practise" : "Make a model make sense";
-        CreateText(panel.transform, "ChatTitle", welcome, 19, Paper, FontStyles.Bold,
+        TMP_Text chatTitle = CreateText(panel.transform, "ChatTitle", welcome, 19, Paper, FontStyles.Bold,
             new Vector2(0.06f, 0.865f), new Vector2(0.94f, 0.945f), TextAlignmentOptions.Left);
+        chatTitle.enableAutoSizing = true;
+        chatTitle.fontSizeMin = 14f;
+        chatTitle.fontSizeMax = 19f;
         TMP_Text status = CreateText(panel.transform, "ChatStatus", "LOCAL GUIDE READY", 12, new Color(0.56f, 0.87f, 0.77f), FontStyles.Bold,
             new Vector2(0.06f, 0.815f), new Vector2(0.94f, 0.86f), TextAlignmentOptions.Left);
         speechOutput.BindCaption(status);
@@ -636,17 +696,25 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         input.textComponent.fontSize = 14f;
         Button send = CreateButton(panel.transform, "SendGuideQuestion", "SEND", new Color(0.97f, 0.72f, 0.43f),
             new Vector2(0.75f, 0.055f), new Vector2(0.955f, 0.17f), true);
-        chatManager = services.GetComponent<ChatUIManager>();
+        if (chatManager == null) chatManager = services.GetComponent<ChatUIManager>();
         if (chatManager == null) chatManager = services.AddComponent<ChatUIManager>();
         chatManager.ConfigureRuntimeChat(client, config, raycaster, input, send, transcript, status, scroll);
+        panel.gameObject.SetActive(false); // Let the environment fill the arrival view.
+        Button collapse = CreateButton(root, "ToggleConversation", "CONVERSATION  /  OPEN", new Color(0.44f, 0.83f, 0.77f),
+            new Vector2(0.68f, 0.105f), new Vector2(0.975f, 0.14f), true);
+        collapse.onClick.AddListener(() =>
+        {
+            panel.gameObject.SetActive(!panel.gameObject.activeSelf);
+            collapse.GetComponentInChildren<TMP_Text>().text = panel.gameObject.activeSelf ? "CONVERSATION  /  HIDE" : "CONVERSATION  /  OPEN";
+        });
 
         string[] quickPrompts = isMuseum
             ? new[] { "Show Rosetta Stone", "Show Antikythera", "Show Triceratops", "Show Apollo 11" }
             : scene == "Classroom"
             ? new[] { "Show atom", "Show Solar System", "Show Earth", "Show a fern" }
             : scene == "Cafestore"
-                ? new[] { "Help me order politely", "Suggest a café conversation starter" }
-                : new[] { "Tell me about the Roman Forum", "Guide me through Roman architecture" };
+                ? new[] { "Help me order", "Start a conversation" }
+                : new[] { "Explain the Forum", "Roman architecture" };
         for (int i = 0; i < quickPrompts.Length; i++)
         {
             int index = i;
@@ -658,7 +726,14 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             Button chip = CreateButton(panel.transform, "QuickPrompt" + i, quickPrompts[i], new Color(0.14f, 0.19f, 0.22f),
                 new Vector2(minX, 0.738f), new Vector2(maxX, 0.795f), true);
             TMP_Text chipText = chip.GetComponentInChildren<TMP_Text>();
-            if (chipText != null) { chipText.color = Paper; chipText.fontSize = quickPrompts.Length > 2 ? 10.5f : 12f; }
+            if (chipText != null)
+            {
+                chipText.color = Paper;
+                chipText.fontSize = quickPrompts.Length > 2 ? 10.5f : 12f;
+                chipText.enableAutoSizing = true;
+                chipText.fontSizeMin = 8.5f;
+                chipText.fontSizeMax = chipText.fontSize;
+            }
             chip.onClick.AddListener(() => chatManager.SubmitWorldPrompt(quickPrompts[index]));
         }
         Rect(viewportRect, new Vector2(0.045f, 0.20f), new Vector2(0.955f, 0.725f), Vector2.zero, Vector2.zero);
@@ -691,8 +766,9 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             && EventSystem.current.currentSelectedGameObject.GetComponentInParent<TMP_InputField>()?.isFocused == true;
         if (interact && !typingIntoChat && target != null && chatManager != null)
         {
-            string prompt = target.category == "Person" ? "Say hello and start a friendly conversation with " + target.GetDisplayName() + "."
+            string prompt = target.category == "Person" || target.category == "AI companion" ? "Say hello and start a friendly conversation with " + target.GetDisplayName() + "."
                 : "Explain " + target.GetDisplayName() + " using its context. What should I notice?";
+            GeminiLiveConversation.Instance?.SelectPartner(target.category == "Person" ? target : null);
             chatManager.SubmitWorldPrompt(prompt, target);
         }
     }
@@ -703,6 +779,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         ObjectMetadata[] objects = FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Exclude);
         foreach (ObjectMetadata metadata in objects)
         {
+            if (!metadata.isActiveAndEnabled || metadata.category == "Interpretive architectural exhibit") continue;
             if (string.IsNullOrWhiteSpace(metadata.scenario)) metadata.scenario = scenario;
             string name = metadata.gameObject.name.ToLowerInvariant();
             if (sceneName == "HistoricalPlace")
@@ -765,7 +842,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         {
             floorPosition = MuseumGalleryExperience.EntryPosition;
             yaw = 0f;
-            pitch = 0f;
+            pitch = -6f;
         }
         else if (sceneName == "Classroom")
         {
@@ -782,15 +859,9 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         }
         else if (sceneName == "HistoricalPlace")
         {
-            Transform spawn = GameObject.Find("Waypoint_forum_entry")?.transform;
-            Transform destination = GameObject.Find("Roman_Forum_Landmark")?.transform;
-            if (spawn != null) floorPosition = spawn.position;
-            if (spawn != null && destination != null)
-            {
-                Vector3 direction = destination.position - spawn.position;
-                direction.y = 0f;
-                if (direction.sqrMagnitude > 0.01f) yaw = Quaternion.LookRotation(direction).eulerAngles.y;
-            }
+            Transform entry=GameObject.Find("Waypoint_forum_entry")?.transform;
+            floorPosition=entry!=null?entry.position:new Vector3(0f,.1f,-28f);
+            yaw = 0f;
             pitch = 0f;
         }
         GameObject player = new GameObject("WorldExplorer");
@@ -854,7 +925,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         canvas.sortingOrder = order;
         CanvasScaler scaler = go.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.referenceResolution = new Vector2(1280, 720);
         scaler.matchWidthOrHeight = 0.5f;
         return canvas;
     }
@@ -911,7 +982,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
     private static TMP_InputField CreateInput(Transform parent, Vector2 anchorMin, Vector2 anchorMax, string placeholderText)
     {
-        Image background = CreateImage(parent, "GuideQuestionInput", new Color(0.97f, 0.96f, 0.91f, 1f), true);
+        Image background = CreateImage(parent, "GuideQuestionInput", new Color(0.08f, 0.14f, 0.22f, 1f), true);
         background.raycastTarget = true;
         Rect(background.rectTransform, anchorMin, anchorMax, Vector2.zero, Vector2.zero);
         GameObject textGo = new GameObject("InputText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
@@ -919,7 +990,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         TMP_Text text = textGo.GetComponent<TMP_Text>();
         text.font = uiFont != null ? uiFont : TMP_Settings.defaultFontAsset;
         text.fontSize = 16;
-        text.color = Ink;
+        text.color = new Color(0.86f, 0.94f, 0.93f);
         text.alignment = TextAlignmentOptions.MidlineLeft;
         text.margin = new Vector4(20, 6, 16, 6);
         // The text graphic sits above the input-field background in the
@@ -932,7 +1003,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         TMP_Text placeholder = placeholderGo.GetComponent<TMP_Text>();
         placeholder.font = text.font;
         placeholder.fontSize = 15;
-        placeholder.color = new Color(0.31f, 0.35f, 0.38f);
+        placeholder.color = new Color(0.48f, 0.62f, 0.66f);
         placeholder.text = placeholderText;
         placeholder.alignment = TextAlignmentOptions.MidlineLeft;
         placeholder.margin = text.margin;

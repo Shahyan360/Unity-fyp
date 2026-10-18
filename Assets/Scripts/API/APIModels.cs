@@ -11,6 +11,8 @@ public class ChatRequest
     public string object_name;
     public string object_description;
     public string session_id;
+    public string speaker_id;
+    public string interrupted_response;
 }
 
 [Serializable]
@@ -26,4 +28,11 @@ public class ChatResponse
     public string scenario;
     public bool offline;
     public string diagnostic;
+    public string speaker_id;
+    public string speaker_name;
+    public string speaker_role;
+    public string response_source;
+    public float first_token_ms;
+    public float response_time_ms;
+    [NonSerialized] public bool spoken_stream;
 }

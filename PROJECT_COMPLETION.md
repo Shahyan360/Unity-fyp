@@ -1,5 +1,7 @@
 # Embodied AI — World Experience Guide
 
+This is a historical guide. Read [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) for the current character/Blender/speech integration, fresh test results, verified Play Mode behavior, and remaining release work. Older counts and readiness claims below are not current proof.
+
 ## Included experiences
 
 The build now opens at the Lumen world hub. Its three entry cards load the authored scenes through a short fade; the backend and Unity share the same scenario IDs.

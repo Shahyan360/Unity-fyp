@@ -40,7 +40,7 @@ public class ObjectRaycaster : MonoBehaviour
 
         Ray ray = raycastCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        if (Physics.Raycast(ray, out RaycastHit hit, raycastDistance, raycastLayers))
+        if (Physics.Raycast(ray, out RaycastHit hit, raycastDistance, raycastLayers, QueryTriggerInteraction.Collide))
         {
             CurrentObject = hit.collider.GetComponentInParent<ObjectMetadata>();
         }

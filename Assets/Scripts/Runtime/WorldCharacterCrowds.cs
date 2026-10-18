@@ -40,7 +40,8 @@ public static class WorldCharacterCrowds
         if (visualRoot == null)
         {
             string resource = person.name.IndexOf("woman", System.StringComparison.OrdinalIgnoreCase) >= 0
-                ? "LumenPeople/GuideFemale" : "LumenPeople/GuideMale";
+                ? "ScenarioCharacters/Ada" : "ScenarioCharacters/Marcus";
+            if(role=="barista")resource="ScenarioCharacters/Maya";
             GameObject prefab = Resources.Load<GameObject>(resource);
             if (prefab != null)
             {
@@ -52,10 +53,10 @@ public static class WorldCharacterCrowds
                 visual.name = "NpcAssetVisual";
                 visual.transform.localPosition = Vector3.zero;
                 visual.transform.localRotation = Quaternion.identity;
-                visual.transform.localScale = Vector3.one * 0.84f;
-                foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true)) Object.Destroy(collider);
+                visual.transform.localScale = Vector3.one;
+                foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
                 foreach (Rigidbody rb in visual.GetComponentsInChildren<Rigidbody>(true)) Object.Destroy(rb);
-                foreach (CharacterController cc in visual.GetComponentsInChildren<CharacterController>(true)) Object.Destroy(cc);
+                foreach (CharacterController cc in visual.GetComponentsInChildren<CharacterController>(true)) cc.enabled = false;
                 foreach (MonoBehaviour script in visual.GetComponentsInChildren<MonoBehaviour>(true))
                     script.enabled = false;
                 foreach (Animator animator in visual.GetComponentsInChildren<Animator>(true))
@@ -69,6 +70,7 @@ public static class WorldCharacterCrowds
         AmbientNpcRoutine routine = person.GetComponent<AmbientNpcRoutine>();
         if (routine == null) routine = person.AddComponent<AmbientNpcRoutine>();
         routine.Configure(role, wander, radius, seed);
+        var expression=person.GetComponent<AgentAnimator>();if(expression==null)expression=person.AddComponent<AgentAnimator>();else expression.RefreshVisual();
 
         // Keep these runtime-swapped humanoids' feet on the real floor instead of
         // sinking into it when their NavMesh/seat height differs from the deck.
@@ -92,29 +94,30 @@ public static class WorldCharacterCrowds
         Vector3 forumCenter = GroundPosition(forum, new Vector3(0f, 0f, 0f));
         Vector3 arenaCenter = GroundPosition(arena, new Vector3(12f, 0f, -10f));
 
-        int id = 0;
-        SpawnGroup(crowd.transform, marketCenter, 6, 5.2f, "market", ref id);
-        SpawnGroup(crowd.transform, forumCenter, 4, 5.8f, "forum", ref id);
-        SpawnGroup(crowd.transform, arenaCenter, 7, 7.2f, "Colosseum", ref id);
+        // Use actual imported humanoids; the old primitive tunic crowd is retired.
         SpawnImportedVisitor(crowd.transform, GroundPosition(null, marketCenter + new Vector3(1.8f, 0f, -1.6f)), 0, "market");
         SpawnImportedVisitor(crowd.transform, GroundPosition(null, forumCenter + new Vector3(-2.3f, 0f, 1.5f)), 1, "forum");
         SpawnImportedVisitor(crowd.transform, GroundPosition(null, arenaCenter + new Vector3(2.2f, 0f, 1.6f)), 2, "Colosseum");
+        int citizenId=3;
+        foreach (Vector3 position in new[]{new Vector3(-6f,0f,-22f),new Vector3(6f,0f,-23f),new Vector3(-20f,0f,3f),new Vector3(20f,0f,2f),new Vector3(-18f,0f,18f)})
+            SpawnImportedVisitor(crowd.transform,GroundPosition(null,position),citizenId++,"city street");
     }
 
     private static void SpawnImportedVisitor(Transform parent, Vector3 position, int id, string place)
     {
-        string resource = id % 2 == 0 ? "LumenPeople/GuideFemale" : "LumenPeople/GuideMale";
+        string style=id%3==0?"RomanGuard":"RomanCitizen";
+        string resource = "ScenarioCharacters/"+CharacterWardrobe.Resource(style);
         GameObject prefab = Resources.Load<GameObject>(resource);
         if (prefab == null) return;
 
-        GameObject visitor = new GameObject("RomeTimeTraveler_" + id.ToString("00"));
+        GameObject visitor = new GameObject("RomanCitizen_" + id.ToString("00"));
         visitor.transform.SetParent(parent, true);
         visitor.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, (id * 137) % 360, 0f));
         GameObject visual = Object.Instantiate(prefab, visitor.transform, false);
         visual.name = "Imported Quaternius Humanoid";
         visual.transform.localPosition = Vector3.zero;
         visual.transform.localRotation = Quaternion.identity;
-        visual.transform.localScale = Vector3.one * 0.84f;
+        visual.transform.localScale = Vector3.one;
         foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true)) Object.Destroy(collider);
         foreach (MonoBehaviour behaviour in visual.GetComponentsInChildren<MonoBehaviour>(true))
             behaviour.enabled = false;
@@ -124,6 +127,7 @@ public static class WorldCharacterCrowds
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
 
+        CharacterWardrobe.Apply(visual.transform,style);
         CapsuleCollider select = visitor.AddComponent<CapsuleCollider>();
         select.center = new Vector3(0f, 0.88f, 0f);
         select.height = 1.8f;
@@ -133,14 +137,15 @@ public static class WorldCharacterCrowds
         if (grounding == null) grounding = visitor.AddComponent<CharacterGrounding>();
         grounding.Initialize(visual.transform);
         AmbientNpcRoutine routine = visitor.AddComponent<AmbientNpcRoutine>();
-        routine.Configure("time-travel visitor", true, 2.8f, 1800 + id);
+        routine.Configure("Roman resident", true, 2.8f, 1800 + id);
+        visitor.AddComponent<AgentAnimator>();
 
         ObjectMetadata metadata = visitor.AddComponent<ObjectMetadata>();
         metadata.objectId = "rome_visitor_" + id;
-        metadata.displayName = id == 0 ? "Curious time traveler" : id == 1 ? "Visiting researcher" : "History enthusiast";
+        metadata.displayName = id%3==0?"Roman guard Lucius":"Roman citizen "+id;
         metadata.objectName = metadata.displayName;
         metadata.category = "Person";
-        metadata.descriptionSummary = "A present-day visitor exploring the " + place + " alongside the ancient Roman reconstructions. They are a time-travel guest, not a Roman resident; say hello or ask what caught their attention.";
+        metadata.descriptionSummary = "A fictional clothed Roman resident in this interpretive reconstruction. Ask about daily life, markets and the city; their dialogue is not an ancient eyewitness account.";
         metadata.description = metadata.descriptionSummary;
         metadata.contextualTags = "ancient rome, visitor, researcher, conversation, " + place;
         metadata.isInteractable = true;

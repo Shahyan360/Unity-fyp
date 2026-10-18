@@ -65,6 +65,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         modal.SetActive(true);
+        modal.transform.SetAsLastSibling();
         RefreshTotal();
     }
 
@@ -297,7 +298,8 @@ public sealed class CafeOrderExperience : MonoBehaviour
         colors.highlightedColor = Color.Lerp(color, Color.white, 0.13f);
         colors.pressedColor = Color.Lerp(color, Color.black, 0.14f);
         button.colors = colors;
-        AddText(go.transform, "Label", title, compact ? 12 : 15, new Color(0.04f, 0.06f, 0.08f), FontStyles.Bold,
+        Color labelColor = color.grayscale < .42f ? new Color(.93f,.96f,.96f) : new Color(.04f,.06f,.08f);
+        AddText(go.transform, "Label", title, compact ? 12 : 15, labelColor, FontStyles.Bold,
             new Vector2(0.03f, 0.03f), new Vector2(0.97f, 0.97f), TextAlignmentOptions.Center);
         return button;
     }

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5747788758339248696
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 101773990700141802}
+  - component: {fileID: 3305418617573493145}
+  m_Layer: 0
+  m_Name: Professor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &101773990700141802
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5747788758339248696}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3305418617573493145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5747788758339248696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19eb483865f0f4458d1418c59e8a7d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TailoredCharacterWardrobe
+  character: Theo
+  maskedBody: {fileID: 4300000, guid: 23242d3452143e640941ec03ca32d294, type: 2}
+  garments: {fileID: 4300000, guid: 7c0a7d6945a1c324bafc85ac0bc312fb, type: 2}
+  garmentSurfaces:
+  - {fileID: 2100000, guid: 9033eae7e16fe29409fa8b16d6a6da6b, type: 2}
+  - {fileID: 2100000, guid: 23743679ce10cda4fa82ade19363146c, type: 2}
+  - {fileID: 2100000, guid: 55236eb5f3e61ae4d977b20ca1a6fad4, type: 2}
+  - {fileID: 2100000, guid: 6ffd61185ea8f8c409aa2e8f39d466b4, type: 2}
+  - {fileID: 2100000, guid: 255580d40d7a14441975753176aef5b7, type: 2}
+  - {fileID: 2100000, guid: 424f7d15ae226074e9b173c33765b247, type: 2}
+  nativeSurfaces:
+  - {fileID: 2100000, guid: ec68f8c9a58fedd4696ba661b016274c, type: 2}
+  - {fileID: 2100000, guid: 0778c6c9a70c9fa4096758bf480e624e, type: 2}
+  - {fileID: 2100000, guid: 6176baf061e716944acc719014cc2381, type: 2}

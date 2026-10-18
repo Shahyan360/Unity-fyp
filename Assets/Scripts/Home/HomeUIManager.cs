@@ -58,6 +58,20 @@ public class HomeUIManager : MonoBehaviour
     private string pendingScenario;
     private readonly List<string> chatLines = new List<string>();
     private bool isWaitingForBackend;
+    private int liveInputLine=-1,liveOutputLine=-1;
+    public void ShowLiveInput(string text)
+    {
+        if(liveInputLine<0){AddUserMessage(text);liveInputLine=chatLines.Count-1;}
+        else if(liveInputLine<chatLines.Count)chatLines[liveInputLine]="You: "+text;
+    }
+    public void ShowLiveOutput(string text)
+    {
+        var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();string label=identity!=null?identity.DisplayName:"Kai";
+        if(liveOutputLine<0){AddChatLine(label+": "+text);liveOutputLine=chatLines.Count-1;}
+        else if(liveOutputLine<chatLines.Count)chatLines[liveOutputLine]=label+": "+text;
+        if(chatOutputText!=null)chatOutputText.text=string.Join("\n",chatLines)+"\n";
+    }
+    public void FinishLiveReply(ChatResponse response){ShowLiveOutput(response.response);liveInputLine=liveOutputLine=-1;}
 
     private void Start()
     {
@@ -208,7 +222,10 @@ public class HomeUIManager : MonoBehaviour
 
     public void SubmitVoiceTranscription(string transcription)
     {
-        if (string.IsNullOrWhiteSpace(transcription) || isWaitingForBackend || userInputField == null) return;
+        if (string.IsNullOrWhiteSpace(transcription) || userInputField == null) return;
+        aiClient?.CancelRequest();FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
+        isWaitingForBackend=false;
+        if(VoiceCommandRouter.TryExecute(transcription,out string reply)){AddUserMessage(transcription);AddAssistantMessage(reply);FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(reply);return;}
         userInputField.text = transcription.Trim();
         SendLocalMessage();
     }
@@ -236,7 +253,8 @@ public class HomeUIManager : MonoBehaviour
             homeChatObjectName,
             homeChatObjectDescription,
             HandleBackendSuccess,
-            HandleBackendError));
+            HandleBackendError,
+            text=>FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(text)));
     }
 
     private void HandleBackendSuccess(ChatResponse response)

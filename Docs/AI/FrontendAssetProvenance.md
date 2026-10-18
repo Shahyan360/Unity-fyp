@@ -1,0 +1,21 @@
+# Frontend assets added in the expanded pass
+
+Original Blender geometry: RomanInsula, RomanTempleRestoration, RomanMarketStall, RomanArcadeRestoration, MuseumCourtyard, ForumTable, FossilCabinet, RomanArtifactCase, TheropodSkeleton, HornedDinosaurSkeleton, OpeningHeroOutfit, MuseumMysticOutfit, ProfessorOutfit, RomanCitizenOutfit, RomanGuardOutfit and CityOlivePlanter. Sources in Tools/Art; .blend/GLB/renders and actual index topology/hash receipt in D:/LumenProject/Art/art-manifest.json (16 assets). Skeletons are schematic interpretive reconstructions, not scientific scans or exact species anatomy. Clothing is inspired by user references, not a licensed copy of the depicted characters. Runtime garments use fitted weighted torso/hip/leg skins and bone attachments for head/foot/short-sleeve details.
+
+Human bases: Microsoft Rocketbox, MIT license, https://github.com/microsoft/Microsoft-Rocketbox. Kai uses Male_Adult_09, Orion Male_Adult_04, Theo Male_Adult_07; retained Ada, Maya and Marcus remain their existing licensed bases. Pinned download commit, source paths, SHA256 and file sizes in D:/LumenProject/References/RocketboxOptions/host-download-receipt.json. License text retained with Rocketbox source. Original sources stay on D; normalized project copies are under Assets/Art/Rocketbox. All facial FBXs have 175 morph shapes; runtime uses the compatible AK family only.
+
+Paintings: Metropolitan Museum Open Access, each authoritative object record explicitly marked isPublicDomain. Object 436535, Wheat Field with Cypresses by Vincent van Gogh (1889), https://www.metmuseum.org/art/collection/search/436535. Object 436105, The Death of Socrates by Jacques Louis David (1787), https://www.metmuseum.org/art/collection/search/436105. Object 11417, Washington Crossing the Delaware by Emanuel Leutze (1851), https://www.metmuseum.org/art/collection/search/11417. Records, image URLs and manifests retained D:/LumenProject/References/MetOpenAccess; runtime credits accompany each image.
+
+LimestonePavers and MuseumLimestone are original generated textures, with reproducible source in Tools/Art. No paid provider generation or asset purchases. Blender Studio Victor was only a user reference; download required an account/payment and was not acquired. Behance/reference screenshots are visual inspiration, not downloadable asset licenses.
+
+Architectural references consulted: https://smarthistory.org/pompeii-an-introduction/ and https://smarthistory.org/forum-romanum-the-roman-forum/. City is an interpretive composition, not an exact reconstruction of an excavated district.
+
+This document covers this pass. It does not certify the provenance of every legacy project asset; the earlier project-wide provenance audit remains pending.
+
+## Fitted character upgrade — 18 October 2026
+
+Reproducible source: Tools/Art/create_tailored_characters.py and Assets/Editor/LumenCharacterTailoring.cs. New surface anatomy is derived from the licensed MIT Microsoft Rocketbox bodies, with original Blender accessories, fabric maps and garment extensions. It supersedes the coarse OpeningHero/MuseumMystic/Professor capsule costumes only; the original16-export manifest above is unchanged. Original FBX meshes, skeletons and facial morph data are retained.
+
+Working directory D:/LumenProject/Art/CharacterTailoring contains read-only native anatomy references, weighted geometry JSON, portable garment GLB previews, .blend source, full/portrait renders and SHA256 receipts. Each costume uses80 native bones; original facial body mesh retains175 shapes. Imported clothing triangles: Kai15,798; Orion27,795; Theo25,863. Individual cloth material groups are combined into one skinned renderer per host; surfaces1024px max, mipmapped/compressed. Complete reusable dressed prefabs: Assets/Prefabs/LumenAgents/Kai.prefab, Orion.prefab, Theo.prefab. Runtime definitions in Resources/TailoredCharacters share the same mesh assets.
+
+No new downloads or paid generation in this pass. Source license copied to D:/LumenProject/Art/CharacterTailoring/LICENSE-Rocketbox.md. New geometry is reference-inspired, not an exact reproduction of the pictured anime/fantasy characters. Native faces remain realistic rather than anime. No claim of photoreal garment simulation or phoneme-aligned lip sync.

@@ -12,7 +12,24 @@ public static class WalkableHomeHub
 
     public static void Ensure()
     {
-        if (GameObject.Find(WorldName) == null) BuildAtrium();
+        // This unmaterialed plane belongs to the retired prototype front screen.
+        // The atrium provides its own solid ground and paths.
+        GameObject oldFloor = GameObject.Find("BackgroundFloor");
+        if (oldFloor != null) oldFloor.SetActive(false);
+        GameObject existing = GameObject.Find(WorldName);
+        if (existing == null)
+        {
+            BuildAtrium();
+        }
+        else if (existing.transform.Find("Portal · Ancient Rome/Rift Rings") == null)
+        {
+            // Enter Play Mode can preserve generated objects when Unity's
+            // reload options are customized. Replace an older hub so a code
+            // update never leaves the player looking at stale portals.
+            existing.SetActive(false);
+            Object.Destroy(existing);
+            BuildAtrium();
+        }
         EnsurePlayerAndCamera();
         EnsureGuide();
     }
@@ -27,14 +44,14 @@ public static class WalkableHomeHub
     {
         GameObject world = new GameObject(WorldName);
         world.transform.position = Vector3.zero;
-        Material grass = MaterialFor("Meadow soft grass", new Color(0.30f, 0.49f, 0.30f));
-        Material stone = MaterialFor("Warm honey limestone", new Color(0.78f, 0.68f, 0.51f));
-        Material brass = MaterialFor("Sunlit brass", new Color(0.94f, 0.69f, 0.25f), true);
-        Material cyan = MaterialFor("Classroom sky blue", new Color(0.16f, 0.66f, 0.91f), true);
-        Material coral = MaterialFor("Rome poppy coral", new Color(0.95f, 0.36f, 0.27f), true);
-        Material mint = MaterialFor("Cafe mint", new Color(0.20f, 0.73f, 0.48f), true);
-        Material violet = MaterialFor("Museum violet", new Color(0.58f, 0.40f, 0.87f), true);
-        Material leaf = MaterialFor("Garden leaf", new Color(0.18f, 0.40f, 0.24f));
+        Material grass = MaterialFor("Meadow midnight grass", new Color(0.08f, 0.18f, 0.20f));
+        Material stone = MaterialFor("Warm moonstone limestone", new Color(0.24f, 0.28f, 0.38f));
+        Material brass = MaterialFor("Moonlit brass", new Color(0.75f, 0.47f, 0.18f), true);
+        Material cyan = MaterialFor("Classroom nebula cyan", new Color(0.10f, 0.54f, 0.86f), true);
+        Material coral = MaterialFor("Rome nebula coral", new Color(0.90f, 0.25f, 0.24f), true);
+        Material mint = MaterialFor("Cafe nebula mint", new Color(0.12f, 0.68f, 0.52f), true);
+        Material violet = MaterialFor("Museum nebula violet", new Color(0.54f, 0.36f, 0.92f), true);
+        Material leaf = MaterialFor("Garden night leaf", new Color(0.08f, 0.23f, 0.25f));
 
         // Keep the hub physically walkable, but let it read as an open garden
         // rather than a sealed showroom. The sky, surrounding scenery and trees
@@ -42,6 +59,7 @@ public static class WalkableHomeHub
         AddBox(world.transform, "Open meadow ground", new Vector3(0f, -0.42f, 40f), new Vector3(100f, 0.84f, 100f), grass, true);
         AddBox(world.transform, "Welcome stone path", new Vector3(0f, -0.015f, 40f), new Vector3(12f, 0.06f, 34f), stone, false);
         AddAtriumArchitecture(world.transform, stone, brass, leaf);
+        AddSkyStars(world.transform);
         Material pathCoral = MaterialFor("Rome garden trail", new Color(0.84f, 0.49f, 0.39f));
         Material pathCyan = MaterialFor("Classroom garden trail", new Color(0.36f, 0.66f, 0.78f));
         Material pathMint = MaterialFor("Cafe garden trail", new Color(0.38f, 0.66f, 0.42f));
@@ -57,8 +75,8 @@ public static class WalkableHomeHub
         AddPortal(world.transform, "Café", "MEET  ·  TALK  ·  ORDER", "cafe", 3.5f, 50.5f, mint);
         AddPortal(world.transform, "Museum", "OBJECTS  ·  STORIES  ·  TIME", "museum", 10.5f, 50.5f, violet);
 
-        AddAreaLight(world.transform, "Garden morning fill", new Vector3(0f, 9f, 38f), new Color(1f, 0.87f, 0.62f), 8f, 34f);
-        AddAreaLight(world.transform, "Portal color wash", new Vector3(0f, 5f, 48f), new Color(0.67f, 0.83f, 1f), 4f, 22f);
+        AddAreaLight(world.transform, "Garden moon fill", new Vector3(0f, 9f, 38f), new Color(0.34f, 0.58f, 1f), 4.2f, 34f);
+        AddAreaLight(world.transform, "Portal color wash", new Vector3(0f, 5f, 48f), new Color(0.34f, 0.70f, 1f), 3.2f, 22f);
         ConfigureGardenLighting(world.transform);
     }
 
@@ -100,6 +118,42 @@ public static class WalkableHomeHub
             crown.GetComponent<Renderer>().sharedMaterial = leaves;
             Object.Destroy(crown.GetComponent<Collider>());
         }
+    }
+
+    private static void AddSkyStars(Transform parent)
+    {
+        Material starMaterial = MaterialFor("Lumen stardust", new Color(0.44f, 0.78f, 1f), true);
+        for (int i = 0; i < 96; i++)
+        {
+            float seed = i + 1f;
+            float x = Mathf.Sin(seed * 12.9898f) * 28f;
+            float z = 18f + Mathf.Abs(Mathf.Cos(seed * 7.123f)) * 68f;
+            float y = 7.5f + Mathf.Abs(Mathf.Sin(seed * 3.317f)) * 20f;
+            GameObject star = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            star.name = "Lumen stardust star";
+            star.transform.SetParent(parent, false);
+            star.transform.localPosition = new Vector3(x, y, z);
+            float size = 0.035f + (i % 5) * 0.018f;
+            star.transform.localScale = Vector3.one * size;
+            star.GetComponent<Renderer>().sharedMaterial = starMaterial;
+            Object.Destroy(star.GetComponent<Collider>());
+        }
+
+        Material rose = MaterialFor("Lumen rose nebula", new Color(0.92f, 0.28f, 0.67f), true);
+        Material aqua = MaterialFor("Lumen aqua nebula", new Color(0.18f, 0.73f, 0.96f), true);
+        AddSkyOrb(parent, "Rose nebula beacon", new Vector3(-17f, 15f, 69f), 0.52f, rose);
+        AddSkyOrb(parent, "Aqua nebula beacon", new Vector3(17f, 12f, 60f), 0.38f, aqua);
+    }
+
+    private static void AddSkyOrb(Transform parent, string name, Vector3 position, float size, Material material)
+    {
+        GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        orb.name = name;
+        orb.transform.SetParent(parent, false);
+        orb.transform.localPosition = position;
+        orb.transform.localScale = Vector3.one * size;
+        orb.GetComponent<Renderer>().sharedMaterial = material;
+        Object.Destroy(orb.GetComponent<Collider>());
     }
 
     private static void AddFlowerPatch(Transform parent, Vector3 position, Material stems, Color[] palette)
@@ -188,18 +242,22 @@ public static class WalkableHomeHub
 
     private static void ConfigureGardenCamera(Camera view)
     {
-        // Some authored scenes ship with a near-black solid background. The
-        // opening hub is an outdoor garden, so give it a clear daytime sky.
-        view.clearFlags = CameraClearFlags.SolidColor;
-        view.backgroundColor = new Color(0.58f, 0.79f, 0.91f);
+        // The opening hub uses the bundled nebula cubemap so the atrium feels
+        // like a small world suspended in space instead of a flat clear sky.
+        Material galaxySky = Resources.Load<Material>("LumenGalaxySky");
+        if (galaxySky != null) RenderSettings.skybox = galaxySky;
+        view.clearFlags = CameraClearFlags.Skybox;
+        view.backgroundColor = new Color(0.015f, 0.025f, 0.07f);
     }
 
     private static void ConfigureGardenLighting(Transform parent)
     {
         RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = new Color(0.66f, 0.79f, 0.90f);
-        RenderSettings.ambientEquatorColor = new Color(0.78f, 0.75f, 0.64f);
-        RenderSettings.ambientGroundColor = new Color(0.39f, 0.34f, 0.27f);
+        RenderSettings.ambientSkyColor = new Color(0.08f, 0.13f, 0.25f);
+        RenderSettings.ambientEquatorColor = new Color(0.13f, 0.16f, 0.23f);
+        RenderSettings.ambientGroundColor = new Color(0.035f, 0.045f, 0.08f);
+        RenderSettings.ambientIntensity = 0.62f;
+        RenderSettings.reflectionIntensity = 0.32f;
 
         GameObject sunObject = new GameObject("Garden daylight");
         sunObject.transform.SetParent(parent, false);
@@ -207,7 +265,7 @@ public static class WalkableHomeHub
         Light sun = sunObject.AddComponent<Light>();
         sun.type = LightType.Directional;
         sun.color = new Color(1f, 0.91f, 0.75f);
-        sun.intensity = 1.15f;
+        sun.intensity = 0.72f;
         sun.shadows = LightShadows.Soft;
         sun.shadowStrength = 0.42f;
     }
@@ -218,20 +276,17 @@ public static class WalkableHomeHub
         if (guide == null) guide = new GameObject("HomeAgent");
 
         foreach (Renderer renderer in guide.GetComponentsInChildren<Renderer>(true))
-            if (renderer.transform != guide.transform) renderer.enabled = false;
+            if (renderer.transform != guide.transform && (guide.transform.Find("LumenGuideVisual")==null||!renderer.transform.IsChildOf(guide.transform.Find("LumenGuideVisual")))) renderer.enabled = false;
         if (guide.transform.Find("LumenGuideVisual") == null)
         {
-            GameObject prefab = Resources.Load<GameObject>("LumenGuide/RobotKyle");
-#if UNITY_EDITOR
-            if (prefab == null) prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/UnityTechnologies/SpaceRobotKyle/Prefabs/RobotKyle.prefab");
-#endif
+            GameObject prefab = Resources.Load<GameObject>("ScenarioCharacters/Kai")??Resources.Load<GameObject>("ScenarioCharacters/Marcus");
             if (prefab != null)
             {
                 GameObject visual = Object.Instantiate(prefab, guide.transform);
                 visual.name = "LumenGuideVisual";
                 visual.transform.localPosition = Vector3.zero;
                 visual.transform.localRotation = Quaternion.identity;
-                visual.transform.localScale = Vector3.one * 0.82f;
+                visual.transform.localScale = Vector3.one;
                 foreach (Transform child in visual.GetComponentsInChildren<Transform>(true))
                 {
                     child.gameObject.tag = "Untagged";
@@ -242,7 +297,7 @@ public static class WalkableHomeHub
                 foreach (Collider collider in visual.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
                 foreach (Animator animator in visual.GetComponentsInChildren<Animator>(true)) animator.enabled = true;
             }
-            else Debug.LogWarning("Lumen guide model is missing from Resources/LumenGuide/RobotKyle.");
+            else Debug.LogWarning("Human guide prefabs are missing from Resources/ScenarioCharacters.");
         }
 
         guide.transform.position = Spawn + Vector3.forward * 3.5f + Vector3.right * 1.3f;
@@ -253,6 +308,7 @@ public static class WalkableHomeHub
         FloatingAgentIdle floating = guide.GetComponent<FloatingAgentIdle>();
         if (floating != null) floating.enabled = false;
         if (guide.GetComponent<AgentAnimator>() == null) guide.AddComponent<AgentAnimator>();
+        ScenarioCharacterIdentity.InstallOnGuide(guide,"HomeScene");
         WalkableGuideFollower follower = guide.GetComponent<WalkableGuideFollower>();
         if (follower == null) follower = guide.AddComponent<WalkableGuideFollower>();
         GameObject player = GameObject.Find("WorldExplorer");
@@ -264,16 +320,24 @@ public static class WalkableHomeHub
         GameObject portal = new GameObject("Portal · " + title);
         portal.transform.SetParent(parent, false);
         portal.transform.position = new Vector3(x, 0f, z);
-        Material housing = MaterialFor(title + " warm stone arch", new Color(0.79f, 0.68f, 0.49f));
-        AddBox(portal.transform, "Portal architectural surround", new Vector3(0f, 2.85f, 0.36f), new Vector3(4.7f, 5.65f, 0.42f), housing, false);
-        AddBox(portal.transform, "Left luminous pier", new Vector3(-1.92f, 2.55f, 0f), new Vector3(0.34f, 5.05f, 0.42f), accent, false);
-        AddBox(portal.transform, "Right luminous pier", new Vector3(1.92f, 2.55f, 0f), new Vector3(0.34f, 5.05f, 0.42f), accent, false);
-        AddBox(portal.transform, "Portal crown", new Vector3(0f, 5.03f, 0f), new Vector3(4.2f, 0.34f, 0.46f), accent, false);
-        Color veilColor = Color.Lerp(accent.color, Color.white, 0.72f);
-        veilColor.a = 0.32f;
-        Material aperture = MaterialFor(title + " portal veil", new Color(veilColor.r, veilColor.g, veilColor.b, 1f));
-        AddBox(portal.transform, "Translucent portal veil", new Vector3(0f, 2.50f, 0.16f), new Vector3(3.45f, 4.55f, 0.12f), aperture, false);
-        AddBox(portal.transform, "Portal threshold", new Vector3(0f, 0.08f, 0.48f), new Vector3(4.35f, 0.18f, 1.05f), accent, false);
+        Color accentColor = accent.color;
+        Material housing = MaterialFor(title + " rift housing", Color.Lerp(new Color(0.025f, 0.045f, 0.09f), accentColor, 0.22f));
+        Material darkCore = MaterialFor(title + " rift depth", new Color(0.008f, 0.018f, 0.045f));
+        Material ringBright = MaterialFor(title + " rift edge", Color.Lerp(accentColor, Color.white, 0.34f), true);
+        Material ringSoft = MaterialFor(title + " rift aura", Color.Lerp(accentColor, Color.white, 0.08f), true);
+
+        // A split arch reads as a doorway instead of a billboard, leaving a
+        // deep aperture in the middle for the live destination preview.
+        AddBox(portal.transform, "Portal left arch", new Vector3(-2.05f, 2.75f, 0.34f), new Vector3(0.62f, 5.7f, 0.62f), housing, false);
+        AddBox(portal.transform, "Portal right arch", new Vector3(2.05f, 2.75f, 0.34f), new Vector3(0.62f, 5.7f, 0.62f), housing, false);
+        AddBox(portal.transform, "Portal crown", new Vector3(0f, 5.56f, 0.34f), new Vector3(4.72f, 0.62f, 0.62f), housing, false);
+        AddBox(portal.transform, "Portal crown energy band", new Vector3(0f, 5.22f, 0.02f), new Vector3(4.18f, 0.16f, 0.22f), ringBright, false);
+        AddBox(portal.transform, "Portal threshold", new Vector3(0f, 0.08f, 0.44f), new Vector3(4.7f, 0.22f, 1.18f), housing, false);
+        AddBox(portal.transform, "Portal threshold energy", new Vector3(0f, 0.22f, 0.03f), new Vector3(4.25f, 0.10f, 0.68f), ringBright, false);
+
+        AddBox(portal.transform, "Rift depth window", new Vector3(0f, 2.68f, 0.31f), new Vector3(3.72f, 4.92f, 0.08f), darkCore, false);
+        AddScenarioPreview(portal.transform, title, accent);
+        AddPortalRiftLayers(portal.transform, title, ringBright, ringSoft, accentColor);
 
         GameObject titleObject = new GameObject("Portal title · " + title, typeof(TextMeshPro));
         titleObject.transform.SetParent(portal.transform, false);
@@ -310,7 +374,146 @@ public static class WalkableHomeHub
         route.scenario = scenario;
         route.displayName = title;
         route.Initialize(accent.color);
-        AddAreaLight(portal.transform, "Portal glow", new Vector3(0f, 2.3f, -0.55f), accent.color, 3.2f, 7f);
+        AddAreaLight(portal.transform, "Portal glow", new Vector3(0f, 2.3f, -0.9f), accent.color, 4.6f, 8f);
+    }
+
+    private static void AddPortalRiftLayers(Transform portal, string title, Material bright, Material soft, Color accent)
+    {
+        Transform rings = new GameObject("Rift Rings").transform;
+        rings.SetParent(portal, false);
+        rings.localPosition = new Vector3(0f, 2.68f, -0.11f);
+        AddVerticalRing(rings, "Rift Ring Outer", new Vector2(1.88f, 2.49f), bright, 0.105f, 0f);
+        AddVerticalRing(rings, "Rift Ring Middle", new Vector2(1.68f, 2.29f), soft, 0.055f, 0.01f);
+        AddVerticalRing(rings, "Rift Ring Inner", new Vector2(1.46f, 2.03f), bright, 0.04f, 0.02f);
+
+        Transform motes = new GameObject("Rift Motes").transform;
+        motes.SetParent(portal, false);
+        motes.localPosition = new Vector3(0f, 2.68f, -0.18f);
+        for (int i = 0; i < 18; i++)
+        {
+            float angle = i / 18f * Mathf.PI * 2f;
+            float radius = 1.58f + (i % 3) * 0.16f;
+            GameObject mote = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            mote.name = "Rift mote";
+            mote.transform.SetParent(motes, false);
+            mote.transform.localPosition = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius * 1.35f, (i % 2) * 0.08f);
+            mote.transform.localScale = Vector3.one * (0.045f + (i % 4) * 0.018f);
+            mote.GetComponent<Renderer>().sharedMaterial = i % 3 == 0 ? bright : soft;
+            Object.Destroy(mote.GetComponent<Collider>());
+        }
+
+        GameObject core = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        core.name = "Rift Core";
+        core.transform.SetParent(portal, false);
+        core.transform.localPosition = new Vector3(0f, 2.68f, -0.2f);
+        core.transform.localScale = Vector3.one * 0.36f;
+        core.GetComponent<Renderer>().sharedMaterial = bright;
+        Object.Destroy(core.GetComponent<Collider>());
+
+        AddVerticalRing(portal, "Ground energy halo", new Vector2(2.08f, 0.26f), soft, 0.045f, 0.02f);
+        Transform halo = portal.Find("Ground energy halo");
+        if (halo != null) halo.localPosition = new Vector3(0f, 0.24f, -0.2f);
+
+        GameObject leftPylon = AddBox(portal, "Left rift pylon", new Vector3(-2.45f, 2.2f, -0.04f), new Vector3(0.18f, 3.9f, 0.18f), bright, false);
+        GameObject rightPylon = AddBox(portal, "Right rift pylon", new Vector3(2.45f, 2.2f, -0.04f), new Vector3(0.18f, 3.9f, 0.18f), bright, false);
+        leftPylon.transform.localRotation = Quaternion.Euler(0f, 0f, -7f);
+        rightPylon.transform.localRotation = Quaternion.Euler(0f, 0f, 7f);
+        AddWorldText(portal, "ENTER THE " + title.ToUpperInvariant(), new Vector3(0f, 6.18f, -0.2f), 0.24f,
+            Color.Lerp(accent, Color.white, 0.28f), new Vector2(7.4f, 0.5f));
+    }
+
+    private static void AddVerticalRing(Transform parent, string name, Vector2 radius, Material material, float width, float z)
+    {
+        GameObject ringObject = new GameObject(name);
+        ringObject.transform.SetParent(parent, false);
+        ringObject.transform.localPosition = new Vector3(0f, 0f, z);
+        LineRenderer ring = ringObject.AddComponent<LineRenderer>();
+        ring.useWorldSpace = false;
+        ring.loop = true;
+        ring.positionCount = 96;
+        ring.startWidth = ring.endWidth = width;
+        ring.sharedMaterial = material;
+        ring.startColor = ring.endColor = material.color;
+        ring.shadowCastingMode = ShadowCastingMode.Off;
+        ring.receiveShadows = false;
+        for (int i = 0; i < ring.positionCount; i++)
+        {
+            float angle = i / (float)ring.positionCount * Mathf.PI * 2f;
+            ring.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius.x, Mathf.Sin(angle) * radius.y, 0f));
+        }
+    }
+
+    private static void AddScenarioPreview(Transform portal, string title, Material accent)
+    {
+        Transform preview = new GameObject("Scenario Preview").transform;
+        preview.SetParent(portal, false);
+        preview.localPosition = new Vector3(0f, 2.68f, 0.05f);
+
+        Material previewFloor = MaterialFor(title + " preview floor", Color.Lerp(accent.color, new Color(0.015f, 0.02f, 0.05f), 0.72f));
+        AddBox(preview, "Preview floor", new Vector3(0f, -2.05f, -0.1f), new Vector3(3.35f, 0.12f, 1.6f), previewFloor, false);
+        Transform vignette = new GameObject("Preview vignette").transform;
+        vignette.SetParent(preview, false);
+        vignette.localPosition = new Vector3(0f, 0f, -0.06f);
+
+        Material highlight = MaterialFor(title + " preview highlight", Color.Lerp(accent.color, Color.white, 0.22f), true);
+        switch (title)
+        {
+            case "Ancient Rome":
+                Material stone = MaterialFor("Rome preview marble", new Color(0.66f, 0.50f, 0.31f));
+                AddCylinder(vignette, "Rome preview column left", new Vector3(-1.05f, -0.75f, 0f), new Vector3(0.22f, 0.90f, 0.22f), stone);
+                AddCylinder(vignette, "Rome preview column right", new Vector3(1.05f, -0.75f, 0f), new Vector3(0.22f, 0.90f, 0.22f), stone);
+                AddBox(vignette, "Rome preview lintel", new Vector3(0f, 0.18f, 0f), new Vector3(2.55f, 0.25f, 0.25f), stone, false);
+                AddBox(vignette, "Rome preview forum", new Vector3(0f, -1.36f, 0.06f), new Vector3(2.25f, 0.12f, 0.8f), highlight, false);
+                AddPreviewSphere(vignette, "Rome preview sun", new Vector3(0.55f, 1.10f, 0f), 0.34f, highlight);
+                break;
+            case "Classroom":
+                Material desk = MaterialFor("Classroom preview desk", new Color(0.42f, 0.25f, 0.16f));
+                AddBox(vignette, "Classroom preview desk", new Vector3(0f, -1.28f, 0f), new Vector3(2.2f, 0.22f, 0.82f), desk, false);
+                AddBox(vignette, "Classroom preview board", new Vector3(0f, 0.92f, 0.04f), new Vector3(2.48f, 1.15f, 0.12f), highlight, false);
+                AddPreviewSphere(vignette, "Classroom preview planet", new Vector3(0f, -0.15f, -0.16f), 0.52f, highlight);
+                AddVerticalRing(vignette, "Classroom preview orbit", new Vector2(0.78f, 0.30f), accent, 0.035f, -0.2f);
+                Transform orbit = vignette.Find("Classroom preview orbit");
+                if (orbit != null) orbit.localPosition = new Vector3(0f, -0.15f, -0.25f);
+                break;
+            case "Café":
+                Material wood = MaterialFor("Cafe preview wood", new Color(0.42f, 0.20f, 0.12f));
+                Material coffee = MaterialFor("Cafe preview coffee", new Color(0.18f, 0.07f, 0.035f), true);
+                AddCylinder(vignette, "Cafe preview table", new Vector3(0f, -1.35f, 0f), new Vector3(1.20f, 0.14f, 1.20f), wood);
+                AddCylinder(vignette, "Cafe preview cup", new Vector3(0f, -0.65f, -0.1f), new Vector3(0.38f, 0.42f, 0.38f), highlight);
+                AddPreviewSphere(vignette, "Cafe preview coffee", new Vector3(0f, -0.23f, -0.1f), 0.24f, coffee);
+                AddPreviewSphere(vignette, "Cafe preview steam one", new Vector3(-0.14f, 0.25f, -0.06f), 0.08f, highlight);
+                AddPreviewSphere(vignette, "Cafe preview steam two", new Vector3(0.12f, 0.52f, -0.06f), 0.06f, highlight);
+                AddBox(vignette, "Cafe preview awning", new Vector3(0f, 1.22f, 0f), new Vector3(2.55f, 0.20f, 0.50f), accent, false);
+                break;
+            case "Museum":
+                Material museumStone = MaterialFor("Museum preview stone", new Color(0.44f, 0.47f, 0.58f));
+                AddBox(vignette, "Museum preview pedestal", new Vector3(0f, -1.24f, 0f), new Vector3(0.86f, 0.72f, 0.86f), museumStone, false);
+                GameObject artifact = AddPreviewSphere(vignette, "Museum preview artifact", new Vector3(0f, -0.18f, -0.02f), 0.55f, highlight);
+                artifact.transform.localRotation = Quaternion.Euler(25f, 35f, 12f);
+                AddVerticalRing(vignette, "Museum preview halo", new Vector2(0.82f, 1.05f), accent, 0.035f, -0.16f);
+                Transform halo = vignette.Find("Museum preview halo");
+                if (halo != null) halo.localPosition = new Vector3(0f, -0.16f, -0.24f);
+                AddBox(vignette, "Museum preview lintel", new Vector3(0f, 1.22f, 0f), new Vector3(2.1f, 0.18f, 0.22f), museumStone, false);
+                break;
+            default:
+                AddPreviewSphere(vignette, "Scenario preview orb", Vector3.zero, 0.7f, highlight);
+                break;
+        }
+
+        AddPreviewSphere(vignette, "Preview glint", new Vector3(-1.15f, 1.25f, -0.22f), 0.10f, highlight);
+        AddPreviewSphere(vignette, "Preview glint", new Vector3(1.12f, 0.78f, -0.22f), 0.07f, highlight);
+    }
+
+    private static GameObject AddPreviewSphere(Transform parent, string name, Vector3 position, float size, Material material)
+    {
+        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphere.name = name;
+        sphere.transform.SetParent(parent, false);
+        sphere.transform.localPosition = position;
+        sphere.transform.localScale = Vector3.one * size;
+        sphere.GetComponent<Renderer>().sharedMaterial = material;
+        Object.Destroy(sphere.GetComponent<Collider>());
+        return sphere;
     }
 
     private static void AddCentralOrb(Transform parent, Material gold, Material cyan)
@@ -438,13 +641,27 @@ public sealed class HomeHubPortal : MonoBehaviour
     public string displayName;
     private Color accent;
     private float phase;
+    private bool entering;
+    private Transform player;
 
-    public void Initialize(Color color) => accent = color;
+    public void Initialize(Color color)
+    {
+        accent = color;
+        phase = color.r * 2.7f + color.g * 4.1f;
+    }
 
     public void Enter()
     {
-        if (string.IsNullOrWhiteSpace(scenario)) return;
+        if (entering || string.IsNullOrWhiteSpace(scenario)) return;
+        entering = true;
         ScenarioTransitionService.LoadScenario(scenario);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // The doorway itself is the interaction: walking through it is enough
+        // to enter, while E/click/1–4 remain useful intentional shortcuts.
+        if (other.GetComponentInParent<CafeWalkController>() != null) Enter();
     }
 
     private void OnMouseDown()
@@ -458,10 +675,45 @@ public sealed class HomeHubPortal : MonoBehaviour
     private void Update()
     {
         phase += Time.deltaTime;
+        if (!entering)
+        {
+            if (player == null)
+            {
+                CafeWalkController movement = Object.FindAnyObjectByType<CafeWalkController>();
+                if (movement != null) player = movement.transform;
+            }
+            if (player != null)
+            {
+                Vector3 localPlayer = transform.InverseTransformPoint(player.position);
+                bool insideOpening = Mathf.Abs(localPlayer.x) < 1.65f
+                    && localPlayer.y > -0.1f && localPlayer.y < 2.4f
+                    && localPlayer.z > -1.55f && localPlayer.z < 0.70f;
+                if (insideOpening) Enter();
+            }
+        }
         Light glow = GetComponentInChildren<Light>();
-        if (glow != null) glow.intensity = 4.2f + Mathf.Sin(phase * 1.6f) * 1.0f;
-        Transform veil = transform.Find("Translucent portal veil");
-        if (veil != null) veil.localScale = new Vector3(2.76f, 3.72f + Mathf.Sin(phase * 1.2f) * 0.06f, 0.12f);
+        if (glow != null) glow.intensity = 4.6f + Mathf.Sin(phase * 1.6f) * 1.2f;
+        Transform rings = transform.Find("Rift Rings");
+        if (rings != null)
+        {
+            rings.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(phase * 0.65f) * 8f);
+            float pulse = 1f + Mathf.Sin(phase * 1.8f) * 0.035f;
+            rings.localScale = Vector3.one * pulse;
+        }
+        Transform motes = transform.Find("Rift Motes");
+        if (motes != null) motes.localRotation = Quaternion.Euler(0f, 0f, phase * 18f);
+        Transform core = transform.Find("Rift Core");
+        if (core != null)
+        {
+            float corePulse = 1f + Mathf.Sin(phase * 2.4f) * 0.16f;
+            core.localScale = Vector3.one * (0.36f * corePulse);
+        }
+        Transform preview = transform.Find("Scenario Preview");
+        if (preview != null)
+        {
+            preview.localPosition = new Vector3(0f, 2.68f + Mathf.Sin(phase * 1.15f) * 0.035f, 0.05f);
+            preview.localScale = Vector3.one * (1f + Mathf.Sin(phase * 1.45f) * 0.012f);
+        }
     }
 }
 
@@ -493,7 +745,7 @@ public sealed class WalkableHubInteractor : MonoBehaviour
         if (prompt != null)
             prompt.text = currentPortal != null
                 ? "[E] ENTER  ·  " + currentPortal.displayName + "\n" + "Walk closer or press the matching 1–4 key."
-                : "WALK TO A GLOWING DOORWAY  ·  E ENTER  ·  1–4 QUICK JUMP";
+                : string.Empty;
 
         if (currentPortal != null && PressedInteract()) currentPortal.Enter();
         int shortcut = ReadShortcut();

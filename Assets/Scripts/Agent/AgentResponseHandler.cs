@@ -49,10 +49,21 @@ public class AgentResponseHandler : MonoBehaviour
         else if (companionController == null) companionController = FindAnyObjectByType<AgentCompanionController>();
         if (speechOutput == null) speechOutput = FindAnyObjectByType<SpeechOutputController>();
 
+        // Select the actual addressed person; otherwise the active world's host owns the response.
+        AgentAnimator speakerAnimator = null;
+        if (responseSpeaker != null)
+            speakerAnimator = responseSpeaker.GetComponentInParent<AgentAnimator>() ?? responseSpeaker.GetComponentInChildren<AgentAnimator>();
+        if (speakerAnimator == null && companionController != null)
+            speakerAnimator = companionController.GetComponent<AgentAnimator>();
+        if (speakerAnimator != null) agentAnimator = speakerAnimator;
+        ScenarioCharacterIdentity identity = agentAnimator != null ? agentAnimator.GetComponent<ScenarioCharacterIdentity>() : null;
+        if (identity != null && companionController != null)
+            companionController.AttendToVisitor(Mathf.Clamp(response.response.Length * .07f + 2f, 3f, 30f));
+
         if (agentAnimator != null)
         {
             agentAnimator.ApplyResponseTags(response.action, response.emotion);
-            agentAnimator.SpeakFor(Mathf.Clamp(response.response.Length * 0.055f, 1.8f, 14f));
+            if (!response.spoken_stream) agentAnimator.SpeakFor(Mathf.Clamp(response.response.Length * 0.055f, 1.8f, 14f));
         }
 
         if (responseSpeaker != null)
@@ -104,20 +115,34 @@ public class AgentResponseHandler : MonoBehaviour
             companionController.TryNavigateToNamedTarget(response.navigation_target);
         }
 
-        if (speechOutput != null)
+        if (speechOutput != null && !response.spoken_stream)
         {
-            bool conversationPartner = responseSpeaker != null && responseSpeaker.category == "Person" && (response.scenario == "cafe" || response.scenario == "ancient_rome");
-            string voice = conversationPartner && response.scenario == "cafe" ? SelectCafeVoice(responseSpeaker.GetDisplayName()) : string.Empty;
-            string caption = conversationPartner ? responseSpeaker.GetDisplayName() : "Lumen";
-            speechOutput.SpeakAs(response.response, voice, caption);
+            bool conversationPartner = responseSpeaker != null && responseSpeaker.category == "Person";
+            string voice = identity != null ? identity.VoiceName : conversationPartner ? SelectPersonVoice(responseSpeaker) : string.Empty;
+            string caption = conversationPartner ? responseSpeaker.GetDisplayName() : identity != null ? identity.DisplayName : "Lumen";
+            speechOutput.SpeakAs(response.response, voice, caption, agentAnimator, identity != null ? identity.SpeechRate : 0, identity != null ? identity.VoicePitch : 1f);
         }
 
         if (changingScene) ScenarioTransitionService.LoadScenario(response.next_scenario);
     }
 
-    private static string SelectCafeVoice(string displayName)
+    public void SpeakIncremental(string text,ObjectMetadata person=null)
     {
-        string name = (displayName ?? string.Empty).ToLowerInvariant();
+        var guide=FindAnyObjectByType<ScenarioCharacterIdentity>();
+        var actor=person!=null?person.GetComponentInParent<AgentAnimator>():guide!=null?guide.GetComponent<AgentAnimator>():null;
+        if(speechOutput==null)speechOutput=FindAnyObjectByType<SpeechOutputController>();
+        if(speechOutput==null)return;
+        var identity=actor!=null?actor.GetComponent<ScenarioCharacterIdentity>():null;
+        if(actor!=null){actor.ApplyEmotion("friendly");actor.GetComponent<AgentCompanionController>()?.AttendToVisitor(20);}
+        speechOutput.EnqueueAs(text,identity!=null?identity.VoiceName:"",identity!=null?identity.DisplayName:person!=null?person.GetDisplayName():"Kai",actor,
+            identity!=null?identity.SpeechRate:0,identity!=null?identity.VoicePitch:1);
+    }
+
+    private static string SelectPersonVoice(ObjectMetadata person)
+    {
+        var visual=person.GetComponentInChildren<ScenarioCharacterVisual>();
+        if(visual!=null&&(visual.ResourceId=="Ada"||visual.ResourceId=="Maya"))return "Microsoft Zira Desktop";
+        string name = (person.GetDisplayName() ?? string.Empty).ToLowerInvariant();
         return name.Contains("woman") || name.Contains("female") || name.Contains("barista")
             ? "Microsoft Zira Desktop"
             : "Microsoft David Desktop";

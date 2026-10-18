@@ -42,6 +42,17 @@ public class ChatUIManager : MonoBehaviour
     private readonly List<string> chatLines = new List<string>();
     private ObjectMetadata explicitResponseSpeaker;
     private ObjectMetadata pendingResponseSpeaker;
+    private int streamingLine=-1;
+    private int liveUserLine=-1;
+    public void ShowLiveInput(string text)
+    {
+        if(liveUserLine<0){AppendChatLine("You: "+text);liveUserLine=chatLines.Count-1;}
+        else if(liveUserLine<chatLines.Count)chatLines[liveUserLine]="You: "+text;
+    }
+    public void ShowLiveOutput(string text){ShowStreamingText(text);}
+    public void FinishLiveReply(ChatResponse response){liveUserLine=-1;pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;HandleChatSuccess(response);}
+    public bool IsWaitingForResponse => isWaitingForResponse;
+    public event System.Action<ChatResponse> ResponseReceived;
 
     private void Awake()
     {
@@ -137,6 +148,8 @@ public class ChatUIManager : MonoBehaviour
     public void ConfigureRuntimeChat(AIClient client, AppConfig config, ObjectRaycaster gaze, TMP_InputField input,
         Button send, TMP_Text transcript, TMP_Text status, ScrollRect scroll)
     {
+        if (sendButton != null) sendButton.onClick.RemoveListener(SendCurrentMessage);
+        if (tmpInputField != null) tmpInputField.onSubmit.RemoveListener(OnInputSubmitted);
         aiClient = client;
         appConfig = config;
         objectRaycaster = gaze;
@@ -147,6 +160,7 @@ public class ChatUIManager : MonoBehaviour
         legacyChatOutput = null;
         tmpStatusText = status;
         chatScrollRect = scroll;
+        agentResponseHandler = client != null ? client.GetComponent<AgentResponseHandler>() : null;
         applyDemoVisualPolishOnStart = false;
         buildSupervisorShowcaseOnStart = false;
         createBackButtonOnStart = false;
@@ -157,7 +171,19 @@ public class ChatUIManager : MonoBehaviour
             sendButton.onClick.RemoveListener(SendCurrentMessage);
             sendButton.onClick.AddListener(SendCurrentMessage);
         }
-        if (tmpInputField != null) tmpInputField.onSubmit.AddListener(_ => SendCurrentMessage());
+        if (tmpInputField != null) tmpInputField.onSubmit.AddListener(OnInputSubmitted);
+    }
+
+    private void OnInputSubmitted(string value) => SendCurrentMessage();
+
+    /// <summary>Hide authored prototype controls before binding the shared world interface.</summary>
+    public void HideLegacyPresentation()
+    {
+        applyDemoVisualPolishOnStart = false;
+        buildSupervisorShowcaseOnStart = false;
+        createBackButtonOnStart = false;
+        Canvas oldCanvas = tmpInputField != null ? tmpInputField.GetComponentInParent<Canvas>() : null;
+        if (oldCanvas != null) oldCanvas.enabled = false;
     }
 
     public void SendCurrentMessage()
@@ -180,7 +206,8 @@ public class ChatUIManager : MonoBehaviour
             return;
         }
 
-        ObjectMetadata currentObject = objectRaycaster != null ? objectRaycaster.CurrentObject : null;
+        ObjectMetadata currentObject = explicitResponseSpeaker != null ? explicitResponseSpeaker
+            : objectRaycaster != null ? objectRaycaster.CurrentObject : null;
         pendingResponseSpeaker = explicitResponseSpeaker != null ? explicitResponseSpeaker : currentObject;
         explicitResponseSpeaker = null;
         string objectName = currentObject != null ? currentObject.GetDisplayName() : "";
@@ -197,17 +224,25 @@ public class ChatUIManager : MonoBehaviour
             objectName,
             objectDescription,
             HandleChatSuccess,
-            HandleChatError));
+            HandleChatError,
+            text=>agentResponseHandler?.SpeakIncremental(text,pendingResponseSpeaker),
+            ShowStreamingText));
     }
 
     /// <summary>Entry point for platform speech-to-text adapters.</summary>
     public void SubmitVoiceTranscription(string transcription)
     {
-        if (string.IsNullOrWhiteSpace(transcription) || isWaitingForResponse)
+        if (string.IsNullOrWhiteSpace(transcription))
         {
             return;
         }
 
+        InterruptCurrentReply();
+        if(VoiceCommandRouter.TryExecute(transcription,out string acknowledgement))
+        {
+            AppendChatLine("You: "+transcription);AppendChatLine("Guide: "+acknowledgement);
+            agentResponseHandler?.SpeakIncremental(acknowledgement);return;
+        }
         if (tmpInputField != null)
         {
             tmpInputField.text = transcription.Trim();
@@ -218,6 +253,23 @@ public class ChatUIManager : MonoBehaviour
         }
 
         SendCurrentMessage();
+    }
+
+    public void InterruptCurrentReply()
+    {
+        if(aiClient!=null)aiClient.CancelRequest();
+        FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
+        SetLoadingState(false);streamingLine=-1;
+    }
+    private void ShowStreamingText(string text)
+    {
+        var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();
+        string label=pendingResponseSpeaker!=null&&pendingResponseSpeaker.category=="Person"?pendingResponseSpeaker.GetDisplayName():identity!=null?identity.DisplayName:"Kai";
+        if(streamingLine<0){AppendChatLine(label+": "+text);streamingLine=chatLines.Count-1;}
+        else if(streamingLine<chatLines.Count)chatLines[streamingLine]=label+": "+text;
+        string rendered=string.Join("\n",chatLines)+"\n";
+        if(tmpChatOutput!=null){tmpChatOutput.text=rendered;ResizeChatOutput();}
+        if(legacyChatOutput!=null)legacyChatOutput.text=rendered;
     }
 
     private string GetScenario(ObjectMetadata currentObject)
@@ -252,8 +304,15 @@ public class ChatUIManager : MonoBehaviour
 
     private void HandleChatSuccess(ChatResponse response)
     {
+        if(streamingLine>=0&&streamingLine<chatLines.Count)chatLines.RemoveAt(streamingLine);streamingLine=-1;
         SetLoadingState(false);
-        AppendChatLine($"Assistant: {response.response}");
+        string speakerName = pendingResponseSpeaker != null && pendingResponseSpeaker.category == "Person"
+            ? pendingResponseSpeaker.GetDisplayName() : response.speaker_name;
+        if (string.IsNullOrWhiteSpace(speakerName)) speakerName = "Lumen";
+        AppendChatLine($"{speakerName}: {response.response}");
+        SetStatus(response.offline ? "Using the local knowledge collection" : "Ready for your next question");
+        ExplorationNotebook.Record(response);
+        ResponseReceived?.Invoke(response);
 
         if (agentResponseHandler != null)
         {
@@ -316,6 +375,7 @@ public class ChatUIManager : MonoBehaviour
 
         if (tmpChatOutput != null)
         {
+            tmpChatOutput.richText = false;
             tmpChatOutput.text = chatText;
             ResizeChatOutput();
         }
@@ -340,7 +400,7 @@ public class ChatUIManager : MonoBehaviour
             tmpChatOutput.textWrappingMode = TextWrappingModes.Normal;
             tmpChatOutput.overflowMode = TextOverflowModes.Overflow;
             tmpChatOutput.alignment = TextAlignmentOptions.TopLeft;
-            tmpChatOutput.fontSize = 19f;
+            tmpChatOutput.fontSize = 16f;
             tmpChatOutput.lineSpacing = 4f;
             tmpChatOutput.paragraphSpacing = 8f;
         }
@@ -375,8 +435,9 @@ public class ChatUIManager : MonoBehaviour
         string introduction = scene == "HistoricalPlace" ? "Welcome to Ancient Rome. Look at a landmark and ask your guide what it reveals."
             : scene == "Cafestore" ? "Welcome to the café. Meet a guest, practise conversation, or place a practice order."
             : "Welcome to the learning studio. Ask about an exhibit, or ask to see a model.";
-        chatLines.Add("Assistant: " + introduction);
-        chatLines.Add("System: Local guide ready.");
+        bool museum = ScenarioRuntimeManager.GetScenarioForScene(scene) == "museum";
+        if (museum) introduction = "Welcome to the Museum of Human Ideas. Choose an artifact to explore its story.";
+        chatLines.Add(introduction);
 
         string chatText = string.Join("\n", chatLines) + "\n";
 
@@ -872,7 +933,7 @@ public class ChatUIManager : MonoBehaviour
             sendButton.interactable = !isLoading;
         }
 
-        SetStatus(isLoading ? "Waiting for assistant..." : "");
+        SetStatus(isLoading ? "Thinking about your question..." : "Ready for your next question");
     }
 
     private void SetStatus(string message)

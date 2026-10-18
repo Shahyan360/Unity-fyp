@@ -27,6 +27,7 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
     private bool isCafeGuest;
     private bool isBarista;
     private bool canWander;
+    private bool allowSeated;
     private string activeClip;
     private string activity = "idle";
 
@@ -36,6 +37,7 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         isCafeGuest = normalized.Contains("guest") || normalized.Contains("citizen");
         isBarista = normalized.Contains("barista") || normalized.Contains("seller");
         canWander = wander;
+        allowSeated = normalized.Contains("cafe guest") && !wander;
         wanderRadius = Mathf.Max(0.6f, radius);
         random = new System.Random(seed);
         home = transform.position;
@@ -47,11 +49,12 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         nextDecision = Time.time + RandomRange(0.5f, 2.5f);
     }
 
-    public void ReactToConversation()
+    public void ReactToConversation(float seconds=4.2f)
     {
         activity = "talk";
-        actionUntil = Time.time + 4.2f;
+        actionUntil = Mathf.Max(actionUntil,Time.time+Mathf.Clamp(seconds,.8f,90f));
         nextDecision = actionUntil;
+        if(agent!=null&&agent.enabled&&agent.isOnNavMesh)agent.isStopped=true;
         TryPlay(isBarista ? new[] { "talk", "wave", "gesture", "idle" } : new[] { "talk", "wave", "gesture", "sit", "idle" });
         Transform player = FindAnyObjectByType<CafeWalkController>()?.transform;
         if (player != null) StartCoroutine(FacePlayerBriefly(player));
@@ -78,6 +81,7 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
     private void Update()
     {
         phase += Time.deltaTime;
+        if(agent!=null&&agent.enabled&&agent.isOnNavMesh&&agent.isStopped&&Time.time>=actionUntil)agent.isStopped=false;
         if (canWander && agent != null && agent.enabled && !agent.isOnNavMesh && Time.time >= nextNavMeshRecovery)
         {
             nextNavMeshRecovery = Time.time + 0.75f;
@@ -100,7 +104,7 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         {
             int choice = random.Next(0, 4);
             if (choice == 0) { activity = "eat"; TryPlay(new[] { "eat", "drink", "sit", "idle" }); }
-            else if (choice == 1) { activity = "talk"; TryPlay(new[] { "talk", "gesture", "sit", "idle" }); }
+            else if (choice == 1) { activity = "look"; TryPlay(new[] { "look", "sit", "idle" }); }
             else if (choice == 2) { activity = "sit"; TryPlay(new[] { "sit", "look", "idle" }); }
             else { activity = "idle"; TryPlay(new[] { "idle", "sit" }); }
             actionUntil = Time.time + RandomRange(2f, 3.4f);
@@ -108,8 +112,8 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         else if (isBarista)
         {
             int choice = random.Next(0, 3);
-            activity = choice == 0 ? "work" : choice == 1 ? "talk" : "idle";
-            TryPlay(choice == 0 ? new[] { "work", "serve", "idle" } : choice == 1 ? new[] { "talk", "gesture", "idle" } : new[] { "idle", "work" });
+            activity = choice == 0 ? "work" : "idle";
+            TryPlay(choice == 0 ? new[] { "work", "serve", "idle" } : choice == 1 ? new[] { "look", "idle" } : new[] { "idle", "work" });
             actionUntil = Time.time + RandomRange(2f, 3.2f);
             if (canWander && random.NextDouble() < 0.3) WalkToNearbyPoint();
         }
@@ -117,8 +121,8 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
         {
             int choice = random.Next(0, 3);
             if (choice == 0 && canWander && WalkToNearbyPoint()) return;
-            activity = choice == 1 ? "talk" : "idle";
-            TryPlay(choice == 1 ? new[] { "talk", "gesture", "idle" } : new[] { "idle", "look", "gesture" });
+            activity = choice == 1 ? "look" : "idle";
+            TryPlay(choice == 1 ? new[] { "look", "idle" } : new[] { "idle", "look" });
             actionUntil = Time.time + RandomRange(2f, 3f);
         }
     }
@@ -176,6 +180,7 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
                 // Never play swimming or combat animations during ambient routine
                 if (lower.Contains("swim") || lower.Contains("death") || lower.Contains("pistol") || lower.Contains("sword") || lower.Contains("spell"))
                     continue;
+                if(!allowSeated&&(lower.Contains("sit")||lower.Contains("crouch")))continue;
 
                 int score = -1;
                 if (lower.EndsWith(keyword + "_loop") || lower.EndsWith("|" + keyword + "_loop"))
@@ -196,7 +201,8 @@ public sealed class AmbientNpcRoutine : MonoBehaviour
                 }
             }
 
-            if (bestClip == null || activeClip == bestClip.name) continue;
+            if (bestClip == null) continue;
+            if (activeClip == bestClip.name) return;
             activeClip = bestClip.name;
             animator.CrossFadeInFixedTime(bestClip.name, 0.24f, 0, 0f);
             return;

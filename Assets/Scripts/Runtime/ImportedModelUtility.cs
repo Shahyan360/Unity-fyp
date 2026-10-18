@@ -6,7 +6,7 @@ public static class ImportedModelUtility
 {
     private static readonly HashSet<string> warnedResources = new HashSet<string>();
 
-    public static GameObject AddFittedModel(string resourceName, Transform parent, float maxExtent, float baseHeight, float yaw = 0f)
+    public static GameObject AddFittedModel(string resourceName, Transform parent, float maxExtent, float baseHeight, float yaw = 0f,float pitch=0f,float roll=0f)
     {
         if (parent == null) return null;
         GameObject prefab = Resources.Load<GameObject>("LumenExhibits/" + resourceName);
@@ -19,7 +19,7 @@ public static class ImportedModelUtility
         GameObject instance = Object.Instantiate(prefab, parent, false);
         instance.name = resourceName.Replace("Smithsonian", "").Replace("Nasa", "") + " 3D model";
         instance.transform.localPosition = Vector3.zero;
-        instance.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        instance.transform.localRotation = Quaternion.AngleAxis(roll,Vector3.forward)*Quaternion.Euler(pitch,yaw,0f);
         instance.transform.localScale = Vector3.one;
 
         Renderer[] renderers = instance.GetComponentsInChildren<Renderer>(true);

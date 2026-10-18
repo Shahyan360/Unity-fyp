@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4234525524987122381
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1560691749088687128}
+  - component: {fileID: 7420521665491874763}
+  m_Layer: 0
+  m_Name: MuseumMystic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1560691749088687128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4234525524987122381}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7420521665491874763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4234525524987122381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19eb483865f0f4458d1418c59e8a7d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TailoredCharacterWardrobe
+  character: Orion
+  maskedBody: {fileID: 4300000, guid: cf202bb134b43344f83b41c21480679c, type: 2}
+  garments: {fileID: 4300000, guid: a3e40aeb114f03a499ba5c99d8ade1d8, type: 2}
+  garmentSurfaces:
+  - {fileID: 2100000, guid: 7fc3f5e32b2475b4489248bb5f0bfb15, type: 2}
+  - {fileID: 2100000, guid: 4ebcf4b3192d48c4894d42195ec04316, type: 2}
+  - {fileID: 2100000, guid: 3cdbf0583144aa6429bcc921bb2b5a36, type: 2}
+  - {fileID: 2100000, guid: 4cebab40d22c8594e91be286ac2066ad, type: 2}
+  - {fileID: 2100000, guid: d55818af1a74a6044b073fc423a9ba4a, type: 2}
+  - {fileID: 2100000, guid: 1fc8919f28c8b0141a34244590065319, type: 2}
+  - {fileID: 2100000, guid: e0604bfe2786757458335b81e35d1bd8, type: 2}
+  - {fileID: 2100000, guid: 19ca272a93178d042bfb210631ab9266, type: 2}
+  nativeSurfaces:
+  - {fileID: 2100000, guid: 3fd7128121710a74d9df816bfcd2996b, type: 2}
+  - {fileID: 2100000, guid: 3e69deac5dafd4f4a8e771a72de61a15, type: 2}
+  - {fileID: 2100000, guid: 9594f0a5b5d84c14dbf3d439cd2a8086, type: 2}

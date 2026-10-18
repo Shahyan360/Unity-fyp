@@ -47,7 +47,9 @@ public static class ClassroomLearningExhibit
         switch (topic)
         {
             case "Atom": BuildAtomicModel(station); break;
-            case "Solar System": BuildSolarSystem(station); break;
+            case "Solar System":
+                if (!BlenderWorldCollection.ShowOrrery(root, station)) BuildSolarSystem(station);
+                break;
             case "Plant Cell": BuildPlantCell(station); break;
             case "Animal Cell": BuildAnimalCell(station); break;
             case "DNA": BuildDna(station); break;

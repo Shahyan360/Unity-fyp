@@ -1,0 +1,32 @@
+[
+  {
+    "id": 436535,
+    "title": "Wheat Field with Cypresses",
+    "artist": "Vincent van Gogh",
+    "date": "1889",
+    "source": "https://www.metmuseum.org/art/collection/search/436535",
+    "image": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-42549-001.jpg",
+    "license": "Public Domain / Met Open Access",
+    "file": "Met436535.jpg"
+  },
+  {
+    "id": 436105,
+    "title": "The Death of Socrates",
+    "artist": "Jacques Louis David",
+    "date": "1787",
+    "source": "https://www.metmuseum.org/art/collection/search/436105",
+    "image": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-13139-001.jpg",
+    "license": "Public Domain / Met Open Access",
+    "file": "Met436105.jpg"
+  },
+  {
+    "id": 11417,
+    "title": "Washington Crossing the Delaware",
+    "artist": "Emanuel Leutze",
+    "date": "1851",
+    "source": "https://www.metmuseum.org/art/collection/search/11417",
+    "image": "https://images.metmuseum.org/CRDImages/ad/web-large/DP215410.jpg",
+    "license": "Public Domain / Met Open Access",
+    "file": "Met11417.jpg"
+  }
+]

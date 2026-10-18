@@ -8,6 +8,10 @@ public static class EmbodiedExperienceBootstrap
 {
     public static void Ensure(AIClient client)
     {
+        // Leave GPU time for local inference instead of rendering hundreds of
+        // unseen frames while the visitor waits for a conversational response.
+        if(Application.targetFrameRate<0||Application.targetFrameRate>60)Application.targetFrameRate=60;
+        Application.runInBackground=true;
         if (client == null || client.GetComponent<ScenarioRuntimeManager>() != null)
         {
             return;

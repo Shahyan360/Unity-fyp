@@ -1,5 +1,7 @@
 # Embodied AI Unity Experience
 
+Current development and verified results are tracked in [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md). The older completion guide contains historical results. The current upgrade includes Ada (science), Marcus (history), and Maya (café), optional local Piper neural speech, and a Blender-authored prop collection; broader environment and release work remains in progress.
+
 Unity `6000.6.2f1` project with three locally guided worlds: Ancient Rome, a science classroom, and a café conversation/order-practice scene.
 
 ## Run

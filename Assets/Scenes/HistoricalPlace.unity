@@ -9847,6 +9847,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &108461710
 GameObject:
   m_ObjectHideFlags: 0
@@ -11217,6 +11221,10 @@ MonoBehaviour:
   contextualTags: historical-place, lake, light-blue, water
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &121752343
 GameObject:
   m_ObjectHideFlags: 0
@@ -15167,6 +15175,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &157305640
 Transform:
   m_ObjectHideFlags: 0
@@ -15349,6 +15361,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &160141577
 Transform:
   m_ObjectHideFlags: 0
@@ -16821,6 +16837,10 @@ MonoBehaviour:
   contextualTags: historical-place, camel, desert
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &187961602
 GameObject:
   m_ObjectHideFlags: 0
@@ -20641,6 +20661,10 @@ MonoBehaviour:
   contextualTags: historical-place, visitor, navmesh
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!114 &234221241
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20663,7 +20687,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 234221238}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: 0
   m_Radius: 0.22
   m_Speed: 1.8
@@ -23495,6 +23519,10 @@ MonoBehaviour:
   contextualTags: historical-place, tiber, river, water
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &279875290
 GameObject:
   m_ObjectHideFlags: 0
@@ -34933,6 +34961,10 @@ MonoBehaviour:
   contextualTags: historical-place, pharaoh, tomb, ancient-egypt
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &407763326
 GameObject:
   m_ObjectHideFlags: 0
@@ -38115,6 +38147,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &442439050
 Transform:
   m_ObjectHideFlags: 0
@@ -38760,6 +38796,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &451570676
 GameObject:
   m_ObjectHideFlags: 0
@@ -41173,6 +41213,10 @@ MonoBehaviour:
   contextualTags: historical-place, ancient-rome, visitor-site, landmark
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &468644697
 GameObject:
   m_ObjectHideFlags: 0
@@ -43969,6 +44013,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &500805776
 GameObject:
   m_ObjectHideFlags: 0
@@ -47481,6 +47529,10 @@ MonoBehaviour:
   contextualTags: historical-place, tiber, river, water
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &550403788
 GameObject:
   m_ObjectHideFlags: 0
@@ -47613,6 +47665,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &550729048
 GameObject:
   m_ObjectHideFlags: 0
@@ -47980,6 +48036,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-forum, landmark
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &556066382
 GameObject:
   m_ObjectHideFlags: 0
@@ -51400,6 +51460,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &582240256
 GameObject:
   m_ObjectHideFlags: 0
@@ -51532,6 +51596,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &584972714
 GameObject:
   m_ObjectHideFlags: 0
@@ -51807,6 +51875,10 @@ MonoBehaviour:
   contextualTags: historical-place, colosseum, amphitheatre, landmark
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &588173612
 GameObject:
   m_ObjectHideFlags: 0
@@ -52448,6 +52520,10 @@ MonoBehaviour:
   contextualTags: historical-place, forum, entrance, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &589352945
 GameObject:
   m_ObjectHideFlags: 0
@@ -53380,6 +53456,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &598607188
 Transform:
   m_ObjectHideFlags: 0
@@ -54009,6 +54089,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &609343154
 Transform:
   m_ObjectHideFlags: 0
@@ -67815,6 +67899,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &781380425
 Transform:
   m_ObjectHideFlags: 0
@@ -76693,6 +76781,10 @@ MonoBehaviour:
   contextualTags: historical-place, entrance, forum, gate
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &887175785
 GameObject:
   m_ObjectHideFlags: 0
@@ -82009,6 +82101,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &956157043
 Transform:
   m_ObjectHideFlags: 0
@@ -87010,6 +87106,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &1027169661
 Transform:
   m_ObjectHideFlags: 0
@@ -94226,6 +94326,10 @@ MonoBehaviour:
   contextualTags: historical-place, landmarks, locations
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1103931072
 GameObject:
   m_ObjectHideFlags: 0
@@ -97512,6 +97616,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-forum, fountain, water
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1143977578
 GameObject:
   m_ObjectHideFlags: 0
@@ -98017,6 +98125,10 @@ MonoBehaviour:
   contextualTags: historical-place, lake, light-blue, boundary
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1154913120
 GameObject:
   m_ObjectHideFlags: 0
@@ -110065,6 +110177,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, landmark
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1302139321
 GameObject:
   m_ObjectHideFlags: 0
@@ -120015,6 +120131,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, landmark
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1433993343
 GameObject:
   m_ObjectHideFlags: 0
@@ -120713,6 +120833,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1442235752
 GameObject:
   m_ObjectHideFlags: 0
@@ -123612,6 +123736,10 @@ MonoBehaviour:
   contextualTags: historical-place, forum, entrance, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1467742438
 GameObject:
   m_ObjectHideFlags: 0
@@ -135362,6 +135490,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &1596495928
 Transform:
   m_ObjectHideFlags: 0
@@ -136616,6 +136748,10 @@ MonoBehaviour:
   contextualTags: historical-place, desert, sand, walkable
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1612930131
 GameObject:
   m_ObjectHideFlags: 0
@@ -143704,6 +143840,10 @@ MonoBehaviour:
   contextualTags: historical-place, entrance, forum, gate
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1685166434
 GameObject:
   m_ObjectHideFlags: 0
@@ -144325,6 +144465,10 @@ MonoBehaviour:
   contextualTags: historical-place, horse
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1694620432
 GameObject:
   m_ObjectHideFlags: 0
@@ -146086,6 +146230,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &1708917917
 Transform:
   m_ObjectHideFlags: 0
@@ -147067,6 +147215,10 @@ MonoBehaviour:
   contextualTags: historical-place, lake, light-blue, water
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1718357653
 GameObject:
   m_ObjectHideFlags: 0
@@ -153651,6 +153803,10 @@ MonoBehaviour:
   contextualTags: historical-place, entrance, forum, gate
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1793774831
 GameObject:
   m_ObjectHideFlags: 0
@@ -153933,6 +154089,10 @@ MonoBehaviour:
   contextualTags: historical-place, camel, desert
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1798609705
 GameObject:
   m_ObjectHideFlags: 0
@@ -159455,6 +159615,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &1861112580
 Transform:
   m_ObjectHideFlags: 0
@@ -162866,6 +163030,10 @@ MonoBehaviour:
   contextualTags: historical-place, via-sacra, brick-path, walkway
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1875821430
 GameObject:
   m_ObjectHideFlags: 0
@@ -167921,6 +168089,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1954743225
 GameObject:
   m_ObjectHideFlags: 0
@@ -169741,6 +169913,10 @@ MonoBehaviour:
   contextualTags: historical-place, roman-temple, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1975899763
 GameObject:
   m_ObjectHideFlags: 0
@@ -169875,6 +170051,10 @@ MonoBehaviour:
   contextualTags: historical-place, colosseum, arena
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1976503942
 GameObject:
   m_ObjectHideFlags: 0
@@ -172976,6 +173156,10 @@ MonoBehaviour:
   contextualTags: historical-place, market, shop, commerce
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2019075273
 GameObject:
   m_ObjectHideFlags: 0
@@ -174902,6 +175086,10 @@ MonoBehaviour:
   contextualTags: historical-place, pharaoh, tomb, ancient-egypt
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2035824843
 GameObject:
   m_ObjectHideFlags: 0
@@ -178131,6 +178319,10 @@ MonoBehaviour:
   contextualTags: historical-place, horse
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2080480958
 GameObject:
   m_ObjectHideFlags: 0
@@ -179757,6 +179949,10 @@ MonoBehaviour:
   contextualTags: historical-place, via-sacra, brick-path, walkway
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2094189183
 GameObject:
   m_ObjectHideFlags: 0
@@ -183097,6 +183293,10 @@ MonoBehaviour:
   contextualTags: historical-place, waypoint, navigation, visitor-route
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!4 &2125386023
 Transform:
   m_ObjectHideFlags: 0

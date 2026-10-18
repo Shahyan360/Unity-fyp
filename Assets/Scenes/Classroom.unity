@@ -495,6 +495,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &30991748
 GameObject:
   m_ObjectHideFlags: 0
@@ -642,6 +646,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &41350480
 GameObject:
   m_ObjectHideFlags: 0
@@ -786,6 +794,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &46578411
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1032,6 +1044,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &52445643
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1165,6 +1181,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &55345994
 GameObject:
   m_ObjectHideFlags: 0
@@ -1310,6 +1330,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &77412968
 GameObject:
   m_ObjectHideFlags: 0
@@ -1420,6 +1444,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &78473666
 GameObject:
   m_ObjectHideFlags: 0
@@ -1530,6 +1558,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &82109460
 GameObject:
   m_ObjectHideFlags: 0
@@ -1730,6 +1762,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &86640261
 GameObject:
   m_ObjectHideFlags: 0
@@ -2066,6 +2102,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &95424540
 GameObject:
   m_ObjectHideFlags: 0
@@ -2211,6 +2251,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &100153428
 GameObject:
   m_ObjectHideFlags: 0
@@ -2369,6 +2413,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &104466990
 GameObject:
   m_ObjectHideFlags: 0
@@ -2768,6 +2816,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &121453578
 GameObject:
   m_ObjectHideFlags: 0
@@ -2992,6 +3044,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &133886110
 GameObject:
   m_ObjectHideFlags: 0
@@ -3102,6 +3158,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &142724389
 GameObject:
   m_ObjectHideFlags: 0
@@ -3270,6 +3330,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &163697519
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3570,6 +3634,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &170034415
 GameObject:
   m_ObjectHideFlags: 0
@@ -3972,6 +4040,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &185160364
 GameObject:
   m_ObjectHideFlags: 0
@@ -4082,6 +4154,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &197530132
 GameObject:
   m_ObjectHideFlags: 0
@@ -4306,6 +4382,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &199956820
 GameObject:
   m_ObjectHideFlags: 0
@@ -4640,6 +4720,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &214656511
 GameObject:
   m_ObjectHideFlags: 0
@@ -4750,6 +4834,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &215317928
 GameObject:
   m_ObjectHideFlags: 0
@@ -4805,6 +4893,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &245103185
 GameObject:
   m_ObjectHideFlags: 0
@@ -4972,6 +5064,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &259608584
 GameObject:
   m_ObjectHideFlags: 0
@@ -5026,6 +5122,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &259608587
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -5574,6 +5674,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &274241389
 GameObject:
   m_ObjectHideFlags: 0
@@ -5744,6 +5848,10 @@ MonoBehaviour:
   contextualTags: classroom, architecture, room
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &303697474
 GameObject:
   m_ObjectHideFlags: 0
@@ -6357,6 +6465,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &345678434
 GameObject:
   m_ObjectHideFlags: 0
@@ -6671,6 +6783,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &363600328
 GameObject:
   m_ObjectHideFlags: 0
@@ -6781,6 +6897,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &392617560
 GameObject:
   m_ObjectHideFlags: 0
@@ -6839,6 +6959,10 @@ MonoBehaviour:
   contextualTags: classroom, architecture, room
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &394729888
 GameObject:
   m_ObjectHideFlags: 0
@@ -6971,6 +7095,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &406715430
 GameObject:
   m_ObjectHideFlags: 0
@@ -7745,6 +7873,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &447348315
 GameObject:
   m_ObjectHideFlags: 0
@@ -8007,6 +8139,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &453605086
 GameObject:
   m_ObjectHideFlags: 0
@@ -8347,6 +8483,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &473178068
 GameObject:
   m_ObjectHideFlags: 0
@@ -8603,6 +8743,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &491681413
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8813,6 +8957,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &500704924
 GameObject:
   m_ObjectHideFlags: 0
@@ -8923,6 +9071,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &509335525
 GameObject:
   m_ObjectHideFlags: 0
@@ -9204,6 +9356,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &537739401
 GameObject:
   m_ObjectHideFlags: 0
@@ -9518,6 +9674,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &541925553
 GameObject:
   m_ObjectHideFlags: 0
@@ -9628,6 +9788,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &556722863
 GameObject:
   m_ObjectHideFlags: 0
@@ -9738,6 +9902,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &558941693
 GameObject:
   m_ObjectHideFlags: 0
@@ -9848,6 +10016,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &566294846
 GameObject:
   m_ObjectHideFlags: 0
@@ -9958,6 +10130,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &575189242
 GameObject:
   m_ObjectHideFlags: 0
@@ -10500,6 +10676,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &616484688
 GameObject:
   m_ObjectHideFlags: 0
@@ -10812,6 +10992,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &639708253
 GameObject:
   m_ObjectHideFlags: 0
@@ -10922,6 +11106,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &641971162
 GameObject:
   m_ObjectHideFlags: 0
@@ -11256,6 +11444,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &654772740
 GameObject:
   m_ObjectHideFlags: 0
@@ -11772,6 +11964,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &690059043
 GameObject:
   m_ObjectHideFlags: 0
@@ -11882,6 +12078,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &692275380
 GameObject:
   m_ObjectHideFlags: 0
@@ -12082,6 +12282,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &696484886
 GameObject:
   m_ObjectHideFlags: 0
@@ -12406,6 +12610,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &700541932
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -12594,6 +12802,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1001 &715460103
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12695,6 +12907,10 @@ MonoBehaviour:
   contextualTags: classroom, teaching, board, front
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &717353470
 GameObject:
   m_ObjectHideFlags: 0
@@ -13009,6 +13225,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &732260764
 GameObject:
   m_ObjectHideFlags: 0
@@ -13065,6 +13285,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &735612115
 GameObject:
   m_ObjectHideFlags: 0
@@ -13289,6 +13513,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &745418530
 GameObject:
   m_ObjectHideFlags: 0
@@ -13343,6 +13571,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &745418533
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -13659,6 +13891,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &752841091
 GameObject:
   m_ObjectHideFlags: 0
@@ -13715,6 +13951,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &753003585
 GameObject:
   m_ObjectHideFlags: 0
@@ -14304,6 +14544,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &805205921
 GameObject:
   m_ObjectHideFlags: 0
@@ -14436,6 +14680,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &818664766
 GameObject:
   m_ObjectHideFlags: 0
@@ -14636,6 +14884,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &830800816
 GameObject:
   m_ObjectHideFlags: 0
@@ -14746,6 +14998,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -15053,6 +15309,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &860422767
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -15241,6 +15501,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &867489924
 GameObject:
   m_ObjectHideFlags: 0
@@ -15373,6 +15637,10 @@ MonoBehaviour:
   contextualTags: classroom, wall, cream, perimeter
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &872852570
 GameObject:
   m_ObjectHideFlags: 0
@@ -15427,6 +15695,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &872852573
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -15674,6 +15946,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &883361953
 GameObject:
   m_ObjectHideFlags: 0
@@ -15784,6 +16060,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &885976928
 GameObject:
   m_ObjectHideFlags: 0
@@ -15894,6 +16174,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &891402858
 GameObject:
   m_ObjectHideFlags: 0
@@ -16094,6 +16378,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &904066341
 GameObject:
   m_ObjectHideFlags: 0
@@ -16247,6 +16535,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &914080039
 GameObject:
   m_ObjectHideFlags: 0
@@ -16357,6 +16649,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &916807368
 GameObject:
   m_ObjectHideFlags: 0
@@ -16781,6 +17077,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &928961433
 GameObject:
   m_ObjectHideFlags: 0
@@ -16835,6 +17135,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &928961436
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -17853,6 +18157,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &998368870
 GameObject:
   m_ObjectHideFlags: 0
@@ -17907,6 +18215,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &998368873
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -18207,6 +18519,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1017763163
 GameObject:
   m_ObjectHideFlags: 0
@@ -18355,6 +18671,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1020657802
 GameObject:
   m_ObjectHideFlags: 0
@@ -18487,6 +18807,10 @@ MonoBehaviour:
   contextualTags: classroom, wall, cream, perimeter
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1020825659
 GameObject:
   m_ObjectHideFlags: 0
@@ -18541,6 +18865,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1020825662
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -18763,6 +19091,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1035833261
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -19224,6 +19556,10 @@ MonoBehaviour:
   contextualTags: classroom, teaching, board, front
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1068635175
 GameObject:
   m_ObjectHideFlags: 0
@@ -19446,6 +19782,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1079900070
 GameObject:
   m_ObjectHideFlags: 0
@@ -19556,6 +19896,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1080132650
 GameObject:
   m_ObjectHideFlags: 0
@@ -19756,6 +20100,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1088466859
 GameObject:
   m_ObjectHideFlags: 0
@@ -19866,6 +20214,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1100346616
 GameObject:
   m_ObjectHideFlags: 0
@@ -20290,6 +20642,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1110801399
 GameObject:
   m_ObjectHideFlags: 0
@@ -20400,6 +20756,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1114097615
 GameObject:
   m_ObjectHideFlags: 0
@@ -21055,6 +21415,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1186019093
 GameObject:
   m_ObjectHideFlags: 0
@@ -21111,6 +21475,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1196814901
 GameObject:
   m_ObjectHideFlags: 0
@@ -21165,6 +21533,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1196814904
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -21489,6 +21861,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1202995215
 GameObject:
   m_ObjectHideFlags: 0
@@ -21599,6 +21975,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1204552981
 GameObject:
   m_ObjectHideFlags: 0
@@ -21823,6 +22203,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1224489282
 GameObject:
   m_ObjectHideFlags: 0
@@ -21955,6 +22339,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1227812417
 GameObject:
   m_ObjectHideFlags: 0
@@ -22177,6 +22565,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1253825128
 GameObject:
   m_ObjectHideFlags: 0
@@ -22401,6 +22793,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1266400672
 GameObject:
   m_ObjectHideFlags: 0
@@ -22456,6 +22852,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1275432632
 GameObject:
   m_ObjectHideFlags: 0
@@ -22736,6 +23136,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1307421111
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -23442,6 +23846,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1359281025
 GameObject:
   m_ObjectHideFlags: 0
@@ -23497,6 +23905,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1359952930
 GameObject:
   m_ObjectHideFlags: 0
@@ -23537,7 +23949,7 @@ NavMeshAgent:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1359952930}
-  m_Enabled: 1
+  m_Enabled: 0
   m_AgentTypeID: 0
   m_Radius: 0.22
   m_Speed: 1.8
@@ -23678,6 +24090,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1371151475
 GameObject:
   m_ObjectHideFlags: 0
@@ -23733,6 +24149,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1374423053
 GameObject:
   m_ObjectHideFlags: 0
@@ -24157,6 +24577,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1401706074
 GameObject:
   m_ObjectHideFlags: 0
@@ -24211,6 +24635,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1401706077
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -24343,6 +24771,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1403875967
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -24621,6 +25053,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1417114034
 GameObject:
   m_ObjectHideFlags: 0
@@ -25071,6 +25507,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1425388679
 GameObject:
   m_ObjectHideFlags: 0
@@ -25181,6 +25621,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1430316951
 GameObject:
   m_ObjectHideFlags: 0
@@ -25735,6 +26179,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!115 &1461649993
 MonoScript:
   m_ObjectHideFlags: 0
@@ -26220,6 +26668,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1483835708
 GameObject:
   m_ObjectHideFlags: 0
@@ -26442,6 +26894,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1500735173
 GameObject:
   m_ObjectHideFlags: 0
@@ -26552,6 +27008,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1504644761
 GameObject:
   m_ObjectHideFlags: 0
@@ -26796,6 +27256,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, teacher, front
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1514804203
 GameObject:
   m_ObjectHideFlags: 0
@@ -27424,6 +27888,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1542558273
 GameObject:
   m_ObjectHideFlags: 0
@@ -27736,6 +28204,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1548594345
 GameObject:
   m_ObjectHideFlags: 0
@@ -27790,6 +28262,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1548594348
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -28104,6 +28580,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1566850460
 GameObject:
   m_ObjectHideFlags: 0
@@ -28214,6 +28694,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1574754290
 GameObject:
   m_ObjectHideFlags: 0
@@ -28586,6 +29070,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1603049735
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -28774,6 +29262,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1615685313
 GameObject:
   m_ObjectHideFlags: 0
@@ -28943,6 +29435,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1626206553
 GameObject:
   m_ObjectHideFlags: 0
@@ -29165,6 +29661,10 @@ MonoBehaviour:
   contextualTags: classroom, wall, cream, perimeter
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1634935340
 GameObject:
   m_ObjectHideFlags: 0
@@ -29501,6 +30001,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1675234067
 GameObject:
   m_ObjectHideFlags: 0
@@ -29668,6 +30172,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1685468657
 GameObject:
   m_ObjectHideFlags: 0
@@ -29722,6 +30230,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1685468660
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -30024,6 +30536,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1704740947
 GameObject:
   m_ObjectHideFlags: 0
@@ -30248,6 +30764,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1727378401
 GameObject:
   m_ObjectHideFlags: 0
@@ -30731,6 +31251,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1760762965
 GameObject:
   m_ObjectHideFlags: 0
@@ -31045,6 +31569,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1770849583
 GameObject:
   m_ObjectHideFlags: 0
@@ -33721,6 +34249,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1804263621
 GameObject:
   m_ObjectHideFlags: 0
@@ -33775,6 +34307,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1804263624
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -33909,6 +34445,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1807659000
 GameObject:
   m_ObjectHideFlags: 0
@@ -34041,6 +34581,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1817501546
 GameObject:
   m_ObjectHideFlags: 0
@@ -34151,6 +34695,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1819344806
 GameObject:
   m_ObjectHideFlags: 0
@@ -34395,6 +34943,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1833083714
 GameObject:
   m_ObjectHideFlags: 0
@@ -34528,6 +35080,10 @@ MonoBehaviour:
   contextualTags: classroom, floor, walkable, room
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1835467788
 GameObject:
   m_ObjectHideFlags: 0
@@ -34638,6 +35194,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1836366073
 GameObject:
   m_ObjectHideFlags: 0
@@ -34770,6 +35330,10 @@ MonoBehaviour:
   contextualTags: classroom, wall, cream, perimeter
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1843560252
 GameObject:
   m_ObjectHideFlags: 0
@@ -35164,6 +35728,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1881429920
 GameObject:
   m_ObjectHideFlags: 0
@@ -35219,6 +35787,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1883743538
 GameObject:
   m_ObjectHideFlags: 0
@@ -35329,6 +35901,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1896728930
 GameObject:
   m_ObjectHideFlags: 0
@@ -35421,6 +35997,10 @@ MonoBehaviour:
   contextualTags: classroom, ceiling, architecture
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1896989076
 GameObject:
   m_ObjectHideFlags: 0
@@ -35475,6 +36055,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1896989079
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -35608,6 +36192,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1914135930
 GameObject:
   m_ObjectHideFlags: 0
@@ -35718,6 +36306,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1916348385
 GameObject:
   m_ObjectHideFlags: 0
@@ -35942,6 +36534,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1953947553
 GameObject:
   m_ObjectHideFlags: 0
@@ -36074,6 +36670,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1967698814
 GameObject:
   m_ObjectHideFlags: 0
@@ -36296,6 +36896,10 @@ MonoBehaviour:
   contextualTags: classroom, wall, cream, perimeter
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1978885823
 GameObject:
   m_ObjectHideFlags: 0
@@ -36578,6 +37182,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &1993094805
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -36766,6 +37374,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1994694565
 GameObject:
   m_ObjectHideFlags: 0
@@ -36876,6 +37488,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &1994740545
 GameObject:
   m_ObjectHideFlags: 0
@@ -37021,6 +37637,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2006548594
 GameObject:
   m_ObjectHideFlags: 0
@@ -37501,6 +38121,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!23 &2021751205
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -37898,6 +38522,10 @@ MonoBehaviour:
   contextualTags: classroom, teaching, lesson, board-text
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2037358384
 GameObject:
   m_ObjectHideFlags: 0
@@ -38008,6 +38636,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2039193453
 GameObject:
   m_ObjectHideFlags: 0
@@ -38064,6 +38696,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, desk
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2050310901
 GameObject:
   m_ObjectHideFlags: 0
@@ -38556,6 +39192,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2088708181
 GameObject:
   m_ObjectHideFlags: 0
@@ -39232,6 +39872,10 @@ MonoBehaviour:
   contextualTags: classroom, learning, book, student
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2117996743
 GameObject:
   m_ObjectHideFlags: 0
@@ -39377,6 +40021,10 @@ MonoBehaviour:
   contextualTags: classroom, furniture, student, chair, seat
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &2131523166
 GameObject:
   m_ObjectHideFlags: 0
@@ -39520,6 +40168,10 @@ MonoBehaviour:
   contextualTags: classroom, door, entrance, interactable
   isInteractable: 0
   interactionHint: 
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &700000000000000011
 GameObject:
   m_ObjectHideFlags: 0
@@ -39684,6 +40336,10 @@ MonoBehaviour:
   contextualTags: classroom, door, entrance, interactable
   isInteractable: 1
   interactionHint: Click the door in Play mode to open or close it.
+  objectName: 
+  objectType: 
+  description: 
+  scenario: 
 --- !u!1 &700000000000000021
 GameObject:
   m_ObjectHideFlags: 0

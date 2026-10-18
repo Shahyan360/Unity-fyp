@@ -15,6 +15,29 @@ public class AgentCompanionController : MonoBehaviour
     private bool navigatingToRequestedTarget;
     private Transform requestedLookTarget;
     private float holdAtRequestedTargetUntil;
+    private float conversationUntil;
+    private bool voiceHold,holdAfterVoiceArrival;
+    public void SetVoiceFollow(bool follow)
+    {
+        voiceHold=!follow;holdAfterVoiceArrival=false;navigatingToRequestedTarget=false;conversationUntil=0;holdAtRequestedTargetUntil=0;
+        if(agent!=null&&agent.enabled&&agent.isOnNavMesh){agent.ResetPath();agent.isStopped=!follow;}
+    }
+    public void HoldAfterVoiceArrival(){holdAfterVoiceArrival=true;voiceHold=false;}
+    public bool TryVoiceDestination(Vector3 point)
+    {
+        if(!RecoverToNavMesh()||!NavMesh.SamplePosition(point,out NavMeshHit hit,2.5f,agent.areaMask))return false;
+        var path=new NavMeshPath();
+        if(!agent.CalculatePath(hit.position,path)||path.status!=NavMeshPathStatus.PathComplete)return false;
+        voiceHold=false;conversationUntil=0;holdAtRequestedTargetUntil=0;requestedLookTarget=null;
+        agent.isStopped=false;agent.updateRotation=true;agent.stoppingDistance=arrivalDistance;
+        if(!agent.SetPath(path))return false;
+        navigatingToRequestedTarget=true;holdAfterVoiceArrival=true;return true;
+    }
+
+    public void AttendToVisitor(float seconds)
+    {
+        conversationUntil = Time.time + Mathf.Clamp(seconds, 1f, 90f);
+    }
 
     private void Awake()
     {
@@ -28,7 +51,7 @@ public class AgentCompanionController : MonoBehaviour
 
     private void Start()
     {
-        if (agent == null || !agent.enabled) return;
+        if (agent == null) return;
 
         // NavMeshAgent owns the guide's world position. Keep it anchored to
         // the baked floor and recover scene-authored spawn points that landed
@@ -42,8 +65,8 @@ public class AgentCompanionController : MonoBehaviour
 
     private void Update()
     {
-        if (agent == null || !agent.enabled) return;
-        if (!agent.isOnNavMesh)
+        if (agent == null) return;
+        if (!agent.enabled || !agent.isOnNavMesh)
         {
             if (Time.time >= nextNavMeshRecovery)
             {
@@ -57,12 +80,25 @@ public class AgentCompanionController : MonoBehaviour
             GameObject playerObject = GameObject.Find("Player") ?? GameObject.Find("WorldExplorer") ?? GameObject.Find("Cafe_Player");
             if (playerObject != null) player = playerObject.transform;
         }
+        if(voiceHold){agent.isStopped=true;return;}
+        if (player != null && Time.time < conversationUntil && !navigatingToRequestedTarget)
+        {
+            agent.isStopped = true;
+            agent.updateRotation = false;
+            Vector3 direction = player.position - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > .1f)
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction), 1f - Mathf.Exp(-Time.deltaTime * 5f));
+            return;
+        }
+        agent.updateRotation = true;
         if (player == null || Time.time < nextRepath) return;
 
         if (navigatingToRequestedTarget)
         {
             if (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.2f) return;
             navigatingToRequestedTarget = false;
+            if(holdAfterVoiceArrival){voiceHold=true;holdAfterVoiceArrival=false;}
             // Stay with the exhibit long enough for the response, gesture and
             // caption to be useful. Without this short hold the normal follow
             // loop immediately pulls the guide back toward the learner.
@@ -87,13 +123,28 @@ public class AgentCompanionController : MonoBehaviour
             agent.isStopped = false;
             agent.SetDestination(hit.position);
         }
+        else if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + .15f)
+        {
+            Vector3 toVisitor = player.position - transform.position;
+            toVisitor.y = 0f;
+            if (toVisitor.sqrMagnitude > .1f) transform.rotation = Quaternion.LookRotation(toVisitor);
+        }
         nextRepath = Time.time + Mathf.Max(0.25f, repathInterval);
     }
 
     private bool RecoverToNavMesh()
     {
-        if (agent == null || !agent.enabled || agent.isOnNavMesh) return agent != null && agent.isOnNavMesh;
+        if (agent == null) return false;
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.StartsWith("Home")) return false;
+        if (agent.enabled && agent.isOnNavMesh) return true;
         if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 6f, agent.areaMask)) return false;
+        // Authored guides start disabled so scene deserialization cannot register
+        // them before the baked/runtime NavMesh is present. Enable at a valid point.
+        if (!agent.enabled)
+        {
+            transform.position = hit.position;
+            agent.enabled = true;
+        }
         return agent.Warp(hit.position);
     }
 
@@ -110,6 +161,7 @@ public class AgentCompanionController : MonoBehaviour
             return false;
         foreach (ObjectMetadata item in FindObjectsByType<ObjectMetadata>(FindObjectsInactive.Exclude))
         {
+            if (!item.isActiveAndEnabled || !item.isInteractable) continue;
             if (item.GetDisplayName().IndexOf(targetName, System.StringComparison.OrdinalIgnoreCase) < 0 &&
                 targetName.IndexOf(item.GetDisplayName(), System.StringComparison.OrdinalIgnoreCase) < 0) continue;
             Vector3 towardLearner = player != null ? player.position - item.transform.position : transform.position - item.transform.position;
@@ -124,7 +176,7 @@ public class AgentCompanionController : MonoBehaviour
             // A point based on the exhibit itself can land on the far side of
             // classroom desks, leaving the guide hidden behind the plinth.
             Vector3 guideStandPoint;
-            if (item.scenario == "museum" || item.scenario == "classroom")
+            if (item.scenario == "museum" || item.scenario == "classroom" || item.scenario == "ancient_rome")
                 guideStandPoint = item.transform.position + towardLearner * 3.4f - screenRight * 0.9f;
             else if (player != null)
             {

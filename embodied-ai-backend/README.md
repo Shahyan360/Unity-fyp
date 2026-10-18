@@ -17,6 +17,18 @@ The default `llama3.2:1b` matches the lightweight model used by the current deve
 
 ## API
 
+The scenario personas are Lumen (hub), Marcus (Ancient Rome), Ada (classroom), Maya (café), and Imani (museum). `GET /characters` returns their catalog. Chat replies include `speaker_id`, `speaker_name`, `speaker_role`, `response_source`, and measured `response_time_ms` alongside the existing Unity contract. Scene changes remain explicit intent routes; mentioning an artifact or a planet alone does not move the user to another world.
+
+From the repository root, run the backend suite with:
+
+```powershell
+.\embodied-ai-backend\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
+```
+
+Latest verified run (2026-10-16): 37 cases passed. For Unity runtime/build results and current limitations, see `../PROJECT_PROGRESS.md`.
+
+Speech synthesis runs in the Unity client. Optional Piper files currently live on `D:\LumenTools\Piper`; `LUMEN_PIPER_HOME` overrides that directory. The client uses installed Windows speech voices when those files are absent. Microphone dictation still requires Windows speech/microphone permissions and is not proven by successful text chat or speech output.
+
 - `GET /health` - local-service availability
 - `GET /scenarios` - scenario catalog
 - `POST /sessions` - starts an in-memory, private conversation

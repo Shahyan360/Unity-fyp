@@ -14,10 +14,10 @@ public static class MuseumGalleryExperience
     private static Material glass;
     private static readonly Vector3 WorldOrigin = new Vector3(60f, 0f, 60f);
 
-    public static Vector3 EntryPosition => WorldOrigin + new Vector3(0f, 0f, -5.7f);
+    public static Vector3 EntryPosition => WorldOrigin + new Vector3(0f, 0f, -19.25f);
     // Keep Lumen just ahead and to the side of the entry sightline so the guide
     // accompanies the visitor without obscuring the first row of exhibits.
-    public static Vector3 GuidePosition => WorldOrigin + new Vector3(-3.0f, 0f, -2.8f);
+    public static Vector3 GuidePosition => WorldOrigin + new Vector3(-1.4f, 0f, -15.8f);
 
     public static void Ensure()
     {
@@ -28,19 +28,20 @@ public static class MuseumGalleryExperience
         gallery.transform.position = WorldOrigin;
 
         CreateBox("Gallery marble floor", new Vector3(0f, -0.15f, 0f), new Vector3(21f, 0.3f, 18f), limestone, true);
-        CreateBox("Gallery left wall", new Vector3(-10.5f, 3.2f, 0f), new Vector3(0.35f, 6.4f, 18f), navy, true);
-        CreateBox("Gallery right wall", new Vector3(10.5f, 3.2f, 0f), new Vector3(0.35f, 6.4f, 18f), navy, true);
-        CreateBox("Gallery back wall", new Vector3(0f, 3.2f, 9f), new Vector3(21f, 6.4f, 0.35f), navy, true);
-        CreateBox("Gallery front wing left", new Vector3(-8.7f, 3.2f, -9f), new Vector3(3.6f, 6.4f, 0.35f), navy, true);
-        CreateBox("Gallery front wing right", new Vector3(8.7f, 3.2f, -9f), new Vector3(3.6f, 6.4f, 0.35f), navy, true);
-        CreateBox("Museum entry lintel", new Vector3(0f, 5.75f, -9f), new Vector3(14f, 1.3f, 0.45f), brass, true);
-        CreateBox("Museum entry left column", new Vector3(-7f, 2.75f, -9f), new Vector3(0.48f, 5.5f, 0.50f), brass, true);
-        CreateBox("Museum entry right column", new Vector3(7f, 2.75f, -9f), new Vector3(0.48f, 5.5f, 0.50f), brass, true);
+        foreach(int side in new[]{-1,1})
+        {
+            foreach(int end in new[]{-1,1})CreateBox("Gallery side doorway wing",new Vector3(side*10.5f,3.2f,end*5.5f),new Vector3(.35f,6.4f,7),navy,true);
+            CreateBox("Gallery side doorway lintel",new Vector3(side*10.5f,5,0),new Vector3(.35f,2.8f,4),navy,true);
+            CreateBox("History entrance wall",new Vector3(side*6.25f,3.2f,9),new Vector3(8.5f,6.4f,.35f),navy,true);
+        }
+        CreateBox("History entrance lintel",new Vector3(0,5,9),new Vector3(4,2.8f,.35f),navy,true);
+        BuildCourtyard();
         CreateBox("Gallery ceiling", new Vector3(0f, 6.35f, 0f), new Vector3(21f, 0.25f, 18f), navy, false);
 
-        AddWorldLabel("MUSEUM OF HUMAN IDEAS", new Vector3(0f, 4.7f, -8.72f), 1.2f, brass.color, new Vector2(8.5f, 0.8f));
-        AddWorldLabel("REPLICAS · EVIDENCE · HUMAN STORIES", new Vector3(0f, 4.12f, -8.72f), 0.46f, ivory.color, new Vector2(7.4f, 0.4f));
+        AddWorldLabel("HUMAN IDEAS / NATURAL HISTORY", new Vector3(0f, 4.8f, -8.45f), .8f, ivory.color, new Vector2(7.4f, 0.8f));
+        AddInteriorDetails();
         AddGalleryLighting();
+        MuseumArchitecture.Extend(gallery.transform);
 
         CreateArtifact("Rosetta Stone", "Egyptian decree, 196 BCE", "A decree from 196 BCE written in Egyptian hieroglyphic, Demotic, and Ancient Greek. Because scholars could read Greek, it helped decipher hieroglyphs; it is not a bilingual dictionary.", "egypt, writing, language, ptolemaic, 196 bce", new Vector3(-7.1f, 0f, 2.3f), BuildRosettaStone);
         CreateArtifact("Antikythera Mechanism", "Greek astronomical instrument", "A fragmented ancient Greek geared device, probably from the second or first century BCE, that modelled astronomical cycles. Its exact original purpose is still debated.", "greece, astronomy, technology, gears, antiquity", new Vector3(-2.5f, 0f, 2.3f), BuildAntikythera);
@@ -55,11 +56,91 @@ public static class MuseumGalleryExperience
         CreateArtifact("Apollo 11 Command Module", "Smithsonian Open Access · 1969", "The Apollo 11 Command Module carried Neil Armstrong, Buzz Aldrin, and Michael Collins and returned the crew to Earth in July 1969. Inspect the spacecraft's compact exterior and heat-shielded return capsule.", "apollo 11, spaceflight, engineering, nasa, smithsonian, open access", new Vector3(2.5f, 0f, -2.1f), BuildApolloCommandModule);
         CreateArtifact("George Washington Bust", "Smithsonian Open Access · portrait history", "A digital Smithsonian model of a George Washington bust. Portraits shape public memory: ask what they show, what they leave out, and why a society chooses to represent a leader in this way.", "george washington, portrait, sculpture, united states, smithsonian, open access", new Vector3(7.1f, 0f, -2.1f), BuildWashingtonBust);
 
+        AddCollectionDisplay("FossilCabinet", "Fossil studies", new Vector3(6.5f, 0f, -6f),
+            "Original interpretive ammonite spiral and fern impression in shale. These are schematic reconstructions, not scanned specimens. Ammonites were extinct marine molluscs; ferns reproduce through spores.");
+        AddCollectionDisplay("ForumTable", "Roman architecture miniature", new Vector3(0f, 0f, -5f),
+            "An original tabletop study of Roman architecture: colonnaded temples, terracotta roofs, courtyard houses and an arcaded amphitheatre. It is an interpretive composition, not an accurate map of ancient Rome.");
+
         NavMeshSurface surface = gallery.AddComponent<NavMeshSurface>();
         surface.collectObjects = CollectObjects.Children;
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~0;
         surface.BuildNavMesh();
+        MuseumArchitecture.Populate(gallery.transform);
+    }
+
+    private static void BuildCourtyard()
+    {
+        GameObject source = Resources.Load<GameObject>("LumenCollection/MuseumCourtyard");
+        if (source != null)
+        {
+            GameObject courtyard = Object.Instantiate(source, gallery.transform, false);
+            courtyard.transform.localPosition = new Vector3(0f, 0f, -9f);
+            courtyard.name = "Compact classical entrance courtyard";
+        }
+        // Separate invisible physics preserves the 5.5 m doorway and level route.
+        AddStructureCollider("Courtyard walkable foundation", new Vector3(0f,-.14f,-14.5f), new Vector3(15f,.28f,11f));
+        foreach (int side in new[]{-1,1})
+        {
+            AddStructureCollider("Facade wing", new Vector3(side*6.8f,2.9f,-9f),new Vector3(7.4f,5.8f,.65f));
+            AddStructureCollider("Reflecting basin",new Vector3(side*4.65f,.35f,-14f),new Vector3(3.65f,.7f,4.8f));
+            foreach(float x in new[]{3.15f,4.30f})
+                AddStructureCollider("Portico column",new Vector3(side*x,2.65f,-9.68f),new Vector3(.78f,5.3f,.9f));
+            foreach(float z in new[]{-11.25f,-16.75f})
+                AddStructureCollider("Hedge planter",new Vector3(side*4.65f,.40f,z),new Vector3(3.7f,.8f,.7f));
+            CreateBox("Low courtyard boundary",new Vector3(side*7.45f,.4f,-14.5f),new Vector3(.22f,.8f,11f),limestone,true);
+            foreach(float z in new[]{-11f,-17.7f})
+            {
+                GameObject lamp = new GameObject("Courtyard lantern glow"); lamp.transform.SetParent(gallery.transform,false);
+                lamp.transform.localPosition = new Vector3(side*1.92f,1.53f,z);
+                Light light = lamp.AddComponent<Light>(); light.type=LightType.Point;
+                light.color=new Color(1f,.73f,.40f); light.intensity=2f; light.range=3.2f;
+            }
+        }
+        AddStructureCollider("Courtyard end boundary",new Vector3(0f,.25f,-20f),new Vector3(15f,.5f,.2f));
+    }
+
+    private static void AddStructureCollider(string name, Vector3 position, Vector3 size)
+    {
+        GameObject structure = new GameObject(name,typeof(BoxCollider));
+        structure.transform.SetParent(gallery.transform,false); structure.transform.localPosition=position;
+        structure.GetComponent<BoxCollider>().size=size;
+    }
+
+    private static void AddCollectionDisplay(string resource, string label, Vector3 position, string description)
+    {
+        GameObject source=Resources.Load<GameObject>("LumenCollection/"+resource);
+        if(source==null) { Debug.LogWarning("Missing compact museum display: "+resource); return; }
+        GameObject display=Object.Instantiate(source,gallery.transform,false); display.name=label;
+        display.transform.localPosition=position;
+        ObjectMetadata metadata=display.AddComponent<ObjectMetadata>();
+        metadata.objectName=label; metadata.displayName=label; metadata.objectId="museum_"+resource;
+        metadata.description=description; metadata.descriptionSummary=description;
+        metadata.scenario="museum"; metadata.category="Interpretive museum exhibit"; metadata.isInteractable=true;
+        metadata.interactionHint="Press E to ask about "+label;
+        AddWorldLabel(label.ToUpperInvariant(),position+new Vector3(0f,1.72f,-.8f),.38f,ivory.color,new Vector2(3.7f,.4f));
+    }
+
+    private static void AddInteriorDetails()
+    {
+        Material timber=MakeMaterial("Museum dark walnut",new Color(.15f,.085f,.045f));
+        Material runner=MakeMaterial("Museum oxblood textile",new Color(.25f,.04f,.04f));
+        CreateBox("Arrival gallery runner",new Vector3(0f,.012f,-2f),new Vector3(2.5f,.025f,13f),runner,false);
+        for(int side=-1;side<=1;side+=2)
+        {
+            CreateBox("Gallery stone skirting",new Vector3(side*10.22f,.35f,0f),new Vector3(.17f,.7f,17.8f),limestone,false);
+            CreateBox("Gallery bronze picture rail",new Vector3(side*10.19f,3.5f,0f),new Vector3(.08f,.05f,17.8f),brass,false);
+            foreach(float z in new[]{-6f,-1f,4f,8f})
+            {
+                CreateBox("Gallery wall pilaster",new Vector3(side*10.13f,3f,z),new Vector3(.28f,6f,.42f),limestone,false);
+                CreateBox("Pilaster capital",new Vector3(side*10.07f,5.5f,z),new Vector3(.4f,.20f,.65f),ivory,false);
+            }
+        }
+        foreach(float z in new[]{-6f,-1f,4f,8f})
+        {
+            CreateBox("Timber ceiling coffer beam",new Vector3(0f,6.02f,z),new Vector3(20.8f,.35f,.28f),timber,false);
+            CreateBox("Ceiling bronze inlay",new Vector3(0f,5.83f,z),new Vector3(20.8f,.025f,.045f),brass,false);
+        }
     }
 
     public static bool ShowArtifact(string requested)
@@ -84,6 +165,7 @@ public static class MuseumGalleryExperience
 
     private static void CreateArtifact(string name, string subtitle, string description, string tags, Vector3 position, ArtifactBuilder build)
     {
+        position=MuseumArchitecture.ExhibitPosition(name,position);
         GameObject display = new GameObject("Museum Exhibit · " + name);
         display.transform.SetParent(gallery.transform, false);
         display.transform.localPosition = position;
@@ -108,8 +190,8 @@ public static class MuseumGalleryExperience
         GameObject trim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         trim.name = name + " · brass inlay"; trim.transform.SetParent(display.transform, false); trim.transform.localPosition = new Vector3(0f, 0.66f, 0f); trim.transform.localScale = new Vector3(1.55f, 0.025f, 1.55f); trim.GetComponent<Renderer>().sharedMaterial = brass; Object.Destroy(trim.GetComponent<Collider>());
         build(display.transform);
-        AddWorldLabel(name.ToUpperInvariant(), new Vector3(position.x, position.y + 2.78f, position.z - 0.7f), 0.52f, ivory.color, new Vector2(3.5f, 0.42f));
-        AddWorldLabel(subtitle, new Vector3(position.x, position.y + 2.40f, position.z - 0.7f), 0.28f, brass.color, new Vector2(3.6f, 0.3f));
+        AddWorldLabel(name.ToUpperInvariant(), new Vector3(position.x, position.y + 3.15f, position.z - 0.7f), 0.52f, ivory.color, new Vector2(3.5f, 0.42f));
+        AddWorldLabel(subtitle, new Vector3(position.x, position.y + 2.83f, position.z - 0.7f), 0.28f, brass.color, new Vector2(3.6f, 0.3f));
     }
 
     private static void BuildRosettaStone(Transform parent)
@@ -214,7 +296,7 @@ public static class MuseumGalleryExperience
 
     private static void BuildWashingtonBust(Transform parent)
     {
-        if (ImportedModelUtility.AddFittedModel("SmithsonianGeorgeWashingtonBust", parent, 1.90f, 0.72f, 180f) != null) return;
+        if (ImportedModelUtility.AddFittedModel("SmithsonianGeorgeWashingtonBust", parent, 1.90f, 0.72f,45f,45f,10f) != null) return;
         CreatePrimitive(parent, PrimitiveType.Capsule, "Portrait bust replica", new Vector3(0f, 1.48f, 0f), new Vector3(0.76f, 1.15f, 0.60f), ivory);
         CreatePrimitive(parent, PrimitiveType.Sphere, "Portrait head replica", new Vector3(0f, 2.22f, 0f), new Vector3(0.60f, 0.72f, 0.52f), ivory);
     }
@@ -247,20 +329,21 @@ public static class MuseumGalleryExperience
     {
         GameObject go = new GameObject("Museum placard · " + content, typeof(TextMeshPro));
         go.transform.SetParent(gallery.transform, false); go.transform.localPosition = position;
-        TextMeshPro text = go.GetComponent<TextMeshPro>(); text.text = content; text.fontSize = size; text.color = color; text.alignment = TextAlignmentOptions.Center; text.fontStyle = FontStyles.Bold; text.outlineWidth = 0.08f; text.outlineColor = new Color(0.025f, 0.04f, 0.07f); text.rectTransform.sizeDelta = dimensions; go.AddComponent<WorldLabelBillboard>();
+        TextMeshPro text = go.GetComponent<TextMeshPro>(); text.text = content; text.fontSize = size*4f; text.color = color; text.alignment = TextAlignmentOptions.Center; text.fontStyle = FontStyles.Bold; text.outlineWidth = 0.08f; text.outlineColor = new Color(0.025f, 0.04f, 0.07f); text.rectTransform.sizeDelta = dimensions; go.AddComponent<WorldLabelBillboard>();
     }
 
     private static void AddGalleryLighting()
     {
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-        RenderSettings.ambientLight = new Color(0.68f, 0.70f, 0.78f);
-        RenderSettings.ambientIntensity = 1.35f;
+        RenderSettings.ambientLight = new Color(0.62f, 0.58f, 0.49f);
+        RenderSettings.ambientIntensity = 1.1f;
         RenderSettings.reflectionIntensity = 0.35f;
         GameObject lightRoot = new GameObject("MuseumGalleryLighting"); lightRoot.transform.SetParent(gallery.transform, false);
-        Light ambient = lightRoot.AddComponent<Light>(); ambient.type = LightType.Point; ambient.color = new Color(0.72f, 0.84f, 1f); ambient.intensity = 60f; ambient.range = 34f; ambient.transform.localPosition = new Vector3(0f, 5f, 0f);
+        Light ambient = lightRoot.AddComponent<Light>(); ambient.type = LightType.Point; ambient.color = new Color(1f, .88f, .70f); ambient.intensity = 35f; ambient.range = 25f; ambient.transform.localPosition = new Vector3(0f, 5f, 0f);
         GameObject museumSun = new GameObject("Museum soft directional wash"); museumSun.transform.SetParent(gallery.transform, false);
         museumSun.transform.localRotation = Quaternion.Euler(46f, -24f, 0f);
-        Light directional = museumSun.AddComponent<Light>(); directional.type = LightType.Directional; directional.color = new Color(0.82f, 0.87f, 1f); directional.intensity = 2.4f;
+        Light directional = museumSun.AddComponent<Light>(); directional.type = LightType.Directional; directional.color = new Color(1f, .92f, .78f); directional.intensity = 1.6f;
+        directional.shadows=LightShadows.Soft; directional.shadowStrength=.45f;
         foreach (float x in new[] { -6.5f, -2.2f, 2.2f, 6.5f })
         {
             GameObject accent = new GameObject("Exhibit spotlight"); accent.transform.SetParent(gallery.transform, false); accent.transform.localPosition = new Vector3(x, 4.8f, 3.8f);
@@ -270,7 +353,7 @@ public static class MuseumGalleryExperience
 
     private static void MakeMaterials()
     {
-        navy = MakeMaterial("Museum deep navy", new Color(0.085f, 0.12f, 0.18f));
+        navy = MakeMaterial("Museum warm charcoal", new Color(0.14f, 0.105f, 0.075f));
         limestone = MakeMaterial("Museum limestone", new Color(0.64f, 0.62f, 0.56f));
         brass = MakeMaterial("Museum brass", new Color(0.73f, 0.53f, 0.25f), true);
         ivory = MakeMaterial("Museum ivory", new Color(0.85f, 0.81f, 0.70f));

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.AI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,6 +20,7 @@ public sealed class CafeWalkController : MonoBehaviour
 
     private CharacterController character;
     private float pitch;
+    private bool viewInitialized;
     private float verticalSpeed;
     private Vector3 lastSafeGroundPosition;
     private bool hasSafeGroundPosition;
@@ -39,8 +39,8 @@ public sealed class CafeWalkController : MonoBehaviour
         if (view != null && view.parent == transform)
         {
             view.localPosition = new Vector3(0f, 1.62f, 0f);
-            view.localRotation = Quaternion.identity;
-            pitch = 0f;
+            if (!viewInitialized) pitch = 0f;
+            view.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 
         // Scene-authored spawn points can sit a few centimetres above/below
@@ -48,7 +48,8 @@ public sealed class CafeWalkController : MonoBehaviour
         // grounded instead of accumulating gravity from its first frame.
         if (TryFindGround(transform.position, out Vector3 groundPosition))
         {
-            Vector3 groundedPosition = groundPosition + Vector3.up * Mathf.Max(0.04f, character.skinWidth * 0.5f);
+            Vector3 groundedPosition = groundPosition + (transform.position - FeetPosition) +
+                Vector3.up * Mathf.Max(0.025f, character.skinWidth * 0.5f);
             if (Mathf.Abs(transform.position.y - groundedPosition.y) > 0.025f)
             {
                 character.enabled = false;
@@ -68,6 +69,7 @@ public sealed class CafeWalkController : MonoBehaviour
     {
         view = cameraTransform;
         pitch = Mathf.Clamp(initialPitch, -80f, 80f);
+        viewInitialized = true;
     }
 
     public void FaceTarget(Transform target)
@@ -103,6 +105,7 @@ public sealed class CafeWalkController : MonoBehaviour
         if (IsTypingIntoUi())
         {
             SetCursorLocked(false);
+            MoveCharacter(Vector3.zero);
             return;
         }
         Vector2 moveInput = Vector2.zero;
@@ -124,13 +127,12 @@ public sealed class CafeWalkController : MonoBehaviour
         if (mouse != null)
         {
             if (Cursor.lockState == CursorLockMode.Locked) lookInput = mouse.delta.ReadValue();
-            bool pointerOverUi = IsPointerOverUI(mouse.deviceId);
             // Recover from the Editor or a scene leaving the cursor captured:
             // a left click is always the user's route back to the on-screen UI.
             // Right-clicking the world is the explicit gesture for mouse-look.
             if (Cursor.lockState == CursorLockMode.Locked && mouse.leftButton.wasPressedThisFrame)
                 unlock = true;
-            relock = mouse.rightButton.wasPressedThisFrame && !pointerOverUi;
+            relock = mouse.rightButton.wasPressedThisFrame && !IsPointerOverUI(mouse.deviceId);
         }
 #else
         moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -153,42 +155,34 @@ public sealed class CafeWalkController : MonoBehaviour
 
         moveInput = Vector2.ClampMagnitude(moveInput, 1f);
         Vector3 horizontal = (transform.right * moveInput.x + transform.forward * moveInput.y) * (sprint ? runSpeed : walkSpeed);
+        MoveCharacter(horizontal);
+    }
+
+    private Vector3 FeetPosition => transform.TransformPoint(character.center) -
+        Vector3.up * (character.height * 0.5f * Mathf.Abs(transform.lossyScale.y));
+
+    private void MoveCharacter(Vector3 horizontal)
+    {
+        if (character == null || !character.enabled) return;
         bool grounded = character.isGrounded || (verticalSpeed <= 0f && CheckGroundedFallback());
         if (grounded && verticalSpeed < 0f) verticalSpeed = -0.5f;
-        verticalSpeed -= 9.81f * Time.deltaTime;
+        verticalSpeed = Mathf.Max(-30f, verticalSpeed - 9.81f * Time.deltaTime);
         character.Move((horizontal + Vector3.up * verticalSpeed) * Time.deltaTime);
 
-        if (grounded)
+        // Record support AFTER moving. The old pre-move flag saved positions
+        // already beyond a ledge and repeatedly respawned the player in the gap.
+        if (CheckGroundedFallback())
         {
             lastSafeGroundPosition = transform.position;
             hasSafeGroundPosition = true;
         }
-        else if (hasSafeGroundPosition && transform.position.y < lastSafeGroundPosition.y - GroundRecoveryDepth)
-        {
-            // A safety net for a missing/incorrect collider in a downloaded
-            // environment: recover at the last valid floor point instead of
-            // leaving the learner in an endless fall.
-            character.enabled = false;
-            transform.position = lastSafeGroundPosition;
-            character.enabled = true;
-            verticalSpeed = 0f;
-        }
+        else RecoverIfFallen();
     }
 
     private bool TryFindGround(Vector3 reference, out Vector3 groundPosition)
     {
-        if (NavMesh.SamplePosition(reference, out NavMeshHit walkable, 1.5f, NavMesh.AllAreas))
-        {
-            groundPosition = walkable.position;
-            return true;
-        }
-
-        bool wasEnabled = character != null && character.enabled;
-        if (wasEnabled) character.enabled = false;
-        Vector3 rayStart = reference + Vector3.up * 2f;
-        bool found = Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 12f,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && hit.normal.y >= 0.55f;
-        if (wasEnabled) character.enabled = true;
+        Vector3 feet = reference + (FeetPosition - transform.position);
+        bool found = WalkableFloorProbe.TryFind(transform, feet, 0.4f, 1.5f, out RaycastHit hit);
         groundPosition = found ? hit.point : reference;
         return found;
     }
@@ -196,8 +190,25 @@ public sealed class CafeWalkController : MonoBehaviour
     private bool CheckGroundedFallback()
     {
         if (character == null) return false;
-        Vector3 bottom = transform.position + character.center - Vector3.up * Mathf.Max(0.1f, character.height * 0.5f - character.radius);
-        return Physics.SphereCast(bottom + Vector3.up * 0.08f, Mathf.Max(0.1f, character.radius * 0.85f), Vector3.down, out _, 0.14f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        return WalkableFloorProbe.TryFind(transform, FeetPosition, 0.06f,
+            Mathf.Max(0.12f, character.skinWidth + 0.04f), out _);
+    }
+
+    /// <summary>Shared with the watchdog; recovery resets gravity and uses a previously visited physical floor.</summary>
+    public bool RecoverIfFallen()
+    {
+        if (character == null || !character.enabled || !hasSafeGroundPosition) return false;
+        if (transform.position.y >= lastSafeGroundPosition.y - GroundRecoveryDepth) return false;
+        Vector3 rootToFeet = FeetPosition - transform.position;
+        if (!WalkableFloorProbe.TryFind(transform, lastSafeGroundPosition + rootToFeet, 0.2f, 0.4f, out RaycastHit floor))
+            return false;
+        Vector3 recovery = floor.point - rootToFeet + Vector3.up * Mathf.Max(0.025f, character.skinWidth * 0.5f);
+        character.enabled = false;
+        transform.position = recovery;
+        character.enabled = true;
+        verticalSpeed = 0f;
+        lastSafeGroundPosition = recovery;
+        return true;
     }
 
     private static void SetCursorLocked(bool locked)
