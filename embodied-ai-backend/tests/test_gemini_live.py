@@ -4,7 +4,7 @@ from gemini_live import live_config, voices_for_person
 def test_actual_display_and_partner_tools_are_available():
     config = live_config("classroom", "theo")
     names = {f["name"] for f in config["tools"][0]["function_declarations"]}
-    assert names == {"show_model", "move_character", "change_world", "talk_to_person"}
+    assert names == {"show_model", "show_image", "move_character", "change_world", "talk_to_person"}
     assert "before saying they are visible" in config["system_instruction"]
     assert "Atom" in config["system_instruction"]
 

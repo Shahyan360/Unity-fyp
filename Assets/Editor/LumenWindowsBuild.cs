@@ -49,6 +49,13 @@ public static class LumenWindowsBuild
         BuildInto("D:/LumenProject/Builds/Windows-Interaction-2026-10-19");
     }
 
+    public static void BuildLiveImages()
+    {
+        var preloaded=PlayerSettings.GetPreloadedAssets();
+        try { BuildInto("D:/LumenProject/Builds/Windows-LiveImages-2026-10-19"); }
+        finally { PlayerSettings.SetPreloadedAssets(preloaded); AssetDatabase.SaveAssets(); }
+    }
+
     private static void BuildInto(string output)
     {
         if(EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play Mode before building.");

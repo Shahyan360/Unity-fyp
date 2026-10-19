@@ -520,6 +520,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     CORS(app, resources={r"/*": {"origins": "*"}})  # Unity standalone uses a local origin.
     from gemini_live import register_live
     register_live(app)
+    from live_images import register_images
+    register_images(app)
     store = LocalStore()
     speech = SpeechService()
     if not app.config.get("TESTING"):

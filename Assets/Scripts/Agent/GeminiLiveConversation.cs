@@ -27,7 +27,10 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     private readonly ConcurrentQueue<Incoming> incoming=new ConcurrentQueue<Incoming>();
     private int epoch;
     private GeminiLiveAudio audio;
+    public ConversationImagePanel Images {get;private set;}
+    private bool receivingVoiceQuestion;
     private float emptySince=-1;
+    // Remains pending through audio/tool continuations; a delayed interruption can belong to the preceding reply.
     private bool awaitingTypedOutput;
     public ObjectMetadata Partner {get;private set;}
     private bool introduced;
@@ -53,6 +56,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     public string LastReply {get;private set;}="";
     public int Replies {get;private set;}
     public string ActiveSpeakerName=>Partner!=null?Partner.GetDisplayName():FindAnyObjectByType<ScenarioCharacterIdentity>()?.DisplayName??"Kai";
+    public Transform ActiveSpeakerTransform=>ActiveActor()?.transform;
     public bool Selected {get;private set;}
     public bool Ready {get;private set;}
     public string State {get;private set;}="Connecting Gemini Live";
@@ -67,6 +71,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     private void Awake()
     {
         if(Instance!=null&&Instance!=this){Destroy(this);return;}Instance=this;
+        Images=GetComponent<ConversationImagePanel>()??gameObject.AddComponent<ConversationImagePanel>();
         var voiceObject=new GameObject("Gemini native audio");voiceObject.transform.SetParent(transform,false);
         output=voiceObject.AddComponent<AudioSource>();audio=voiceObject.AddComponent<GeminiLiveAudio>();output.playOnAwake=false;output.spatialBlend=0;output.volume=.9f;
         output.mute=PlayerPrefs.GetInt("Lumen.MuteVoice",0)!=0;
@@ -112,7 +117,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
             if(item.epoch!=epoch)continue;
             if(item.audio!=null)
             {
-                audio.Enqueue(item.audio);awaitingTypedOutput=false;emptySince=-1;
+                audio.Enqueue(item.audio);emptySince=-1;
                 AudioChunks++;turnEnded=false;
                 if(FirstAudioSeconds<0&&sentAt>0)FirstAudioSeconds=Time.realtimeSinceStartup-sentAt;
             }
@@ -201,12 +206,15 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         if(e.@event=="input_text")
         {
             awaitingTypedOutput=false;LastHeard=e.text;State="Hearing you";
+            if(completed!=null){error?.Invoke("Reply interrupted; listening to you.");ClearCallbacks();ResetTranscriptTurn();}
+            if(!receivingVoiceQuestion){receivingVoiceQuestion=true;Images.BeginQuestion(e.text,scenario!="cafe");}
+            Images.UpdateQuestion(e.text);
             ApplyInputEmotion(e.text);
             if(completed==null){var chat=FindAnyObjectByType<ChatUIManager>();if(chat!=null)chat.ShowLiveInput(e.text);else FindAnyObjectByType<HomeUIManager>()?.ShowLiveInput(e.text);}
         }
         if(e.@event=="output_text")
         {
-            awaitingTypedOutput=false;State="Gemini speaking";
+            State="Gemini speaking";
             if(partial!=null)partial(e.text);
             else{var chat=FindAnyObjectByType<ChatUIManager>();if(chat!=null)chat.ShowLiveOutput(e.text);else FindAnyObjectByType<HomeUIManager>()?.ShowLiveOutput(e.text);}
         }
@@ -214,7 +222,8 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         {
             turnEnded=true;State="Gemini listening";
             if(string.IsNullOrWhiteSpace(e.text))return; // Empty tool boundaries are not conversational answers.
-            LastReply=e.text;Replies++;
+            LastReply=e.text;Replies++;receivingVoiceQuestion=false;
+            Images.CompleteAnswer(e.text,backend);
             var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();
             var response=new ChatResponse{response=e.text??"",speaker_id=speaker,speaker_name=Partner!=null?Partner.GetDisplayName():identity!=null?identity.DisplayName:speaker,
                 scenario=scenario,emotion=emotion,action="idle",intent="conversation",spoken_stream=true,response_source="gemini-live"};
@@ -224,12 +233,18 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         if(e.@event=="command")
         {
             bool ok=false;string reply="Unsupported command";
-            if(e.name=="move_character")ok=VoiceCommandRouter.TryExecute(e.command,out reply);
+            if(e.name=="show_image")
+            {
+                ok=Images.CanShowForQuestion&&!string.IsNullOrWhiteSpace(e.command);
+                if(ok)Images.RequestImage(e.command,backend);
+                reply=ok?"Image search started in a separate panel. Speak your explanation now; do not claim the image is already visible. The panel will show the image with credits or an unavailable message.":"No image requested. In the cafe keep this answer voice/text only unless the visitor explicitly requests a visual aid.";
+            }
+            else if(e.name=="move_character")ok=VoiceCommandRouter.TryExecute(e.command,out reply);
             else if(e.name=="show_model")
             {
                 ok=scenario=="classroom"&&ClassroomLearningExhibit.ShowModel(e.command);
                 if(ok)ActiveActor()?.PlayAction("show_model");
-                reply=ok?"Displayed "+e.command+". "+ClassroomLearningExhibit.ActiveDescription:"That model is unavailable here. Offer a model from the supported list; no online image feature is enabled.";
+                reply=ok?"Displayed "+e.command+". "+ClassroomLearningExhibit.ActiveDescription:"That interactive 3D model is unavailable here. Use show_image to look up a relevant picture instead; clearly call it an image.";
             }
             else if(e.name=="talk_to_person")
             {
@@ -266,7 +281,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     }
     public bool SendText(string text,Action<ChatResponse> onDone,Action<string> onPartial,Action<string> onError)
     {
-        if(!Ready)return false;CancelReply();ApplyInputEmotion(text);awaitingTypedOutput=true;completed=onDone;partial=onPartial;error=onError;sentAt=Time.realtimeSinceStartup;FirstAudioSeconds=-1;
+        if(!Ready)return false;CancelReply();receivingVoiceQuestion=false;Images.BeginQuestion(text,scenario!="cafe");ApplyInputEmotion(text);awaitingTypedOutput=true;completed=onDone;partial=onPartial;error=onError;sentAt=Time.realtimeSinceStartup;FirstAudioSeconds=-1;
         Send(new Event{@event="text",text=text});return true;
     }
     public void Reconnect(){Disconnect();ResetTranscriptTurn();failed=false;retryAt=0;fingerprint="";State="Reconnecting Gemini Live";}
@@ -274,9 +289,9 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     public void SetVoiceMuted(bool muted){output.mute=muted;}
     public void PauseMicrophone(){if(Ready)Send(new Event{@event="audio_end"});}
     public void CancelReply(){ClearCallbacks();StopPlayback();}
-    private void ClearCallbacks(){completed=null;partial=null;error=null;}
+    private void ClearCallbacks(){awaitingTypedOutput=false;completed=null;partial=null;error=null;}
     public void StopPlayback(){if(audio!=null)audio.Clear();emptySince=-1;if(output!=null)output.Stop();playing=false;turnEnded=false;if(actor!=null)actor.EndSpeech();}
-    private void Disconnect(){epoch++;Ready=false;connecting=false;if(wire!=null){try{wire.cancel.Cancel();wire.socket.Abort();}catch(ObjectDisposedException){}}wire=null;StopPlayback();ClearCallbacks();}
+    private void Disconnect(){epoch++;receivingVoiceQuestion=false;Images?.ResetConversation();Ready=false;connecting=false;if(wire!=null){try{wire.cancel.Cancel();wire.socket.Abort();}catch(ObjectDisposedException){}}wire=null;StopPlayback();ClearCallbacks();}
     private void OnDisable(){Disconnect();}
     private void OnDestroy(){Disconnect();if(clip!=null)Destroy(clip);if(Instance==this)Instance=null;}
 }
