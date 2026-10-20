@@ -17,7 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HistoricalPlace.unity
     guid: d80505f0717534e4da70be25946a602d
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Phase1_DemoScene.unity
     guid: 71a2469868c92ab43a414f350f9b3842
   m_configObjects:

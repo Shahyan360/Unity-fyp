@@ -14,10 +14,10 @@ public sealed class LumenActivityPanel:MonoBehaviour
     }
     private void Build(Transform root)
     {
-        var statePanel=Panel(root,"Assistant connection state",new Vector2(.555f,.88f),new Vector2(.975f,.92f));
+        var statePanel=Panel(root,"Assistant connection state",new Vector2(.555f,.86f),new Vector2(.975f,.92f));
         assistant=Label(statePanel.transform,"Assistant connecting",new Vector2(.025f,.05f),new Vector2(.975f,.95f),18);
-        var open=Button(root,"Optional practice",new Vector2(.79f,.82f),new Vector2(.975f,.875f));
-        practice=Panel(root,"Optional practice panel",new Vector2(.64f,.43f),new Vector2(.975f,.81f));
+        var open=Button(root,"Optional practice",new Vector2(.76f,.80f),new Vector2(.975f,.855f));
+        practice=Panel(root,"Optional practice panel",new Vector2(.49f,.36f),new Vector2(.975f,.79f));
         Label(practice.transform,"PRACTISE AT YOUR PACE",new Vector2(.04f,.84f),new Vector2(.96f,.98f),23);
         Label(practice.transform,"Three short turns with your companion.\nNo scores. Leave whenever you wish.",new Vector2(.04f,.65f),new Vector2(.96f,.85f),18);
         string[] modes={"conversation","interview","presentation"};
@@ -56,7 +56,7 @@ public sealed class LumenActivityPanel:MonoBehaviour
         if(Time.unscaledTime<next)return;next=Time.unscaledTime+.25f;
         var live=GeminiLiveConversation.Instance;assistant.text=live!=null?live.State:"Assistant unavailable / open Guide to retry";
         var coach=FindAnyObjectByType<SocialCoachingController>();
-        if(coach!=null)practiceState.text=coach.State=="Off"?"Choose a mode to begin.":coach.State+" / "+coach.ActiveMode+" / "+Mathf.Min(coach.Turn+1,3)+" of 3\n"+coach.CurrentPrompt;
+        if(coach!=null)practiceState.text=coach.State=="Off"?"Choose a mode to begin.":coach.State+" / "+coach.ActiveMode+" / "+Mathf.Clamp(coach.Turn,1,3)+" of 3\n"+coach.CurrentPrompt;
         var model=LearningModelInspection.Current;inspection.SetActive(model!=null);if(model!=null)
         {
             inspectLabel.text=model.IsInspecting?"Esc: return":"EXHIBIT";

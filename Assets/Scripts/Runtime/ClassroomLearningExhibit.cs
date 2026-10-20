@@ -118,6 +118,8 @@ public static class ClassroomLearningExhibit
     {
         string query = requested.Trim().ToLowerInvariant().Replace(" exhibit", "");
         string[] topics = { "apollo 11", "command module", "triceratops", "dinosaur", "fern", "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune", "solar system", "atom", "periodic table", "plant cell", "animal cell", "animal anatomy", "sunflower", "oak tree", "dna", "human heart", "water cycle", "electric circuit", "water molecule", "volcano", "pythagorean theorem", "plant", "light spectrum" };
+        // Specific names win over substrings: anatomy contains atom.
+        System.Array.Sort(topics,(a,b)=>b.Length.CompareTo(a.Length));
         foreach (string topic in topics)
             if (query == topic || query.Contains(topic))
             {

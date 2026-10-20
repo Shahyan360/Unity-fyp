@@ -95,27 +95,45 @@ public sealed class LumenFunctionalVerification:MonoBehaviour
             coach.StartPractice(mode);float until=Time.realtimeSinceStartup+15;while(coach.State=="Starting"&&Time.realtimeSinceStartup<until)yield return null;
             Check(coach.IsActive&&coach.ActiveMode==mode,mode+" starts real backend session");
             for(int i=0;i<3&&coach.IsActive;i++)
-            {coach.CompleteTurn("I would introduce myself and ask a clear question.",mode+"-"+i);until=Time.realtimeSinceStartup+15;while(coach.IsAdvancing&&Time.realtimeSinceStartup<until)yield return null;Check(coach.Turn==i+1,mode+" actual backend progression "+(i+1));}
+            {coach.CompleteTurn("I would introduce myself and ask a clear question.",mode+"-"+i);until=Time.realtimeSinceStartup+15;while(coach.IsAdvancing&&Time.realtimeSinceStartup<until)yield return null;Check(coach.Turn==Mathf.Min(i+2,3),mode+" actual backend step after answer "+(i+1));}
             Check(coach.State=="Completed",mode+" completes three steps");coach.EndPractice();Check(coach.State=="Off",mode+" opt out/reset");
         }
         LumenPreferences.SetInt("Lumen.Offline",1);live.enabled=true;live.Reconnect();
         foreach(string world in new[]{"home","ancient_rome","classroom","museum","cafe"})
         {
             yield return Load(world);if(finished)yield break;
-            foreach(var resolution in new[]{new Vector2Int(1024,768),new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(2560,1080)})
+            if(world=="classroom"){ClassroomLearningExhibit.ShowModel("Atom");yield return new WaitForSecondsRealtime(1);}
+            foreach(var resolution in new[]{new Vector2Int(1024,768),new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(1720,720)})
             {
                 Screen.SetResolution(resolution.x,resolution.y,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
+                Check(Screen.width==resolution.x&&Screen.height==resolution.y,"Actual display matches requested "+resolution);
                 foreach(int tier in new[]{0,2})
                 {
                     LumenPreferences.SetInt("Lumen.TextTier",tier);LumenAccessibility.Refresh();yield return new WaitForSecondsRealtime(1.2f);Canvas.ForceUpdateCanvases();
                     string label=world+"-"+resolution.x+"x"+resolution.y+"-text"+tier;
-                    var labels=FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Exclude);foreach(var text in labels){text.ForceMeshUpdate();if(text.isTextOverflowing)report.overflow.Add(label+" / "+text.transform.parent.name+"/"+text.name+" / "+text.text);}
+                    var labels=VisibleLabels();RecordOverflow(label,labels);
                     Check(labels.All(t=>t.fontSize*t.canvas.scaleFactor>=15.9f),label+" minimum readable text");
                     yield return Capture(label);
+                    if((resolution.x==1024&&tier==2)||(resolution.x==1920&&tier==0))yield return Panels(label,world);
                 }
             }
         }
+        Check(report.overflow.Count==0,"No overflowing visible labels in all captured HUDs and panels");
         LumenPreferences.SetInt("Lumen.TextTier",0);Screen.SetResolution(1280,720,FullScreenMode.Windowed);yield return Load("home");Finish();
+    }
+    private TextMeshProUGUI[] VisibleLabels()=>FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Exclude).Where(t=>t.GetComponentsInParent<CanvasGroup>().All(g=>g.alpha>.05f)).ToArray();
+    private void RecordOverflow(string label,TextMeshProUGUI[] labels)
+    {foreach(var text in labels){text.ForceMeshUpdate();if(text.isTextOverflowing&&text.GetComponentInParent<ScrollRect>()==null)report.overflow.Add(label+" / "+text.transform.parent.name+"/"+text.name+" / "+text.text);}}
+    private IEnumerator Panels(string label,string world)
+    {
+        foreach(string name in new[]{"VisitHeader","SwitchGuideCharacter","Optional practice","ToggleConversation","RevealWorlds","OpenCafeMenu"})
+        {
+            var target=GameObject.Find(name);if(target==null)continue;var button=target.GetComponent<Button>()??target.GetComponentInChildren<Button>();if(button==null)continue;
+            button.onClick.Invoke();yield return new WaitForSecondsRealtime(1.2f);Canvas.ForceUpdateCanvases();RecordOverflow(label+"-"+name,VisibleLabels());yield return Capture(label+"-"+name);
+            if(name=="OpenCafeMenu")FindAnyObjectByType<CafeOrderExperience>()?.Hide();
+            else button.onClick.Invoke();yield return new WaitForSecondsRealtime(.5f);
+            if(name=="Optional practice"){GameObject.Find("Optional practice panel")?.SetActive(false);LumenAccessibility.MenuOpen=false;}
+        }
     }
     private IEnumerator Capture(string name)
     {

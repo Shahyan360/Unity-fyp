@@ -11,13 +11,13 @@ public sealed class WorldVisitControls:MonoBehaviour
     {var owner=canvas.gameObject.AddComponent<WorldVisitControls>();owner.Build(canvas.transform,scene);LumenActivityPanel.Install(canvas);}
     private void Build(Transform root,string scene)
     {
-        string title=scene.StartsWith("Home")?"LUMEN / DISCOVER":scene=="HistoricalPlace"?"ANCIENT ROME":scene=="Cafestore"?"THE CAFE":scene=="Museum"?"MUSEUM":"CLASSROOM";
+        string title=scene.StartsWith("Home")?"LUMEN / DISCOVER":scene=="HistoricalPlace"?"ANCIENT ROME":scene=="Cafestore"?"THE CAFE":ScenarioRuntimeManager.GetScenarioForScene(scene)=="museum"?"MUSEUM":"CLASSROOM";
         var header=Panel(root,"VisitHeader",new Vector2(.025f,.925f),new Vector2(.545f,.985f));
         Label(header.transform,title,new Vector2(.035f,.10f),new Vector2(.73f,.90f),22);
         var open=Button(header.transform,"VISIT",new Vector2(.76f,.08f),new Vector2(.97f,.92f));
-        drawer=Panel(root,"VisitSettings",new Vector2(.025f,.17f),new Vector2(.43f,.915f));
+        drawer=Panel(root,"VisitSettings",new Vector2(.025f,.075f),new Vector2(.59f,.915f));
         Label(drawer.transform,"YOUR VISIT",new Vector2(.045f,.92f),new Vector2(.95f,.985f),25);
-        Label(drawer.transform,"Tab: controls  /  Enter: choose  /  Esc: close\nRight-click or Numpad 4/6/8/2: look\nE: interact  /  M: microphone",new Vector2(.045f,.82f),new Vector2(.95f,.92f),17);
+        Label(drawer.transform,"Tab: focus · Enter: choose · Esc: close\nRight-click or Numpad: look · E: interact",new Vector2(.045f,.82f),new Vector2(.95f,.92f),17);
         var quality=Button(drawer.transform,"Graphics: "+WorldPresentationQuality.SelectedQuality,new Vector2(.045f,.73f),new Vector2(.49f,.81f));
         quality.onClick.AddListener(()=>quality.GetComponentInChildren<TMP_Text>().text="Graphics: "+WorldPresentationQuality.CycleQuality());
         var cues=Button(drawer.transform,"UI cues: "+LumenPreferences.GetInt("Lumen.UIVolume",80)+"%",new Vector2(.51f,.73f),new Vector2(.95f,.81f));
@@ -71,7 +71,7 @@ public sealed class WorldVisitControls:MonoBehaviour
     private static string MotionLabel()=>"Motion: "+(LumenAccessibility.ReducedMotion?"reduced":"standard");
     private static string VoiceLabel()=>"Speech: "+LumenPreferences.GetInt("Lumen.SpeechVolume",90)+"%";
     private static string VisualLabel()=>"Images: "+(LumenPreferences.GetInt("Lumen.VisualAids",1)==0?"off":"optional");
-    private static string ConnectionLabel()=>LumenPreferences.GetInt("Lumen.Offline",0)!=0?"Offline exhibit labels / connect assistant":"Assistant mode / switch to offline labels";
+    private static string ConnectionLabel()=>LumenPreferences.GetInt("Lumen.Offline",0)!=0?"Connect assistant":"Switch to offline labels";
     private static GameObject Panel(Transform root,string name,Vector2 min,Vector2 max)
     {
         var go=new GameObject(name,typeof(RectTransform),typeof(UnityEngine.UI.Image));go.transform.SetParent(root,false);Place((RectTransform)go.transform,min,max);

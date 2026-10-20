@@ -67,7 +67,7 @@ public sealed class HomeScenarioPanel : MonoBehaviour
     {
         isOpen = false;
         targetAnimation = 0f;
-        if (revealLabel != null) revealLabel.text = "WORLDS  /  CHOOSE YOUR NEXT DISCOVERY";
+        if (revealLabel != null) revealLabel.text = "CHOOSE A WORLD";
     }
 
     private void SetClosedImmediate()
@@ -82,14 +82,14 @@ public sealed class HomeScenarioPanel : MonoBehaviour
             panelGroup.blocksRaycasts = false;
         }
         if (panelRect != null) panelRect.localScale = Vector3.one * 0.965f;
-        if (revealLabel != null) revealLabel.text = "WORLDS  /  CHOOSE YOUR NEXT DISCOVERY";
+        if (revealLabel != null) revealLabel.text = "CHOOSE A WORLD";
         for (int i = 0; i < cards.Count; i++) cards[i].localScale = Vector3.one * 0.84f;
     }
 
     private void Update()
     {
         float speed = isOpen ? 5.4f : 7.4f;
-        animation = Mathf.MoveTowards(animation, targetAnimation, Time.unscaledDeltaTime * speed);
+        animation = LumenAccessibility.ReducedMotion?targetAnimation:Mathf.MoveTowards(animation, targetAnimation, Time.unscaledDeltaTime * speed);
         float eased = animation * animation * (3f - 2f * animation);
 
         if (panelGroup != null)
@@ -101,7 +101,7 @@ public sealed class HomeScenarioPanel : MonoBehaviour
         if (panelRect != null) panelRect.localScale = Vector3.Lerp(Vector3.one * 0.965f, Vector3.one, eased);
         if (revealRect != null)
         {
-            float pulse = 1f + Mathf.Sin(Time.unscaledTime * 2.1f) * (isOpen ? 0.006f : 0.018f);
+            float pulse = LumenAccessibility.ReducedMotion?1f:1f + Mathf.Sin(Time.unscaledTime * 2.1f) * (isOpen ? 0.006f : 0.018f);
             revealRect.localScale = Vector3.one * pulse;
         }
 

@@ -222,26 +222,33 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             new Vector2(0.81f, 0.10f), new Vector2(0.975f, 0.90f), TextAlignmentOptions.Right);
 
         Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.13f, 0.94f), true);
-        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.455f, 0.265f), Vector2.zero, Vector2.zero);
+        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.065f), new Vector2(0.575f, 0.34f), Vector2.zero, Vector2.zero);
         CreateText(guidePanel.transform, "GuidePromptTitle", "KAI  /  YOUR COMPANION", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
-            new Vector2(0.045f, 0.77f), new Vector2(0.95f, 0.97f), TextAlignmentOptions.Left);
-        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask anything. I’ll help you find a place to begin.", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
-            new Vector2(0.045f, 0.59f), new Vector2(0.95f, 0.79f), TextAlignmentOptions.Left);
+            new Vector2(0.045f, 0.80f), new Vector2(0.95f, 0.98f), TextAlignmentOptions.Left);
+        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask a question or choose a portal.", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
+            new Vector2(0.045f, 0.66f), new Vector2(0.95f, 0.80f), TextAlignmentOptions.Left);
         targetText = CreateText(guidePanel.transform, "GuideConversation", "Welcome. Choose a world, or ask Kai where to begin.", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
             new Vector2(0.045f, 0.30f), new Vector2(0.95f, 0.60f), TextAlignmentOptions.Left);
+        var homeViewport=new GameObject("Home transcript viewport",typeof(RectTransform),typeof(Image),typeof(RectMask2D),typeof(ScrollRect));
+        homeViewport.transform.SetParent(guidePanel.transform,false);
+        var homeViewportRect=(RectTransform)homeViewport.transform;
+        Rect(homeViewportRect,new Vector2(.045f,.24f),new Vector2(.955f,.66f),Vector2.zero,Vector2.zero);
+        homeViewport.GetComponent<Image>().color=new Color(.03f,.06f,.08f,.25f);
+        targetText.transform.SetParent(homeViewport.transform,false);
+        var homeScroll=homeViewport.GetComponent<ScrollRect>();homeScroll.viewport=homeViewportRect;homeScroll.content=targetText.rectTransform;homeScroll.horizontal=false;
 
         TMP_InputField input = CreateInput(guidePanel.transform,
-            new Vector2(0.045f, 0.07f), new Vector2(0.72f, 0.28f), "Ask your guide...");
-        Button send = CreateButton(guidePanel.transform, "SendMessage", "LET'S GO", new Color(0.99f, 0.65f, 0.36f),
-            new Vector2(0.74f, 0.07f), new Vector2(0.955f, 0.28f), true);
+            new Vector2(0.045f, 0.035f), new Vector2(0.72f, 0.215f), "Ask your guide...");
+        Button send = CreateButton(guidePanel.transform, "SendMessage", "SEND", new Color(0.99f, 0.65f, 0.36f),
+            new Vector2(0.74f, 0.035f), new Vector2(0.955f, 0.215f), true);
         hubPortalPrompt = CreateText(root, "PortalInteractionPrompt", string.Empty,
             12, new Color(0.62f, 0.89f, 0.84f), FontStyles.Bold,
             new Vector2(0.025f, 0.875f), new Vector2(0.975f, 0.915f), TextAlignmentOptions.Center);
         WalkableHomeHub.BindPrompt(hubPortalPrompt);
-        CreateText(root, "VoiceControls", "WASD MOVE  ·  RIGHT-CLICK LOOK  ·  M TOGGLE MIC  ·  V PUSH TO TALK", 12, new Color(0.55f, 0.73f, 0.76f), FontStyles.Bold,
+        CreateText(root, "VoiceControls", "Controls in VISIT", 12, new Color(0.55f, 0.73f, 0.76f), FontStyles.Bold,
             new Vector2(0.66f, 0.035f), new Vector2(0.975f, 0.075f), TextAlignmentOptions.Right);
 
-        Button revealWorlds = CreateButton(root, "RevealWorlds", "WORLDS  /  CHOOSE YOUR NEXT DISCOVERY", new Color(0.36f, 0.75f, 0.79f, 0.96f),
+        Button revealWorlds = CreateButton(root, "RevealWorlds", "CHOOSE A WORLD", new Color(0.36f, 0.75f, 0.79f, 0.96f),
             new Vector2(0.025f, 0.805f), new Vector2(0.665f, 0.865f), true);
         scenarioPanel = canvas.gameObject.AddComponent<HomeScenarioPanel>();
         GameObject panelObject = new GameObject("ScenarioRevealPanel", typeof(RectTransform), typeof(CanvasGroup));
@@ -274,7 +281,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             home.userInputField = input;
             home.sendButton = send;
             home.chatOutputText = targetText;
-            home.autoManageChatLayout = false;
+            home.chatScrollRect=homeScroll;home.chatHorizontalPadding=8;home.chatVerticalPadding=4;home.minimumChatTextWidth=100;
+            home.autoManageChatLayout = true;
             home.maxStoredMessages = 5;
             targetText.fontSize = 14f;
             targetText.lineSpacing = 2f;
@@ -524,13 +532,14 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         Image illustration = CreateImage(card.transform, "IllustrationWash", new Color(accent.r, accent.g, accent.b, 0.18f), true);
         illustration.raycastTarget = false;
         Rect(illustration.rectTransform, new Vector2(0.035f, 0.43f), new Vector2(0.965f, 0.96f), Vector2.zero, Vector2.zero);
-        BuildIcon(card.transform, index, accent);
-        CreateText(card.transform, "CardNumber", number + "   /   " + category, 11, accent, FontStyles.Bold,
-            new Vector2(0.06f, 0.34f), new Vector2(0.94f, 0.43f), TextAlignmentOptions.Left);
+        illustration.gameObject.SetActive(false);
+        CreateText(card.transform, "CardNumber", number + " / " + category, 11, accent, FontStyles.Bold,
+            new Vector2(0.06f, 0.79f), new Vector2(0.94f, 0.99f), TextAlignmentOptions.Left);
         CreateText(card.transform, "CardTitle", title, 21, Paper, FontStyles.Bold,
-            new Vector2(0.06f, 0.19f), new Vector2(0.94f, 0.35f), TextAlignmentOptions.Left);
-        CreateText(card.transform, "CardDescription", description, 12, Muted, FontStyles.Normal,
-            new Vector2(0.06f, 0.035f), new Vector2(0.94f, 0.205f), TextAlignmentOptions.Left);
+            new Vector2(0.06f, 0.51f), new Vector2(0.94f, 0.79f), TextAlignmentOptions.Left);
+        string concise=index==0?"Forum, market and arena":index==1?"Explore science in 3D":index==2?"Coffee and conversation":"History, art and nature";
+        CreateText(card.transform, "CardDescription", concise, 12, Muted, FontStyles.Normal,
+            new Vector2(0.06f, 0.035f), new Vector2(0.94f, 0.51f), TextAlignmentOptions.Left);
     }
 
     private static void PositionHomeGuide()
@@ -601,27 +610,27 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         CharacterSelectionControl.Install(canvas,sceneName);
 
         Image interaction = CreateImage(root, "InteractionPrompt", new Color(0.035f, 0.055f, 0.09f, 0.88f), true);
-        Rect(interaction.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.37f, 0.15f), Vector2.zero, Vector2.zero);
-        CreateText(interaction.transform, "InteractionEyebrow", "LOOK AT SOMETHING TO EXPLORE IT", 11, new Color(0.97f, 0.72f, 0.43f), FontStyles.Bold,
-            new Vector2(0.06f, 0.68f), new Vector2(0.94f, 0.95f), TextAlignmentOptions.Left);
-        targetText = CreateText(interaction.transform, "InteractionObjectName", "Move your view over an object or person.", 15, Paper, FontStyles.Normal,
-            new Vector2(0.06f, 0.37f), new Vector2(0.94f, 0.69f), TextAlignmentOptions.Left);
-        CreateText(interaction.transform, "InteractionHint", "Press E to ask your guide about it", 12, Muted, FontStyles.Normal,
-            new Vector2(0.06f, 0.08f), new Vector2(0.94f, 0.38f), TextAlignmentOptions.Left);
+        Rect(interaction.rectTransform, new Vector2(0.025f, 0.065f), new Vector2(0.46f, 0.205f), Vector2.zero, Vector2.zero);
+        CreateText(interaction.transform, "InteractionEyebrow", "EXPLORE", 11, new Color(0.97f, 0.72f, 0.43f), FontStyles.Bold,
+            new Vector2(0.06f, 0.72f), new Vector2(0.94f, 0.98f), TextAlignmentOptions.Left);
+        targetText = CreateText(interaction.transform, "InteractionObjectName", "Look at an object or person.", 15, Paper, FontStyles.Normal,
+            new Vector2(0.06f, 0.33f), new Vector2(0.94f, 0.72f), TextAlignmentOptions.Left);
+        CreateText(interaction.transform, "InteractionHint", "E: ask your guide", 12, Muted, FontStyles.Normal,
+            new Vector2(0.06f, 0.02f), new Vector2(0.94f, 0.33f), TextAlignmentOptions.Left);
 
         if (sceneName == "Cafestore")
         {
             cafeOrders = canvas.gameObject.AddComponent<CafeOrderExperience>();
             cafeOrders.Initialize(canvas, chatManager);
-            Button orderButton = CreateButton(root, "OpenCafeMenu", "ORDER  /  VIEW MENU", new Color(0.92f, 0.52f, 0.45f),
+            Button orderButton = CreateButton(root, "OpenCafeMenu", "MENU", new Color(0.92f, 0.52f, 0.45f),
                 new Vector2(0.78f, 0.035f), new Vector2(0.975f, 0.095f), true);
             orderButton.onClick.AddListener(cafeOrders.Show);
-            CreateText(root, "CafeControls", "WASD MOVE  |  RIGHT-CLICK LOOK  |  ESC FREE CURSOR", 11, Muted, FontStyles.Bold,
+            CreateText(root, "CafeControls", "Controls in VISIT", 11, Muted, FontStyles.Bold,
                 new Vector2(0.40f, 0.035f), new Vector2(0.76f, 0.095f), TextAlignmentOptions.Right);
         }
         else
         {
-            CreateText(root, "WorldControls", "WASD MOVE  |  RIGHT-CLICK LOOK  |  ESC FREE CURSOR", 11, Muted, FontStyles.Bold,
+            CreateText(root, "WorldControls", "Controls in VISIT", 11, Muted, FontStyles.Bold,
                 new Vector2(0.40f, 0.035f), new Vector2(0.975f, 0.095f), TextAlignmentOptions.Right);
         }
     }
@@ -651,14 +660,14 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         if (responseHandler == null) responseHandler = services.AddComponent<AgentResponseHandler>();
 
         Image panel = CreateImage(root, "LocalGuideChat", new Color(0.045f, 0.067f, 0.095f, 0.94f), true);
-        Rect(panel.rectTransform, new Vector2(0.68f, 0.145f), new Vector2(0.975f, 0.89f), Vector2.zero, Vector2.zero);
+        Rect(panel.rectTransform, new Vector2(0.53f, 0.17f), new Vector2(0.975f, 0.86f), Vector2.zero, Vector2.zero);
         CreateText(panel.transform, "ChatEyebrow", "YOUR COMPANION", 12, new Color(0.56f, 0.87f, 0.77f), FontStyles.Bold,
             new Vector2(0.06f, 0.925f), new Vector2(0.94f, 0.985f), TextAlignmentOptions.Left);
         string scene = SceneManager.GetActiveScene().name;
         bool isMuseum = string.Equals(config.defaultScenario, "museum", System.StringComparison.OrdinalIgnoreCase);
-        string welcome = isMuseum ? "Walk through the Museum of Human Ideas"
-            : scene == "HistoricalPlace" ? "Explore Rome together"
-            : scene == "Cafestore" ? "Talk, order, and practise" : "Make a model make sense";
+        string welcome = isMuseum ? "Museum discoveries"
+            : scene == "HistoricalPlace" ? "Explore Rome"
+            : scene == "Cafestore" ? "Talk and practise" : "Explore a model";
         TMP_Text chatTitle = CreateText(panel.transform, "ChatTitle", welcome, 19, Paper, FontStyles.Bold,
             new Vector2(0.06f, 0.865f), new Vector2(0.94f, 0.945f), TextAlignmentOptions.Left);
         chatTitle.enableAutoSizing = true;
@@ -707,12 +716,12 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         if (chatManager == null) chatManager = services.AddComponent<ChatUIManager>();
         chatManager.ConfigureRuntimeChat(client, config, raycaster, input, send, transcript, status, scroll);
         panel.gameObject.SetActive(false); // Let the environment fill the arrival view.
-        Button collapse = CreateButton(root, "ToggleConversation", "CONVERSATION  /  OPEN", new Color(0.44f, 0.83f, 0.77f),
-            new Vector2(0.68f, 0.105f), new Vector2(0.975f, 0.14f), true);
+        Button collapse = CreateButton(root, "ToggleConversation", "CHAT", new Color(0.44f, 0.83f, 0.77f),
+            new Vector2(0.68f, 0.105f), new Vector2(0.975f, 0.165f), true);
         collapse.onClick.AddListener(() =>
         {
             panel.gameObject.SetActive(!panel.gameObject.activeSelf);
-            collapse.GetComponentInChildren<TMP_Text>().text = panel.gameObject.activeSelf ? "CONVERSATION  /  HIDE" : "CONVERSATION  /  OPEN";
+            collapse.GetComponentInChildren<TMP_Text>().text = panel.gameObject.activeSelf ? "CLOSE CHAT" : "CHAT";
         });
 
         string[] quickPrompts = isMuseum
@@ -725,13 +734,12 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         for (int i = 0; i < quickPrompts.Length; i++)
         {
             int index = i;
-            float chipWidth = quickPrompts.Length > 2 ? 0.215f : 0.435f;
-            float gap = quickPrompts.Length > 2 ? 0.018f : 0.03f;
-            float totalWidth = quickPrompts.Length * chipWidth + (quickPrompts.Length - 1) * gap;
-            float minX = (1f - totalWidth) * 0.5f + i * (chipWidth + gap);
+            float chipWidth = .435f;
+            float gap = .03f;
+            float minX = .05f + (i%2) * (chipWidth + gap);
             float maxX = minX + chipWidth;
             Button chip = CreateButton(panel.transform, "QuickPrompt" + i, quickPrompts[i], new Color(0.14f, 0.19f, 0.22f),
-                new Vector2(minX, 0.738f), new Vector2(maxX, 0.795f), true);
+                new Vector2(minX, .73f-(i/2)*.08f), new Vector2(maxX, .805f-(i/2)*.08f), true);
             TMP_Text chipText = chip.GetComponentInChildren<TMP_Text>();
             if (chipText != null)
             {
@@ -743,7 +751,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             }
             chip.onClick.AddListener(() => chatManager.SubmitWorldPrompt(quickPrompts[index]));
         }
-        Rect(viewportRect, new Vector2(0.045f, 0.20f), new Vector2(0.955f, 0.725f), Vector2.zero, Vector2.zero);
+        Rect(viewportRect, new Vector2(0.045f, 0.20f), new Vector2(0.955f, 0.63f), Vector2.zero, Vector2.zero);
     }
 
     private void Update()
@@ -753,12 +761,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         ObjectMetadata target = raycaster != null ? raycaster.CurrentObject : null;
         if (target != null)
         {
-            string hint = string.IsNullOrWhiteSpace(target.interactionHint) ? "Press E to ask your guide about it" : "Press E  ·  " + target.interactionHint;
-            targetText.text = target.GetDisplayName() + "\n" + hint;
+            targetText.text = target.GetDisplayName();
         }
         else
         {
-            targetText.text = "Move your view over an object or person.\nPress E to ask your guide about it";
+            targetText.text = "Look at an object or person.";
         }
 
         bool interact = false;
@@ -1001,7 +1008,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         text.fontSize = 16;
         text.color = new Color(0.86f, 0.94f, 0.93f);
         text.alignment = TextAlignmentOptions.MidlineLeft;
-        text.margin = new Vector4(20, 6, 16, 6);
+        text.margin = new Vector4(12, 0, 12, 0);
         // The text graphic sits above the input-field background in the
         // GraphicRaycaster. Let pointer events reach TMP_InputField itself so
         // a first click reliably focuses the box instead of the 3D controller.

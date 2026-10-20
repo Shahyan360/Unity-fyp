@@ -627,6 +627,8 @@ public class HomeUIManager : MonoBehaviour
         chatTextRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferredHeight);
     }
 
+    public void RefreshReadability(){if(autoManageChatLayout)ResizeChatTextToContent();}
+
     private float ApplyChatTextWidth(RectTransform chatTextRect, RectTransform viewportRect)
     {
         float width = fallbackChatTextWidth;
