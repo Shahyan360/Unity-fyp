@@ -57,6 +57,17 @@ public sealed class LumenLiveWalkVerification:MonoBehaviour
         while(!action.Terminal&&Time.realtimeSinceStartup<until)yield return null;
         Check(action.Succeeded,"Local walk "+command+" / "+action.reason);
     }
+    private IEnumerator ManualCancelProbe()
+    {
+        if(++report.questions>14){Check(false,"Question budget exceeded");Finish();yield break;}
+        var live=GeminiLiveConversation.Instance;
+        live.SendText("Describe a museum visit in ten detailed sentences, without images.",r=>{},s=>{},e=>{});
+        float until=Time.realtimeSinceStartup+15;while(!live.IsSpeaking&&Time.realtimeSinceStartup<until)yield return null;
+        Check(live.IsSpeaking,"Real provider speech is active before manual turn cancellation");string reply=live.LastReply;
+        live.CancelReply();yield return new WaitForSecondsRealtime(2);
+        Check(!live.IsSpeaking&&live.BufferedSeconds<.01f&&live.OutputLevel<.005f,"Manual turn cancellation leaves no old PCM playing");
+        Check(live.LastReply==reply,"Cancelled turn cannot publish a late reply");
+    }
     private IEnumerator Journey()
     {
         Screen.SetResolution(1600,900,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(4);
@@ -72,6 +83,7 @@ public sealed class LumenLiveWalkVerification:MonoBehaviour
                 // A bounded external acceptance step may restart the owned local service here.
                 yield return new WaitForSecondsRealtime(20);yield return Ready();
                 yield return Ask("What is my name, and what topic did I say I enjoy?","Robin");
+                yield return ManualCancelProbe();
                 GeminiLiveConversation.Instance.Reconnect();yield return Ready();yield return Ask("After reconnecting, what interest did I ask you to remember?","astronomy");
                 var helper=FindAnyObjectByType<ScenarioCharacterIdentity>();var guide=helper.GetComponent<WalkableGuideFollower>();VoiceCommandRouter.Execute("follow me");Check(guide!=null&&guide.IsFollowing,"Home follower active during live walkthrough");
             }
