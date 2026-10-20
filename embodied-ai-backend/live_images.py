@@ -47,7 +47,7 @@ def eligible(metadata):
 
 def cache_root():
     # Keep downloads off C even when launched by the user's normal Python.
-    return Path(os.environ.get("LUMEN_IMAGE_CACHE", "D:/LumenProject/Cache/LiveImages"))
+    return Path(os.environ.get("LUMEN_IMAGE_CACHE", str(Path(os.getenv("LOCALAPPDATA", str(Path.home() / ".cache"))) / "Lumen" / "LiveImages")))
 
 
 def prune_cache(root):

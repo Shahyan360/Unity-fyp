@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

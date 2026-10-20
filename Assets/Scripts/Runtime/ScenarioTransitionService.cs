@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;

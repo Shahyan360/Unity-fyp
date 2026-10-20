@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 import os
 if __name__ == "__main__":
-    _voice_python = "D:/LumenTools/VoiceRuntime/Scripts/python.exe"
+    _voice_python = os.getenv("LUMEN_PYTHON", "")
     if os.path.isfile(_voice_python) and os.path.normcase(os.path.abspath(sys.executable)) != os.path.normcase(os.path.abspath(_voice_python)):
         os.execv(_voice_python, [_voice_python, os.path.abspath(__file__), *sys.argv[1:]])
 
@@ -125,6 +125,7 @@ SCENARIO_ALIASES = {
 class Session:
     scenario: str
     created_at: float = field(default_factory=time.time)
+    last_seen: float = field(default_factory=time.time)
     history: list[dict[str, str]] = field(default_factory=list)
     coaching_mode: str = ""
     coaching_turn: int = 0
@@ -134,26 +135,44 @@ class Session:
 class LocalStore:
     """In-memory private session store. No conversation is written to disk."""
 
-    def __init__(self) -> None:
+    def __init__(self, max_sessions=64, ttl_seconds=1800, clock=time.time) -> None:
         self.sessions: dict[str, Session] = {}
+        self.max_sessions = max(1, max_sessions)
+        self.ttl_seconds = max(1, ttl_seconds)
+        self.clock = clock
+        self.lock = threading.RLock()
+
+    def expire(self):
+        with self.lock:
+            now = self.clock()
+            for key in list(self.sessions):
+                if now - self.sessions[key].last_seen >= self.ttl_seconds:
+                    del self.sessions[key]
 
     def create(self, scenario: str) -> tuple[str, Session]:
-        identifier = uuid.uuid4().hex
-        session = Session(scenario=scenario)
-        self.sessions[identifier] = session
-        return identifier, session
+        with self.lock:
+            self.expire()
+            while len(self.sessions) >= self.max_sessions:
+                del self.sessions[min(self.sessions, key=lambda k: self.sessions[k].last_seen)]
+            identifier = uuid.uuid4().hex
+            session = Session(scenario=scenario, created_at=self.clock(), last_seen=self.clock())
+            self.sessions[identifier] = session
+            return identifier, session
 
     def get_or_create(self, session_id: str | None, scenario: str) -> tuple[str, Session]:
-        if session_id and session_id in self.sessions:
-            session = self.sessions[session_id]
-            if session.scenario != scenario:
-                session.scenario = scenario
-                session.history.clear()
-                session.character_state.clear()
-                session.coaching_mode = ""
-                session.coaching_turn = 0
-            return session_id, session
-        return self.create(scenario)
+        with self.lock:
+            self.expire()
+            if session_id and session_id in self.sessions:
+                session = self.sessions[session_id]
+                session.last_seen = self.clock()
+                if session.scenario != scenario:
+                    session.scenario = scenario
+                    session.history.clear()
+                    session.character_state.clear()
+                    session.coaching_mode = ""
+                    session.coaching_turn = 0
+                return session_id, session
+            return self.create(scenario)
 
 
 def read_knowledge(scenario: str, query: str, limit: int = 4) -> list[str]:
@@ -517,7 +536,13 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     )
     if test_config:
         app.config.update(test_config)
-    CORS(app, resources={r"/*": {"origins": "*"}})  # Unity standalone uses a local origin.
+    app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
+    CORS(app, resources={r"/*": {"origins": [r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?$"]}})
+    @app.before_request
+    def desktop_origin_boundary():
+        from gemini_live import allowed_origin
+        if not allowed_origin(request.headers.get("Origin", "")):
+            return jsonify({"error": "This desktop service accepts native and loopback clients only."}), 403
     from gemini_live import register_live
     register_live(app)
     from live_images import register_images
@@ -602,10 +627,29 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/sessions/<session_id>/history")
     def session_history(session_id: str):
+        store.expire()
         session = store.sessions.get(session_id)
         if not session:
             return jsonify({"error": "Session was not found or has expired."}), 404
         return jsonify({"session_id": session_id, "scenario": session.scenario, "history": session.history})
+
+    @app.delete("/sessions/<session_id>")
+    def reset_session(session_id):
+        with store.lock:
+            store.sessions.pop(session_id, None)
+        return jsonify({"reset": True})
+
+    @app.post("/coaching/end")
+    def coaching_end():
+        payload = request.get_json(silent=True) or {}
+        if not isinstance(payload, dict):
+            return jsonify({"error": "Request body must be an object."}), 400
+        store.expire()
+        session = store.sessions.get(payload.get("session_id", ""))
+        if session:
+            session.coaching_mode = ""
+            session.coaching_turn = 0
+        return jsonify({"active": False})
 
     @app.post("/coaching/start")
     def coaching_start():

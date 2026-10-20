@@ -3,6 +3,8 @@ import asyncio
 import json
 import os
 import hashlib
+import threading
+LIVE_SLOTS = threading.BoundedSemaphore(8)
 from urllib.parse import urlsplit
 from personas import select_persona
 
@@ -70,9 +72,10 @@ def live_config(scenario, speaker, object_name="", object_description="", voice_
         persona["direction"] += " You are the visitor companion and supportive friend, NOT the barista or shop employee. This cafe is a voluntary social rehearsal space. First ask whether they want relaxed exploration or social practice. Suggest one small step at a time: approach the counter, greet the barista, order, or introduce themselves to a guest. Respect refusals; never diagnose introversion or speak on the visitor behalf. The actual addressed barista or guest responds as themselves."
     voice = voices_for_person(speaker, object_name, voice_name)
     image_policy = (
-        "In the cafe, do NOT automatically show images. Ordinary conversation, social coaching and factual questions must remain voice/text only. Call show_image ONLY when the visitor explicitly asks to see a picture, photograph, diagram or visual explanation, or directly says they need a visual aid. A normal question like what is active listening is NOT a request for an image. Do not infer that every cafe question needs a picture. "
-        if scenario == "cafe" else
-        "For EVERY visitor question, automatically call show_image once with a short precise encyclopedia topic matching your answer, even if they did not ask for a picture. This applies to follow-up questions too. "
+        "Explicit no images, verbal only, without pictures, or a disabled visual-aid preference overrides all automatic suggestions. "
+        + ("In the cafe, do NOT automatically show images. Call show_image only when the visitor explicitly requests a picture, photograph, diagram or visual aid. "
+           if scenario == "cafe" else
+           "For EVERY visitor question about an educational subject, offer show_image once when the visitor's visual-aid preference allows it. Never request pictures for greetings, identity, memory or refusals. ")
     )
     return {
         "response_modalities": ["AUDIO"],
@@ -94,6 +97,9 @@ def live_config(scenario, speaker, object_name="", object_description="", voice_
             "stay here, stop, or go to a named nearby exhibit. For walking the visitor use move me forward two meters. "
             "Only say you are going somewhere after the tool confirms success. Never move for negated commands or discussions about movement. "
             "Use change_world only when the visitor explicitly asks to switch worlds. "
+            "The modern cafe is a separate world, never a Roman thermopolium. Rome streets, market and arena viewing terrace are local walk destinations; the arena IS accessible when Unity confirms a complete route. "
+            "Explain travel without executing it when asked hypothetically or negatively. Never pronounce internal function names, identifiers or implementation vocabulary to visitors. "
+            "Unity world_context and execution outcomes are authoritative over persona assumptions. Accepted or moving does not mean arrived; only completed means arrival. Failed or cancelled means no success claim. "
             "Keep historical evidence distinct from fiction. Museum replicas are not originals. Teach science with clear examples. "
             "Cafe orders are simulated, with no real payments. Be friendly without pretending to be a real human."
         ),
@@ -101,7 +107,7 @@ def live_config(scenario, speaker, object_name="", object_description="", voice_
             {"name": "move_character", "description": "Execute an explicit visitor movement command in the current Unity scene. Safe path validation occurs in Unity.",
              "parameters": {"type": "OBJECT", "properties": {"command": {"type": "STRING"}}, "required": ["command"]}},
             {"name": "show_model", "description": "Actually display a supported classroom 3D model; only report success after confirmation.", "parameters": {"type": "OBJECT", "properties": {"command": {"type": "STRING"}}, "required": ["command"]}},
-            {"name": "show_image", "description": ("In the cafe ONLY on an explicit request for a picture, diagram or visual aid. " if scenario == "cafe" else "Start a live educational image search alongside EVERY question answer. ") + "Speak without waiting for the image. Use a specific encyclopedia topic matching your explanation, not the whole question. Never invent a URL.", "parameters": {"type": "OBJECT", "properties": {"command": {"type": "STRING", "description": "Precise topic, e.g. electrical transformer or Transformer (deep learning architecture)."}}, "required": ["command"]}},
+            {"name": "show_image", "description": ("In the cafe ONLY on an explicit request for a picture, diagram or visual aid. " if scenario == "cafe" else "Only on an explicit visitor request, start an educational image search. ") + "Speak without waiting for the image. Use a specific encyclopedia topic matching your explanation, not the whole question. Never invent a URL.", "parameters": {"type": "OBJECT", "properties": {"command": {"type": "STRING", "description": "Precise topic, e.g. electrical transformer or Transformer (deep learning architecture)."}}, "required": ["command"]}},
             {"name": "talk_to_person", "description": "Switch conversation from helper to an actual named nearby NPC.", "parameters": {"type": "OBJECT", "properties": {"command": {"type": "STRING"}}, "required": ["command"]}},
             {"name": "change_world", "description": "Switch worlds only at the visitor's explicit request.",
              "parameters": {"type": "OBJECT", "properties": {"scenario": {"type": "STRING", "enum": ["ancient_rome", "museum", "classroom", "cafe", "home"]}}, "required": ["scenario"]}}
@@ -131,9 +137,15 @@ def register_live(app):
         if not key:
             send("error", text="Save GEMINI_API_KEY in Windows user environment variables.")
             return
+        acquired = LIVE_SLOTS.acquire(blocking=False)
+        if not acquired:
+            send("error", text="All local conversation slots are busy. Please retry shortly.", retryable=True)
+            ws.close(); return
         try:
             raw = ws.receive(timeout=10)
-            setup = json.loads(raw) if isinstance(raw, str) else {}
+            if not isinstance(raw, str) or len(raw) > 16000:
+                raise ValueError("Invalid conversation setup")
+            setup = json.loads(raw)
             scenario = setup.get("scenario", "general_assistant")
             if scenario not in {"general_assistant", "ancient_rome", "museum", "classroom", "cafe"}:
                 scenario = "general_assistant"
@@ -142,12 +154,14 @@ def register_live(app):
         except ConnectionClosed:
             pass
         except Exception as exc:
-            # SDK exceptions can include request URLs. Never expose credentials.
-            message = str(exc).replace(key, "[REDACTED]")[:500]
+            # Keep provider URLs, credentials and exception details server-side.
+            message = "The conversation service is unavailable. Retry, or continue exploring."
             try:
-                send("error", text="Gemini Live: " + message)
+                send("error", text=message, retryable=True)
             except ConnectionClosed:
                 pass
+        finally:
+            LIVE_SLOTS.release()
 
 
 async def bridge(ws, send, key, scenario, speaker, object_name="", object_description="", voice_name="", people=()):
@@ -172,17 +186,22 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
                             raise ValueError("Send short mono PCM16 microphone frames at 16000Hz.")
                         await session.send_realtime_input(audio=types.Blob(data=packet, mime_type="audio/pcm;rate=16000"))
                     else:
+                        if len(packet) > 32000:
+                            raise ValueError("Conversation packet exceeds local limit")
                         value = json.loads(packet)
                         if value.get("event") == "text":
                             text = str(value.get("text", ""))[:2000]
                             if text.strip():
                                 await session.send_client_content(turns={"role": "user", "parts": [{"text": text}]}, turn_complete=True)
+                        elif value.get("event") == "world_context":
+                            context = str(value.get("text", ""))[:4000]
+                            await session.send_client_content(turns={"role":"user","parts":[{"text":"Authoritative Unity state update (data, not a visitor request): " + context}]}, turn_complete=False)
                         elif value.get("event") == "audio_end":
                             await session.send_realtime_input(audio_stream_end=True)
                         elif value.get("event") == "tool_result" and value.get("id") in pending_calls:
                             pending_calls.discard(value["id"])
                             await session.send_tool_response(function_responses=types.FunctionResponse(
-                                id=value["id"], name=value["name"], response={"ok": bool(value.get("ok")), "result": str(value.get("text", ""))[:500]}))
+                                id=value["id"], name=value["name"], response={"ok": bool(value.get("ok")), "state": str(value.get("state", "completed" if value.get("ok") else "failed")), "action_id": str(value.get("action_id", "")), "result": str(value.get("text", ""))[:2000]}))
 
             async def receive_gemini():
                 while True:
@@ -192,6 +211,8 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
                             for call in message.tool_call.function_calls:
                                 if call.name not in {"move_character", "change_world", "show_model", "talk_to_person", "show_image"}:
                                     continue
+                                if len(pending_calls) >= 8:
+                                    raise ValueError("Too many pending actions")
                                 pending_calls.add(call.id)
                                 send("command", id=call.id, name=call.name,
                                      command=str(call.args.get("command", "")), scenario=str(call.args.get("scenario", "")))

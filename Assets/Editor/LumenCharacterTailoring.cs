@@ -8,7 +8,7 @@ using UnityEngine;
 /// <summary>Exports the exact imported rest anatomy for fitted Blender garments.</summary>
 public static class LumenCharacterTailoring
 {
-    private const string Working = "D:/LumenProject/Art/CharacterTailoring";
+    private static string Working => Path.GetFullPath(Path.Combine(Application.dataPath,"../../Art/CharacterTailoring"));
     [Serializable] public sealed class Surface { public string name, color, normal;public int[] triangles; }
     [Serializable] public sealed class Bone { public string name;public Vector3 position; }
     [Serializable] public sealed class Weight { public int[] bones;public float[] values; }
@@ -20,7 +20,7 @@ public static class LumenCharacterTailoring
     public static void ExportReferences()
     {
         Directory.CreateDirectory(Working+"/Reference");
-        foreach(string name in new[]{"Kai","Orion","Theo","Marcus"})
+        foreach(string name in new[]{"Kai","Orion","Theo","Marcus","Maya"})
         {
             var prefab=Resources.Load<GameObject>("ScenarioCharacters/"+name);
             var skin=prefab.GetComponentInChildren<SkinnedMeshRenderer>();var mesh=skin.sharedMesh;

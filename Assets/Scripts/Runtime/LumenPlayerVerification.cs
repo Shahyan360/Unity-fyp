@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +14,9 @@ public sealed class LumenPlayerVerification : MonoBehaviour
 {
     [Serializable] private sealed class FrameReport
     {
-        public string view, scene, guide, graphics;
+        public string view, scene, variant, guide, graphics, buildId, captureFile;
+        public Vector3 cameraPosition, cameraEuler;
+        public int width, height;
         public int frames, people, validNavigators, navigators, missingComponents, errorMaterials;
         public float averageFrameMs, maximumFrameMs;
         public float maximumJaw;
@@ -21,7 +24,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     }
     [Serializable] private sealed class RunReport
     {
-        public string unity, startedUtc, completedUtc, status = "Running";
+        public string unity, buildId, startedUtc, completedUtc, status = "Running";
         public List<string> errors = new List<string>();
         public List<string> checks = new List<string>();
         public List<string> invalidMaterials = new List<string>();
@@ -32,6 +35,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     private string output;
     private float deadline;
     private bool finished;
+    private string expectedScene="HomeScene", expectedVariant="general_assistant";
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void StartIfRequested()
@@ -49,7 +53,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     {
         output = Path.GetFullPath(directory);
         Directory.CreateDirectory(output);
-        report = new RunReport { unity = Application.unityVersion, startedUtc = DateTime.UtcNow.ToString("O") };
+        report = new RunReport { unity = Application.unityVersion, buildId = Application.buildGUID, startedUtc = DateTime.UtcNow.ToString("O") };
         foreach (string key in new[] { ScenarioRuntimeManager.SelectedScenarioKey, "Lumen.Character.HomeScene", "Lumen.Character.Classroom", "Lumen.Character.Museum", "Lumen.Character.HistoricalPlace", "Lumen.Character.Cafestore" })
             preferences[key] = PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null;
         Application.logMessageReceived += OnLog;
@@ -82,10 +86,11 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         yield return new WaitForSecondsRealtime(4);
         Check(SceneManager.GetActiveScene().name == "HomeScene", "Startup opens HomeScene");
         yield return Capture("01-opening");
-        // Exercise the actual frontend card, including its installed listener.
-        var card = GameObject.Find("Enter ANCIENT ROME");
-        Check(card != null && card.GetComponent<Button>() != null, "Opening Rome card exists");
-        if (card != null) card.GetComponent<Button>().onClick.Invoke();
+        // Exercise the real portal component, independent of decorative button text.
+        var portal = FindObjectsByType<HomeHubPortal>().FirstOrDefault(p=>p.scenario=="ancient_rome");
+        Check(portal!=null,"Rome portal exists");
+        if(portal==null){Finish();yield break;}
+        portal.Enter();
         yield return WaitScene("HistoricalPlace");
         SetView(new Vector3(0,1.8f,-28), Quaternion.identity);
         yield return Capture("02-rome-streets");
@@ -98,7 +103,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         yield return Capture("04-market");
 
         ScenarioTransitionService.LoadScenario("museum");
-        yield return WaitScene("Classroom");
+        yield return WaitScene("Classroom","museum");
         yield return Capture("05-museum-arrival");
         Check(GameObject.Find("Natural history wing") != null && GameObject.Find("Historical collections") != null && GameObject.Find("Painting gallery") != null, "Three connected museum wings exist");
         foreach (int number in new[] { 436535, 436105, 11417 })
@@ -126,6 +131,11 @@ public sealed class LumenPlayerVerification : MonoBehaviour
             for (int i=0;i<CharacterWardrobe.Styles.Length;i++)
             {
                 selector.onClick.Invoke();
+                string style=CharacterWardrobe.Styles[i];
+                var choice=GameObject.Find("Choose "+style)?.GetComponent<Button>();
+                Check(choice!=null,"Named guide entry "+style+" exists");
+                if(choice==null){Finish();yield break;}
+                choice.onClick.Invoke();
                 yield return new WaitForSecondsRealtime(.8f);
                 seen.Add(guide.DisplayName);
                 yield return Capture("09-guide-"+i);
@@ -151,7 +161,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
                     SetView(new Vector3(84,1.3f,57.3f),Quaternion.Euler(4,0,0));
                 }
             }
-            Check(seen.Count == 6, "Actual guide selector cycles six distinct appearances");
+            Check(seen.Count == 6, "Named guide entries select six distinct appearances");
         }
 
         ScenarioTransitionService.LoadScenario("cafe");
@@ -160,7 +170,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         Check(FindAnyObjectByType<CafeOrderExperience>() != null, "Cafe order experience installed");
         Check(FindAnyObjectByType<ScenarioCharacterIdentity>()?.DisplayName == "Maya", "Cafe default guide is Maya");
         ScenarioTransitionService.LoadScenario("classroom");
-        yield return WaitScene("Classroom");
+        yield return WaitScene("Classroom","classroom");
         Check(ClassroomLearningExhibit.ShowModel("Solar System"), "Science Solar System exhibit opens");
         yield return Capture("11-science");
         ScenarioTransitionService.LoadHome();
@@ -169,12 +179,17 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         Finish();
     }
 
-    private IEnumerator WaitScene(string scene)
+    private IEnumerator WaitScene(string scene,string variant=null)
     {
+        expectedScene=scene;
+        expectedVariant=variant??ScenarioRuntimeManager.GetScenarioForScene(scene);
         float until = Time.realtimeSinceStartup + 30;
         while (SceneManager.GetActiveScene().name != scene && Time.realtimeSinceStartup < until) yield return null;
         Check(SceneManager.GetActiveScene().name == scene, "Transition to "+scene);
         yield return new WaitForSecondsRealtime(3);
+        bool valid=SceneManager.GetActiveScene().name==scene&&ScenarioRuntimeManager.GetScenarioForScene(scene)==expectedVariant;
+        Check(valid,"Actual scene/variant matches "+scene+" / "+expectedVariant);
+        if(!valid){Finish();StopAllCoroutines();}
     }
     private void SetView(Vector3 position, Quaternion rotation)
     {
@@ -184,7 +199,17 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     }
     private IEnumerator Capture(string name,float duration=1.5f)
     {
-        var frame = new FrameReport { view = name, scene = SceneManager.GetActiveScene().name, graphics = SystemInfo.graphicsDeviceType.ToString() };
+        string scene=SceneManager.GetActiveScene().name;
+        string variant=ScenarioRuntimeManager.GetScenarioForScene(scene);
+        if(finished||scene!=expectedScene||variant!=expectedVariant)
+        {
+            Check(false,"Capture aborted: expected "+expectedScene+"/"+expectedVariant+", actual "+scene+"/"+variant);
+            Finish();StopAllCoroutines();yield break;
+        }
+        var frame = new FrameReport { view=name,scene=scene,variant=variant,buildId=Application.buildGUID,
+            graphics=SystemInfo.graphicsDeviceType.ToString(),width=Screen.width,height=Screen.height,
+            cameraPosition=Camera.main.transform.position,cameraEuler=Camera.main.transform.eulerAngles };
+        frame.captureFile=name+"__"+scene+"__"+variant+"__"+Application.buildGUID+".png";
         float until = Time.realtimeSinceStartup + duration, total=0;
         var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();
         var facial=identity!=null?identity.GetComponentsInChildren<SkinnedMeshRenderer>().FirstOrDefault(s=>s.sharedMesh.blendShapeCount>0):null;
@@ -220,7 +245,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         Check(frame.missingComponents==0,name+" has no missing components");
         Check(frame.errorMaterials==0,name+" has no missing/error material shaders");
         yield return new WaitForEndOfFrame();
-        ScreenCapture.CaptureScreenshot(Path.Combine(output,name+".png"));
+        ScreenCapture.CaptureScreenshot(Path.Combine(output,frame.captureFile));
         yield return new WaitForEndOfFrame();yield return null;
         File.WriteAllText(Path.Combine(output,"journey.json"),JsonUtility.ToJson(report,true));
     }

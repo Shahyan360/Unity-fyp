@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;

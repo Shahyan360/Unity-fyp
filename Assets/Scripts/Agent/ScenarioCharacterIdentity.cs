@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using UnityEngine;
 
 /// <summary>Scenario host identity, presentation, and offline voice preferences.</summary>

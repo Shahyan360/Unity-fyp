@@ -9,7 +9,7 @@ from pathlib import Path
 
 class SpeechService:
     def __init__(self):
-        self.model_path = os.getenv("LUMEN_STT_MODEL", "D:/LumenTools/VoiceModels/base.en")
+        self.model_path = os.getenv("LUMEN_STT_MODEL", str(Path(__file__).resolve().parent / "runtime" / "models" / "base.en"))
         self.model = None
         self.error = ""
         self.lock = threading.Lock()
@@ -24,7 +24,7 @@ class SpeechService:
         if self.model is None:
             from faster_whisper import WhisperModel
             if not Path(self.model_path, "model.bin").is_file():
-                raise RuntimeError("Local speech model is not installed on D. Run Tools/Voice/setup_voice.py.")
+                raise RuntimeError("Local speech model is unavailable. Configure LUMEN_STT_MODEL to an installed model directory.")
             self.model = WhisperModel(self.model_path, device="cpu", compute_type="int8", cpu_threads=2, num_workers=1)
 
     def warm(self):
