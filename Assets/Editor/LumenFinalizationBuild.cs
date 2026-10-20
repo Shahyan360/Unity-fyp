@@ -25,6 +25,7 @@ public static class LumenFinalizationBuild
         catch(Exception error) { File.WriteAllText(Path.Combine(root,"Evidence","baseline-build-error.txt"),error.ToString()); Debug.LogException(error); }
     }
     public static void Baseline() => Build("Baseline");
+    public static void Diagnostics() => Build("Diagnostics");
     public static void Candidate()
     {
         PlayerSettings.productName="Lumen";PlayerSettings.companyName="";PlayerSettings.bundleVersion="0.2.0";
@@ -41,11 +42,11 @@ public static class LumenFinalizationBuild
         string root=Path.GetFullPath(Path.Combine(Application.dataPath,"../.."));
         string output=Path.Combine(root,"Builds",stage+"-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
         Directory.CreateDirectory(output);
-        File.WriteAllText(Path.Combine(root,"Evidence","latest-build-path.txt"),output);
+        File.WriteAllText(Path.Combine(root,"Evidence",stage=="Diagnostics"?"latest-diagnostics-build-path.txt":"latest-build-path.txt"),output);
         var options=new BuildPlayerOptions {
             scenes=stage=="Baseline"?EditorBuildSettings.scenes.Where(s=>s.enabled).Select(s=>s.path).ToArray():new[]{"Assets/Scenes/HomeScene.unity","Assets/Scenes/Classroom.unity","Assets/Scenes/HistoricalPlace.unity","Assets/Scenes/Cafestore.unity"},
             target=BuildTarget.StandaloneWindows64,locationPathName=Path.Combine(output,"Lumen.exe"),
-            options=BuildOptions.DetailedBuildReport
+            options=BuildOptions.DetailedBuildReport|(stage=="Diagnostics"?BuildOptions.Development:BuildOptions.None)
         };
         var report=BuildPipeline.BuildPlayer(options);
         File.WriteAllText(Path.Combine(output,"build-result.txt"),

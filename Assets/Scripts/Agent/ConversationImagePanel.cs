@@ -73,7 +73,7 @@ public sealed class ConversationImagePanel : MonoBehaviour
         Button(panel.transform,"RETRY",new Vector2(.045f,.018f),new Vector2(.25f,.078f),()=>RequestImage(topic,backend));
         Button(panel.transform,"SOURCE",new Vector2(.28f,.018f),new Vector2(.50f,.078f),()=>OpenSource(false));
         Button(panel.transform,"LICENSE",new Vector2(.53f,.018f),new Vector2(.75f,.078f),()=>OpenSource(true));
-        Button(root.transform,"PICTURE",new Vector2(.025f,.86f),new Vector2(.097f,.90f),()=>panel.SetActive(!panel.activeSelf));
+        Button(root.transform,"PICTURE",new Vector2(.025f,.87f),new Vector2(.15f,.92f),()=>panel.SetActive(!panel.activeSelf));
         panel.SetActive(false);picture.enabled=false;
     }
     public void BeginQuestion(string text,bool automatic=true)
@@ -93,7 +93,10 @@ public sealed class ConversationImagePanel : MonoBehaviour
     }
     public void RequestImage(string query,string backendUrl)
     {
-        EnsureUi();DockBesideSpeaker();RequestedForTurn=true;backend=backendUrl.TrimEnd('/');topic=(query??"").Trim();
+        EnsureUi();DockBesideSpeaker();RequestedForTurn=true;
+        if(string.IsNullOrWhiteSpace(backendUrl))
+        {CancelSearch();ClearImage();current=null;panel.SetActive(true);Unavailable("Ask the assistant for an image first.");return;}
+        backend=backendUrl.TrimEnd('/');topic=(query??"").Trim();
         if(topic.Length>160)topic=topic.Substring(0,160);
         CancelSearch();ClearImage();current=null;panel.SetActive(true);
         title.text=string.IsNullOrWhiteSpace(topic)?"No image available":topic;status.text="Looking up an image…";credits.text="Finding a source and checking image credits.";State="Searching";

@@ -247,7 +247,7 @@ public class HomeUIManager : MonoBehaviour
             sendButton.interactable = false;
         }
 
-        AddAssistantMessage("Lumen is thinking on-device…");
+        AddAssistantMessage("Thinking…");
 
         StartCoroutine(aiClient.SendChatMessage(
             userMessage,
@@ -294,12 +294,12 @@ public class HomeUIManager : MonoBehaviour
             sendButton.interactable = true;
         }
 
-        AddAssistantMessage($"I could not reach the backend yet. {errorMessage}");
+        AddAssistantMessage("The assistant is unavailable. You can keep exploring, choose offline labels in Visit, or retry from the guide menu.");
     }
 
     private void RemoveLastThinkingMessage()
     {
-        if (chatLines.Count > 0 && chatLines[chatLines.Count - 1] == "Assistant: Lumen is thinking on-device…")
+        if (chatLines.Count > 0 && chatLines[chatLines.Count - 1] == "Assistant: Thinking…")
         {
             chatLines.RemoveAt(chatLines.Count - 1);
         }

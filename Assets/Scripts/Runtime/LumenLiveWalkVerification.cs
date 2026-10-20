@@ -69,13 +69,18 @@ public sealed class LumenLiveWalkVerification:MonoBehaviour
             if(index==0)
             {
                 yield return Ask("Please remember that my name is Robin and I enjoy astronomy. Briefly introduce yourself.","Kai");
-                GeminiLiveConversation.Instance.Reconnect();yield return Ready();yield return Ask("What is my name, and what topic did I say I enjoy?","Robin");
+                // A bounded external acceptance step may restart the owned local service here.
+                yield return new WaitForSecondsRealtime(20);yield return Ready();
+                yield return Ask("What is my name, and what topic did I say I enjoy?","Robin");
+                GeminiLiveConversation.Instance.Reconnect();yield return Ready();yield return Ask("After reconnecting, what interest did I ask you to remember?","astronomy");
                 var helper=FindAnyObjectByType<ScenarioCharacterIdentity>();var guide=helper.GetComponent<WalkableGuideFollower>();VoiceCommandRouter.Execute("follow me");Check(guide!=null&&guide.IsFollowing,"Home follower active during live walkthrough");
             }
             else if(index==1)
             {
                 yield return Ask("Take me to the market.");Check(VoiceCommandRouter.LastExecution?.Succeeded==true&&VoiceCommandRouter.LastExecution.target.Contains("market"),"Live market tool arrived");
                 yield return Ask("Take me inside the Colosseum to watch the fight.");Check(VoiceCommandRouter.LastExecution?.Succeeded==true&&VoiceCommandRouter.LastExecution.target.Contains("arena"),"Live arena tool arrived");
+                FindAnyObjectByType<ScenarioCharacterIdentity>().ApplyAppearance("RomanGuard");yield return new WaitForSecondsRealtime(1.5f);yield return Ready();
+                yield return Ask("Who are you, and were you a real guard from ancient history? Answer briefly, without images.","Lucius");
             }
             else if(index==2)
             {
@@ -92,6 +97,7 @@ public sealed class LumenLiveWalkVerification:MonoBehaviour
             else
             {
                 yield return Ask("Are you the barista or my practice companion?","companion");
+                yield return Ask("What is my name, and which interest did I explicitly ask you to remember?","Robin");
                 yield return Ask("I want to start a conversation with a guest. Suggest one small opening without pictures.");
             }
             while(Time.realtimeSinceStartupAsDouble-segment<120&&!finished)

@@ -59,8 +59,15 @@ public sealed class LumenFunctionalVerification:MonoBehaviour
     private IEnumerator Run()
     {
         yield return new WaitForSecondsRealtime(3);yield return Load("home");if(finished)yield break;
+        var imagePanel=GeminiLiveConversation.Instance.Images;imagePanel.RequestImage("DNA",null);
+        Check(imagePanel.State=="Unavailable","Retry before an image connection is configured fails gracefully");imagePanel.ResetConversation();
         VoiceCommandRouter.Execute("stop");var follower=FindAnyObjectByType<WalkableGuideFollower>();Check(follower!=null&&!follower.IsFollowing,"Home guide stop controls actual follower");
         VoiceCommandRouter.Execute("follow me");Check(follower!=null&&follower.IsFollowing,"Home guide follow controls actual follower");
+        yield return new WaitForSecondsRealtime(3);var visitor=FindAnyObjectByType<CafeWalkController>();Vector3 guideBefore=follower.transform.position;
+        visitor.GetComponent<CharacterController>().Move(visitor.transform.forward*2);yield return new WaitForSecondsRealtime(4);
+        Check(Vector3.Distance(guideBefore,follower.transform.position)>.5f,"Home guide follows actual visitor displacement");
+        guideBefore=follower.transform.position;visitor.transform.Rotate(0,90,0);yield return new WaitForSecondsRealtime(3);
+        Check(Vector3.Distance(guideBefore,follower.transform.position)<.15f,"Looking at the stationary Home guide does not make it orbit");
         Check(!VoiceCommandRouter.Execute("Do not take me to the market").handled,"Negated movement does not execute");
         yield return Load("ancient_rome");if(finished)yield break;
         Check(WorldStateContext.Snapshot().Contains("Roman market stall"),"Provider context includes actual market destinations");
@@ -123,7 +130,12 @@ public sealed class LumenFunctionalVerification:MonoBehaviour
     }
     private TextMeshProUGUI[] VisibleLabels()=>FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Exclude).Where(t=>t.GetComponentsInParent<CanvasGroup>().All(g=>g.alpha>.05f)).ToArray();
     private void RecordOverflow(string label,TextMeshProUGUI[] labels)
-    {foreach(var text in labels){text.ForceMeshUpdate();if(text.isTextOverflowing&&text.GetComponentInParent<ScrollRect>()==null)report.overflow.Add(label+" / "+text.transform.parent.name+"/"+text.name+" / "+text.text);}}
+    {
+        foreach(var text in labels){text.ForceMeshUpdate();if(text.isTextOverflowing&&text.GetComponentInParent<ScrollRect>()==null)report.overflow.Add(label+" / "+text.transform.parent.name+"/"+text.name+" / "+text.text);}
+        foreach(var scroll in FindObjectsByType<ScrollRect>(FindObjectsInactive.Exclude).Where(s=>s.GetComponentsInParent<CanvasGroup>().All(g=>g.alpha>.05f)))
+            if(!scroll.horizontal&&scroll.content!=null&&scroll.viewport!=null&&scroll.viewport.rect.width>5&&scroll.content.rect.width>scroll.viewport.rect.width+1)
+                report.overflow.Add(label+" / "+scroll.name+" content wider than its nonhorizontal viewport");
+    }
     private IEnumerator Panels(string label,string world)
     {
         foreach(string name in new[]{"VisitHeader","SwitchGuideCharacter","Optional practice","ToggleConversation","RevealWorlds","OpenCafeMenu"})

@@ -675,6 +675,8 @@ public class ChatUIManager : MonoBehaviour
         textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferredHeight);
     }
 
+    public void RefreshReadability()=>ResizeChatOutput();
+
     private void SetupRuntimeChatScrollRect()
     {
         if (tmpChatOutput == null || chatScrollRect == null) return;

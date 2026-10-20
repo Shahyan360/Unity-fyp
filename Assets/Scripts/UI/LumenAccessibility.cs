@@ -55,6 +55,7 @@ public sealed class LumenAccessibility : MonoBehaviour
                 label.fontSize=Mathf.Max(size,16/Mathf.Max(.4f,canvas.scaleFactor))*scale;
             }
             FindAnyObjectByType<HomeUIManager>()?.RefreshReadability();
+            FindAnyObjectByType<ChatUIManager>()?.RefreshReadability();
             foreach(var button in FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Include))
             {
                 var colors=button.colors;colors.highlightedColor=new Color(.42f,.68f,.67f);colors.selectedColor=new Color(.46f,.72f,.70f);colors.pressedColor=new Color(.24f,.45f,.44f);colors.disabledColor=new Color(.25f,.29f,.29f,.55f);button.colors=colors;

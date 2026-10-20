@@ -1030,6 +1030,9 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         input.targetGraphic = background;
         input.textComponent = text;
         input.placeholder = placeholder;
+        // Give long single-line questions an explicit clipping/scrolling viewport.
+        background.gameObject.AddComponent<RectMask2D>();
+        input.textViewport = background.rectTransform;
         input.lineType = TMP_InputField.LineType.SingleLine;
         input.characterLimit = 240;
         return input;

@@ -770,10 +770,12 @@ public sealed class WalkableGuideFollower : MonoBehaviour
     private Transform player;
     private Vector3 velocity;
     private bool following=true;
+    private Vector3 lastPlayerPosition,followTarget;
+    private bool targetValid;
     public bool IsFollowing=>following;
-    public void SetFollowing(bool value){following=value;if(!value)velocity=Vector3.zero;}
+    public void SetFollowing(bool value){following=value;targetValid=false;if(!value)velocity=Vector3.zero;}
 
-    public void Initialize(Transform playerTransform) => player = playerTransform;
+    public void Initialize(Transform playerTransform){player=playerTransform;targetValid=false;}
 
     private void Update()
     {
@@ -784,9 +786,16 @@ public sealed class WalkableGuideFollower : MonoBehaviour
             if (found != null) player = found.transform;
         }
         if (player == null) return;
-        Vector3 target = player.position + player.forward * 3.5f + player.right * 1.3f;
-        if (Physics.Raycast(target + Vector3.up * 2f, Vector3.down, out RaycastHit ground, 5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) target.y = ground.point.y;
-        else target.y = 0f;
+        // A visitor looking at the guide must not make the guide orbit them.
+        // Update the companion's place when the visitor moves or explicitly resumes following.
+        if(!targetValid||(player.position-lastPlayerPosition).sqrMagnitude>.025f)
+        {
+            followTarget=player.position+player.forward*3.5f+player.right*1.3f;
+            if(Physics.Raycast(followTarget+Vector3.up*2f,Vector3.down,out RaycastHit ground,5f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))followTarget.y=ground.point.y;
+            else followTarget.y=0;
+            lastPlayerPosition=player.position;targetValid=true;
+        }
+        Vector3 target=followTarget;
         float speed = Vector3.Distance(transform.position, target) > 4.5f ? 4.4f : 2.4f;
         transform.position = Vector3.SmoothDamp(transform.position, target, ref velocity, 0.32f, speed, Time.deltaTime);
         Vector3 travel = target - transform.position;

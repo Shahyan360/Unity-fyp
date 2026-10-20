@@ -57,7 +57,7 @@ public sealed class LumenImageVerification : MonoBehaviour
         float until=Time.realtimeSinceStartup+18;while(SceneManager.GetActiveScene().name!=scene&&Time.realtimeSinceStartup<until)yield return null;
         yield return new WaitForSecondsRealtime(3);
         string variant=ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);bool valid=SceneManager.GetActiveScene().name==scene&&variant==(scenario=="home"?"general_assistant":scenario);
-        Check(valid,"Actual scene/variant="+SceneManager.GetActiveScene().name+"/"+variant+" expected="+scene+"/"+scenario);if(!valid){Finish();yield break;}yield return Ready();
+        Check(valid,"Actual scene/variant="+SceneManager.GetActiveScene().name+"/"+variant+" expected="+scene+"/"+scenario);if(!valid){Finish();StopAllCoroutines();yield break;}yield return Ready();
     }
     private IEnumerator Ask(string question,string expected,string screenshot,bool expectImage=true)
     {
