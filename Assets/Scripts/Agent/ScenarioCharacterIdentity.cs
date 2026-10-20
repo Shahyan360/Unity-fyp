@@ -13,17 +13,14 @@ public sealed class ScenarioCharacterIdentity : MonoBehaviour
     [SerializeField] private float voicePitch = 1f;
 
     public string CharacterId => characterId;
-    public string ConversationId => displayName=="Kai"?"kai":displayName=="Orion"?"orion":displayName=="Professor Theo"?"theo":displayName=="Aurelius"?"aurelius":displayName=="Lucius"?"lucius":displayName=="Maya"?"maya":characterId;
+    private LumenCharacterDefinitions.Definition definition;
+    public string ConversationId => definition?.id??characterId;
     public string DisplayName => displayName;
     public string Role => role;
     public string VoiceName => voiceName;
     public int SpeechRate => speechRate;
     public float VoicePitch => voicePitch;
-    public string NeuralSpeakerLabel => displayName switch
-    {
-        "Kai"=>"p226","Orion"=>"p237","Professor Theo"=>"p227","Lucius"=>"p243","Aurelius"=>"p245","Maya"=>"p229",
-        _=>voiceName.Contains("Zira")?"p229":"p226"
-    };
+    public string NeuralSpeakerLabel=>definition?.neuralVoice??(voiceName.Contains("Zira")?"p229":"p226");
 
     public static ScenarioCharacterIdentity InstallOnGuide(GameObject guide, string scenario)
     {
@@ -150,7 +147,7 @@ public sealed class ScenarioCharacterIdentity : MonoBehaviour
                 GetComponent<CharacterGrounding>()?.Initialize(visual);
             }
         }
-        if(style=="CafeHost"||CharacterWardrobe.Apply(visual,style))
+        if(CharacterWardrobe.Apply(visual,style)||style=="CafeHost")
         {
             string previousName=displayName;
             displayName=CharacterWardrobe.Label(style);
@@ -164,7 +161,13 @@ public sealed class ScenarioCharacterIdentity : MonoBehaviour
                     data.descriptionSummary=data.descriptionSummary?.Replace(previousName,displayName);
                 }
             }
-            voiceName=style=="CafeHost"?"Microsoft Zira Desktop":"Microsoft David Desktop";
+            definition=LumenCharacterDefinitions.ForStyle(style);
+            if(definition!=null)
+            {
+                characterId=definition.id;displayName=definition.name;role=definition.role;voiceName=definition.voice;
+                if(data!=null){data.objectId=definition.id;data.objectName=data.displayName=definition.name;data.description=definition.direction;data.descriptionSummary=definition.role;data.contextualTags=definition.id+", guide, companion";}
+            }
+            else voiceName=style=="CafeHost"?"Microsoft Zira Desktop":"Microsoft David Desktop";
         }
         GetComponent<AgentAnimator>()?.RefreshVisual();
         GetComponent<CharacterFacialAnimation>()?.SetRestExpression(style=="OpeningHero"?13:style=="MuseumMystic"?11:style=="Professor"?9:style=="CafeHost"?12:7,style=="MuseumMystic"?4:2);

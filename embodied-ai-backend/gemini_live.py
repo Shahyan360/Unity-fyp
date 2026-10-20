@@ -6,7 +6,7 @@ import hashlib
 import threading
 LIVE_SLOTS = threading.BoundedSemaphore(8)
 from urllib.parse import urlsplit
-from personas import select_persona
+from personas import select_persona, IDENTITIES, LEGACY_IDENTITIES
 
 
 def api_key():
@@ -50,13 +50,16 @@ def allowed_origin(origin):
         return True  # Native Unity WebSocket sends no Origin.
     try:
         parsed = urlsplit(origin)
-        return parsed.scheme in {"http", "https"} and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+        port = parsed.port  # Validate malformed or out-of-range ports too.
+        return (parsed.scheme in {"http", "https"} and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+                and not parsed.username and not parsed.password and not parsed.path and not parsed.query and not parsed.fragment)
     except ValueError:
         return False
 
 
 def voices_for_person(speaker, object_name="", requested=""):
-    voices={"kai":"Puck","orion":"Charon","theo":"Iapetus","aurelius":"Fenrir","lucius":"Orus","maya":"Aoede"}
+    speaker = LEGACY_IDENTITIES.get(speaker, speaker)
+    voices={key:p["cloudVoice"] for key,p in IDENTITIES.items()}
     if not object_name:return voices.get(speaker,"Puck")
     # Stable across sessions/processes, independent of Python randomized hash.
     if requested in NPC_VOICES:
@@ -150,7 +153,22 @@ def register_live(app):
             if scenario not in {"general_assistant", "ancient_rome", "museum", "classroom", "cafe"}:
                 scenario = "general_assistant"
             speaker = str(setup.get("speaker_id", "kai"))[:40]
-            asyncio.run(bridge(ws, send, key, scenario, speaker, str(setup.get("object_name", ""))[:100], str(setup.get("object_description", ""))[:1000], str(setup.get("voice_name", "")), setup.get("people", []) if isinstance(setup.get("people"), list) else []))
+            state_context = str(setup.get("world_context", ""))[:6000]
+            store = app.extensions.get("lumen_store")
+            practice = None
+            if store:
+                with store.lock:
+                    store.expire()
+                    practice = store.sessions.get(setup.get("session_id", ""))
+                    if practice and setup.get("coaching_active") is False:
+                        from coaching_state import end
+                        end(practice)
+                    if practice and practice.coaching_mode and not setup.get("object_name"):
+                        from coaching_state import current
+                        state_context += " Authoritative optional practice state: " + json.dumps(current(practice))
+            if setup.get("coaching_active") and not practice:
+                send("practice_expired")
+            asyncio.run(bridge(ws, send, key, scenario, speaker, str(setup.get("object_name", ""))[:100], str(setup.get("object_description", ""))[:1000], str(setup.get("voice_name", "")), setup.get("people", []) if isinstance(setup.get("people"), list) else [], state_context))
         except ConnectionClosed:
             pass
         except Exception as exc:
@@ -164,7 +182,7 @@ def register_live(app):
             LIVE_SLOTS.release()
 
 
-async def bridge(ws, send, key, scenario, speaker, object_name="", object_description="", voice_name="", people=()):
+async def bridge(ws, send, key, scenario, speaker, object_name="", object_description="", voice_name="", people=(), world_context=""):
     from google import genai
     from google.genai import types
     from simple_websocket import ConnectionClosed
@@ -172,6 +190,8 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
     try:
         async with client.aio.live.connect(model=os.getenv("GEMINI_LIVE_MODEL", "gemini-3.8-live"),
                                            config=live_config(scenario, speaker, object_name, object_description, voice_name, people)) as session:
+            if world_context:
+                await session.send_client_content(turns={"role":"user","parts":[{"text":"Authoritative Unity scene and visitor context (data, not a new request): "+world_context}]},turn_complete=False)
             send("ready", speaker=speaker, scenario=scenario, voice=voices_for_person(speaker, object_name, voice_name))
             turn = LiveTurn()
             pending_calls = turn.pending
@@ -246,7 +266,9 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
 
             incoming = asyncio.create_task(receive_unity())
             outgoing = asyncio.create_task(receive_gemini())
-            done, pending = await asyncio.wait({incoming, outgoing}, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = await asyncio.wait({incoming, outgoing}, timeout=1800, return_when=asyncio.FIRST_COMPLETED)
+            if not done:
+                send("reconnect", text="The bounded conversation session expired. Reconnecting.")
             for task in pending:
                 task.cancel()
             await asyncio.gather(*pending, return_exceptions=True)

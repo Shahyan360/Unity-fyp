@@ -6,6 +6,8 @@ using UnityEngine;
 public static class ClassroomLearningExhibit
 {
     public static string ActiveDescription {get;private set;}="";
+    public static string ActiveModel {get;private set;}="";
+    public static bool HasActiveModel=>activeModelRoot!=null;
     private static Transform root;
     private static Transform hostRoot;
     private static Transform activeModelRoot;
@@ -27,7 +29,7 @@ public static class ClassroomLearningExhibit
             if (deepBlue == null) MakeMaterials();
             return;
         }
-        MakeMaterials();
+        MakeMaterials();ActiveDescription="";ActiveModel="";
         GameObject rootObject = new GameObject("Classroom_Learning_Exhibits");
         hostRoot = root = rootObject.transform;
     }
@@ -38,7 +40,9 @@ public static class ClassroomLearningExhibit
         string topic = ResolveModelName(requested);
         if (string.IsNullOrEmpty(topic)) return false;
         Ensure();
-        if (activeModelRoot != null) Object.Destroy(activeModelRoot.gameObject);
+        if(LearningModelInspection.Current!=null){LearningModelInspection.Current.Exit();Object.Destroy(LearningModelInspection.Current.gameObject);}
+        else if(activeModelRoot!=null)Object.Destroy(activeModelRoot.gameObject);
+        ActiveDescription="";
         GameObject model = new GameObject("ActiveLearningModel_" + topic.Replace(' ', '_'));
         model.transform.SetParent(hostRoot, false);
         activeModelRoot = model.transform;
@@ -78,6 +82,22 @@ public static class ClassroomLearningExhibit
             default: BuildPlanet(station, topic); break;
         }
         root = hostRoot;
+        foreach(var facts in activeModelRoot.GetComponentsInChildren<ObjectMetadata>())
+            if(!string.IsNullOrWhiteSpace(facts.description)){ActiveDescription=facts.description;break;}
+        ActiveModel=topic;
+        ExplorationNotebook.RecordExhibit(topic);
+        foreach(var label in Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude))
+        {
+            if(label.text!=null&&(label.text.IndexOf("Newton",System.StringComparison.OrdinalIgnoreCase)>=0||label.name=="ActiveLessonBoard"))
+            {
+                int stop=ActiveDescription.IndexOf(". ",System.StringComparison.Ordinal);
+                string shortExplanation=stop>=0?ActiveDescription.Substring(0,stop+1):ActiveDescription;
+                if(shortExplanation.Length>180)shortExplanation=shortExplanation.Substring(0,177)+"...";
+                label.name="ActiveLessonBoard";label.text=topic+"\n"+shortExplanation+"\nSimplified teaching representation; not to scale.";
+                label.enableAutoSizing=true;label.fontSizeMin=1.2f;label.fontSizeMax=2.4f;label.overflowMode=TextOverflowModes.Ellipsis;
+            }
+        }
+        LearningModelInspection.Attach(activeModelRoot,station+Vector3.up*1.35f);
         var guide=Object.FindAnyObjectByType<ScenarioCharacterIdentity>();
         if(guide!=null&&Vector3.Distance(guide.transform.position,station)<1.7f)
         {
@@ -187,7 +207,7 @@ public static class ClassroomLearningExhibit
         Vector3 center = new Vector3(0f, 1.20f, 0f);
         SphereCollider body = MakeSphere(exhibit, "Cell Wall", center, new Vector3(1.58f, 1.04f, 0.82f), cellWall);
         body.isTrigger = true;
-        SphereCollider membrane = MakeSphere(exhibit, "Cell Membrane", center, new Vector3(1.42f, 0.90f, 0.70f), new Material(green) { color = new Color(0.36f, 0.78f, 0.49f, 0.55f) });
+        SphereCollider membrane = MakeSphere(exhibit, "Cell Membrane", center, new Vector3(1.42f, 0.90f, 0.70f), LumenRuntimeResources.Own(new Material(green) { color = new Color(0.36f, 0.78f, 0.49f, 0.55f) },root.gameObject));
         membrane.isTrigger = true;
         MakeSphere(exhibit, "Nucleus", center + new Vector3(-0.23f, 0.08f, 0.04f), Vector3.one * 0.34f, violet);
         MakeSphere(exhibit, "Vacuole", center + new Vector3(0.34f, -0.08f, 0.03f), new Vector3(0.56f, 0.28f, 0.35f), cyan);
@@ -291,7 +311,7 @@ public static class ClassroomLearningExhibit
             "A simplified animal cell. The membrane encloses cytoplasm; the nucleus stores most genetic material, while mitochondria help release usable energy. The organelles are enlarged and not to scale.",
             "animal-cell, biology, mitochondria, learning-model", basePosition, new Color(0.62f, 0.40f, 0.77f));
         Vector3 center = new Vector3(0f, 1.38f, 0f);
-        MakeSphere(exhibit, "Cell membrane", center, new Vector3(1.52f, 0.96f, 1.08f), new Material(cyan) { color = new Color(0.30f, 0.75f, 0.83f, 0.28f) }).isTrigger = true;
+        MakeSphere(exhibit, "Cell membrane", center, new Vector3(1.52f, 0.96f, 1.08f), LumenRuntimeResources.Own(new Material(cyan) { color = new Color(0.30f, 0.75f, 0.83f, 0.28f) },root.gameObject)).isTrigger = true;
         MakeSphere(exhibit, "Nucleus", center + new Vector3(-0.26f, 0.05f, 0.04f), Vector3.one * 0.46f, violet).isTrigger = true;
         for (int i = 0; i < 5; i++)
         {
@@ -400,7 +420,7 @@ public static class ClassroomLearningExhibit
             "For a right triangle, a² + b² = c². The three attached squares show that the combined area on the two shorter sides equals the area on the hypotenuse; lengths and colors are schematic.",
             "math, geometry, pythagorean-theorem, triangle, learning-model", basePosition, new Color(0.37f, 0.62f, 0.85f));
         GameObject triangle = new GameObject("Right triangle"); triangle.transform.SetParent(exhibit, false); triangle.transform.localPosition = new Vector3(-0.56f, 0.82f, 0f);
-        Mesh mesh = new Mesh { name = "Right triangle surface" };
+        Mesh mesh = LumenRuntimeResources.Own(new Mesh { name = "Right triangle surface" },root.gameObject);
         mesh.vertices = new[] { Vector3.zero, new Vector3(0f, 1.12f, 0f), new Vector3(1.48f, 0f, 0f) };
         mesh.triangles = new[] { 0, 1, 2 };
         mesh.RecalculateNormals();
@@ -675,7 +695,7 @@ public static class ClassroomLearningExhibit
     private static Material MakeMaterial(string name, Color color, bool emissive = false)
     {
         Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Unlit/Color");
-        Material material = new Material(shader) { name = name, color = color };
+        Material material = LumenRuntimeResources.Own(new Material(shader) { name = name, color = color });
         if (emissive && material.HasProperty("_EmissionColor"))
         {
             material.EnableKeyword("_EMISSION");
@@ -689,7 +709,7 @@ public sealed class LearningModelSpin : MonoBehaviour
 {
     private void Update()
     {
-        transform.Rotate(Vector3.up, 12f * Time.deltaTime, Space.World);
+        if(!LumenAccessibility.ReducedMotion&&LearningModelInspection.Current?.IsInspecting!=true)transform.Rotate(Vector3.up, 12f * Time.deltaTime, Space.World);
     }
 }
 

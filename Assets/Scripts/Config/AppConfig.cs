@@ -16,6 +16,8 @@ public class AppConfig : MonoBehaviour
 
     private void Awake()
     {
+        string configured=System.Environment.GetEnvironmentVariable("LUMEN_BACKEND_URL");
+        if(System.Uri.TryCreate(configured,System.UriKind.Absolute,out var address)&&address.IsLoopback&&string.IsNullOrEmpty(address.UserInfo)&&(address.Scheme=="http"||address.Scheme=="https"))backendUrl=configured.TrimEnd('/');
         LoadSelectedScenario();
     }
 

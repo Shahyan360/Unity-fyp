@@ -13,6 +13,8 @@ public class ChatRequest
     public string session_id;
     public string speaker_id;
     public string interrupted_response;
+    public bool coaching_active;
+    public string world_context;
 }
 
 [Serializable]

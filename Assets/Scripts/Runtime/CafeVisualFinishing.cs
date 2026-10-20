@@ -24,7 +24,7 @@ public sealed class CafeVisualFinishing:MonoBehaviour
             for(int i=0;i<4;i++)Primitive(PrimitiveType.Capsule,"Fresh baked croissant",p+new Vector3(-.36f+i*.24f,.12f,0),new Vector3(.18f,.09f,.13f),pastry);
         }
     }
-    private Material Material(string name,Color color)=>new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color};
+    private Material Material(string name,Color color)=>LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color});
     private void Primitive(PrimitiveType type,string name,Vector3 position,Vector3 scale,Material material)
     {
         var go=GameObject.CreatePrimitive(type);go.name=name;go.transform.SetParent(transform,true);go.transform.position=position;go.transform.localScale=scale;go.GetComponent<Renderer>().sharedMaterial=material;go.GetComponent<Collider>().enabled=false;

@@ -30,7 +30,7 @@ from typing import Any
 import requests
 from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
-from personas import PERSONAS, character_reply, learning_reply, performance_tags, select_persona
+from personas import PERSONAS, IDENTITIES, character_reply, learning_reply, performance_tags, select_persona
 from speech_service import SpeechService
 
 
@@ -129,6 +129,7 @@ class Session:
     history: list[dict[str, str]] = field(default_factory=list)
     coaching_mode: str = ""
     coaching_turn: int = 0
+    coaching_receipts: dict[str, dict[str, Any]] = field(default_factory=dict)
     character_state: dict[str, dict[str, str]] = field(default_factory=dict)
 
 
@@ -169,6 +170,7 @@ class LocalStore:
                     session.scenario = scenario
                     session.history.clear()
                     session.character_state.clear()
+                    session.coaching_receipts.clear()
                     session.coaching_mode = ""
                     session.coaching_turn = 0
                 return session_id, session
@@ -548,6 +550,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     from live_images import register_images
     register_images(app)
     store = LocalStore()
+    app.extensions["lumen_store"] = store
     speech = SpeechService()
     if not app.config.get("TESTING"):
         threading.Thread(target=speech.warm, daemon=True, name="Local speech warmup").start()
@@ -603,7 +606,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             "configured_model_available": model_available,
             "scenarios": list(SCENARIOS),
             "contract_version": 2,
-            "characters": [persona["id"] for persona in PERSONAS.values()],
+            "characters": list(IDENTITIES),
         })
 
     @app.get("/scenarios")
@@ -612,7 +615,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/characters")
     def characters():
-        return jsonify({"characters": [{"scenario": scenario, "speaker_id": persona["id"], "speaker_name": persona["name"], "speaker_role": persona["role"], "speaking_style": persona["style"]} for scenario, persona in PERSONAS.items()]})
+        return jsonify({"characters": [{"speaker_id": record["id"], "speaker_name": record["name"], "speaker_role": record["role"], "speaking_style": record["manner"]} for record in IDENTITIES.values()]})
 
     @app.post("/sessions")
     def start_session():
@@ -647,9 +650,32 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         store.expire()
         session = store.sessions.get(payload.get("session_id", ""))
         if session:
-            session.coaching_mode = ""
-            session.coaching_turn = 0
+            from coaching_state import end
+            with store.lock:
+                end(session)
         return jsonify({"active": False})
+
+    @app.post("/coaching/turn")
+    def coaching_turn():
+        from coaching_state import advance
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify({"error": "Request body must be an object."}), 400
+        query, turn_id = payload.get("query"), payload.get("turn_id")
+        if not isinstance(query, str) or not query.strip() or len(query) > 2000 or not isinstance(turn_id, str) or not 1 <= len(turn_id) <= 80:
+            return jsonify({"error": "Provide one bounded answer and a stable turn ID."}), 400
+        with store.lock:
+            store.expire()
+            session = store.sessions.get(payload.get("session_id", ""))
+            if not session:
+                return jsonify({"error": "Practice expired. Start a new session."}), 404
+            session.last_seen = store.clock()
+            try:
+                result = advance(session, query, turn_id)
+            except ValueError:
+                return jsonify({"error": "No practice is active. Choose a mode to begin."}), 409
+        result["session_id"] = payload["session_id"]
+        return jsonify(result)
 
     @app.post("/coaching/start")
     def coaching_start():
@@ -660,9 +686,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if mode not in {"interview", "presentation", "conversation"}:
             return jsonify({"error": "Mode must be interview, presentation, or conversation."}), 400
         session_id, session = store.get_or_create(payload.get("session_id"), "cafe")
-        session.coaching_mode, session.coaching_turn = mode, 1
-        prompts = {"interview": "Tell me about yourself and one achievement you are proud of.", "presentation": "Give a 30-second opening for a topic you know well.", "conversation": "Start a relaxed conversation with a new classmate."}
-        return jsonify({"session_id": session_id, "mode": mode, "prompt": prompts[mode], "turn": session.coaching_turn})
+        from coaching_state import start
+        with store.lock:
+            result = start(session, mode)
+        return jsonify({"session_id": session_id, **result})
 
     @app.post("/chat")
     def chat(streaming=False):
@@ -686,7 +713,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         object_name = str(payload.get("object_name", "")).strip()[:120]
         object_description = str(payload.get("object_description", "")).strip()[:1000]
         session_id, session = store.get_or_create(payload.get("session_id"), scenario)
+        if "coaching_active" in payload and not isinstance(payload["coaching_active"], bool):
+            return jsonify({"error": "Field 'coaching_active' must be a Boolean."}), 400
+        if payload.get("coaching_active") is False:
+            from coaching_state import end
+            with store.lock:
+                end(session)
         persona = select_persona(scenario, str(payload.get("speaker_id", "")), object_name, object_description)
+        active_coaching = "" if persona["id"].startswith(("cafe_guest_", "cafe_staff_")) else session.coaching_mode
         character_state = session.character_state.setdefault(persona["id"], {})
         context = read_knowledge(scenario, f"{query} {object_name} {object_description}")
         fallback_emotion = user_emotion(query)
@@ -769,7 +803,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         educational = fast_educational_answer(query)
         cafe_reply = fast_cafe_answer(query) if scenario == "cafe" and persona["id"] == "maya" else None
         roman_greeting = fast_rome_greeting(query, object_name, object_description) if scenario == "ancient_rome" else None
-        curated = fast_curated_answer(query, context) if not session.coaching_mode and not requested_model and not requested_artifact else None
+        curated = fast_curated_answer(query, context) if not active_coaching and not requested_model and not requested_artifact else None
 
         # Curated exhibits and high-confidence local knowledge should answer immediately;
         # do not wait for a full Llama generation only to overwrite it afterwards.
@@ -862,7 +896,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                         yield json.dumps({"event": "error", "text": "The local model did not finish. " + str(exc)[:180]}) + "\n"
                 return Response(stream_with_context(generate()), mimetype="application/x-ndjson",
                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
-            prompt = build_prompt(SCENARIOS[scenario], query, context, object_name, object_description, session.history, session.coaching_mode, persona)
+            private_history = [h for h in session.history if h.get("speaker_id") == persona["id"]][-MAX_HISTORY * 2:]
+            prompt = build_prompt(SCENARIOS[scenario], query, context, object_name, object_description, private_history, active_coaching, persona)
             try:
                 parsed = extract_json(call_ollama(prompt, app.config["OLLAMA_MODEL"], app.config["OLLAMA_URL"], app.config["OLLAMA_TIMEOUT"]))
                 if not parsed or not isinstance(parsed.get("response"), str) or not parsed["response"].strip():
@@ -877,7 +912,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 result["navigation_target"] = ""
                 source = "ollama"
             except (requests.RequestException, RuntimeError, ValueError) as error:
-                result = normalise_result(offline_reply(scenario, query, object_name, context, session.coaching_mode), fallback_emotion, offline=True)
+                result = normalise_result(offline_reply(scenario, query, object_name, context, active_coaching), fallback_emotion, offline=True)
                 result["diagnostic"] = str(error)[:240]
                 result["next_scenario"] = ""
                 source = "fallback"

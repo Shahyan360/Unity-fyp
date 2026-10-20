@@ -11,19 +11,23 @@ public static class ExplorationNotebook
     public static void Record(ChatResponse response)
     {
         if (response == null || response.action != "show_model" || string.IsNullOrWhiteSpace(response.navigation_target)) return;
-        Entries data = Read();
-        string item = response.navigation_target.Trim();
-        if (item.Length > 80) item = item.Substring(0, 80);
-        if (data.items.Contains(item)) return;
-        data.items.Add(item);
-        if (data.items.Count > 40) data.items.RemoveAt(0);
-        PlayerPrefs.SetString(Key, JsonUtility.ToJson(data));
-        PlayerPrefs.Save();
+        // Compatibility hook reads the actual displayed model, never an unexecuted transport target.
+        if(ClassroomLearningExhibit.HasActiveModel)RecordExhibit(ClassroomLearningExhibit.ActiveModel);
     }
+    public static void RecordExhibit(string stableName)
+    {
+        if(string.IsNullOrWhiteSpace(stableName))return;
+        Entries data=Read();
+        string item=stableName.Trim();if(item.Length>80)item=item.Substring(0,80);
+        if(data.items.Exists(v=>string.Equals(v,item,StringComparison.OrdinalIgnoreCase)))return;
+        data.items.Add(item);if(data.items.Count>40)data.items.RemoveAt(0);
+        PlayerPrefs.SetString(Key,JsonUtility.ToJson(data));PlayerPrefs.Save();
+    }
+    public static void Reset(){PlayerPrefs.DeleteKey(Key);PlayerPrefs.Save();}
     public static string Summary()
     {
         Entries data = Read();
-        return data.items.Count == 0 ? "Your discoveries will appear here. Ask a guide to show an exhibit." : string.Join("  /  ", data.items);
+        return data.items.Count == 0 ? "Your discoveries will appear here. Ask a guide to show an exhibit." : "• "+string.Join("\n• ", data.items);
     }
     private static Entries Read()
     {

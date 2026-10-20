@@ -28,7 +28,9 @@ public sealed class SpeechOutputController : MonoBehaviour
     private float lastAudioAt=-100;
     public string RecentSpokenText {get;private set;}="";
     public bool WasRecentlySpeaking => IsSpeaking||Time.unscaledTime-lastAudioAt<1.2f;
-    public void SetListeningDucked(bool value){if(speaker!=null)speaker.volume=value?.16f:.9f;}
+    private bool ducked;
+    public void SetVoiceVolume(float value){speechVolume=Mathf.RoundToInt(Mathf.Clamp01(value)*100);if(speaker!=null)speaker.volume=value*(ducked?.18f:1);}
+    public void SetListeningDucked(bool value){ducked=value;SetVoiceVolume(LumenPreferences.GetInt("Lumen.SpeechVolume",90)/100f);}
     public void CancelSpeech()
     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
@@ -75,8 +77,9 @@ public sealed class SpeechOutputController : MonoBehaviour
         if (speaker == null)
             speaker = gameObject.AddComponent<AudioSource>();
         speaker.playOnAwake = false;
+        LumenAudioMix.Route(speaker,"Speech");
         speaker.spatialBlend = 0f;
-        speaker.volume = 0.9f;
+        SetVoiceVolume(LumenPreferences.GetInt("Lumen.SpeechVolume",90)/100f);
         speaker.mute = PlayerPrefs.GetInt("Lumen.MuteVoice", 0) != 0;
     }
 
@@ -134,7 +137,7 @@ public sealed class SpeechOutputController : MonoBehaviour
             "$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + pathBase64 + "')); " +
             "$t=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + textBase64 + "')); " +
             "$n=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + voiceBase64 + "')); " +
-            "$v=New-Object System.Speech.Synthesis.SpeechSynthesizer; $v.Rate=" + rate + "; $v.Volume=" + speechVolume + "; " +
+            "$v=New-Object System.Speech.Synthesis.SpeechSynthesizer; $v.Rate=" + rate + "; $v.Volume=100; " +
             "if($n){try{$v.SelectVoice($n)}catch{}}; " +
             "$v.SetOutputToWaveFile($p); $v.Speak($t); $v.Dispose();";
         string encodedCommand = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
@@ -153,7 +156,8 @@ public sealed class SpeechOutputController : MonoBehaviour
         };
         // Optional portable neural speech install. Keep large models outside the Unity project.
         string piperRoot = Environment.GetEnvironmentVariable("LUMEN_PIPER_HOME");
-        if (string.IsNullOrWhiteSpace(piperRoot)) piperRoot = @"D:\LumenTools\Piper";
+        if (string.IsNullOrWhiteSpace(piperRoot)) piperRoot = Path.Combine(Application.dataPath,"../Runtime/Piper");
+        if (!Directory.Exists(piperRoot)&&Application.isEditor) piperRoot = @"D:\LumenTools\Piper";
         string piper = Path.Combine(piperRoot, "piper", "piper.exe");
         string model = Path.Combine(piperRoot, "voices", "en_GB-vctk-medium.onnx");
         bool neural = File.Exists(piper) && File.Exists(model) && File.Exists(model + ".json");

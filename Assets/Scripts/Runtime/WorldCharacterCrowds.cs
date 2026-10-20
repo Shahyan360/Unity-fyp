@@ -267,7 +267,7 @@ public static class WorldCharacterCrowds
     {
         if (materials.TryGetValue(color, out Material material)) return material;
         Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-        material = new Material(shader) { color = color };
+        material = LumenRuntimeResources.Own(new Material(shader) { color = color });
         materials[color] = material;
         return material;
     }

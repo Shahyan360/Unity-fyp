@@ -64,7 +64,7 @@ public sealed class RomanCityVisualUpgrade : MonoBehaviour
         Texture2D pavers=Resources.Load<Texture2D>("EnvironmentTextures/LimestonePavers");
         if(pavers!=null)
         {
-            var stone=new Material(Shader.Find("Universal Render Pipeline/Lit")){name="Roman limestone street",color=new Color(.82f,.83f,.79f),mainTexture=pavers};
+            var stone=LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){name="Roman limestone street",color=new Color(.82f,.83f,.79f),mainTexture=pavers});
             stone.mainTextureScale=new Vector2(30f,30f);stone.SetFloat("_Smoothness",.18f);
             foreach(Renderer renderer in FindObjectsByType<Renderer>(FindObjectsInactive.Exclude))
                 if(renderer.name=="RomanGround"||renderer.name.Contains("Paver")||renderer.name.Contains("Cobble"))renderer.sharedMaterial=stone;

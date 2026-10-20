@@ -63,10 +63,29 @@ HOSTS = {
 }
 
 
+# One authored identity catalog, also loaded by the Unity wardrobe/labels.
+import json
+from pathlib import Path
+_identity_path = Path(__file__).resolve().parent.parent / "Assets" / "Resources" / "LumenCharacterIdentities.json"
+if not _identity_path.is_file():
+    _identity_path = Path(__file__).resolve().parent / "data" / "characters.json"
+IDENTITIES = {p["id"]: p for p in json.loads(_identity_path.read_text(encoding="utf-8-sig"))["characters"]}
+HOSTS = {key: (p["name"],p["role"],p["manner"],p["direction"]) for key,p in IDENTITIES.items()}
+LEGACY_IDENTITIES = {"lumen":"kai","ada":"theo","marcus":"aurelius","imani":"orion"}
+for _scenario,_id in {"general_assistant":"kai","classroom":"theo","academic_tutor":"theo","ancient_rome":"aurelius","historical_guide":"aurelius","museum":"orion","cafe":"maya","social_coach":"maya"}.items():
+    if _scenario not in PERSONAS: continue
+    _p=IDENTITIES[_id]
+    PERSONAS[_scenario].update(id=_id,name=_p["name"],role=_p["role"],style=_p["manner"],direction=_p["direction"],
+        greeting=f"Hi! I'm {_p['name']}. What would you like to explore?",
+        introduction=f"I'm {_p['name']}, your {_p['role'].lower()}. I'm a fictional virtual guide.",
+        invitation="We can explore together at your pace. What catches your interest?")
+
+
 def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", object_description: str = "") -> dict[str, str]:
     """The active world owns the main speaker; recognized ambient people keep their role."""
     persona = dict(PERSONAS[scenario])
     host_id = speaker_id.lower().strip()
+    host_id = LEGACY_IDENTITIES.get(host_id,host_id)
     if host_id in HOSTS:
         name, role, style, direction = HOSTS[host_id]
         persona.update(id=host_id, name=name, role=role, style=style,
@@ -79,7 +98,14 @@ def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", o
     # The client may pass the main character ID even while inspecting a prop.
     if speaker_id == persona["id"]:
         return persona
-    if scenario == "cafe" and object_name and re.search(r"\b(guest|customer|patron)\b", selected) and not re.search(r"\b(barista|chef|maya)\b", object_name.lower()):
+    staff_description = re.search(r"(?i)^(?:a |the )?(?:fictional )?(?:cafe |café )?(?:barista|chef|staff member)\b|\bis (?:a |the )?(?:fictional )?(?:cafe |café )?(?:barista|chef|staff member)\b", object_description)
+    if scenario == "cafe" and object_name and object_name.lower() != "maya" and (re.search(r"\b(barista|chef|staff)\b", object_name.lower()) or staff_description):
+        persona.update(id="cafe_staff_"+re.sub(r"[^a-z0-9]+","_",object_name.lower()).strip("_")[:48],
+            name=object_name[:80],role="Cafe staff",direction="Respond as the named fictional cafe staff member, never as Maya or the visitor's companion. Orders use the simulated menu; no real payments or invented order status.",
+            greeting=f"Hello, I'm {object_name[:80]}, one of the cafe staff. You can browse the simulated menu whenever you like.",
+            introduction=f"I'm {object_name[:80]}, a fictional cafe staff member. Maya is your companion.",
+            invitation="Would you like to browse the simulated menu, or ask about the cafe?")
+    elif scenario == "cafe" and object_name and re.search(r"\b(guest|customer|patron)\b", selected) and not re.search(r"\b(barista|chef|maya)\b", object_name.lower()):
         persona.update({
             "id": "cafe_guest_" + re.sub(r"[^a-z0-9]+", "_", object_name.lower()).strip("_")[:48],
             "name": object_name[:80], "role": "Café guest",
@@ -94,7 +120,7 @@ def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", o
             "name": object_name[:80], "role": "Roman resident · Historical role-play",
             "direction": "You portray a fictional Roman resident in a learning reconstruction. Clearly acknowledge the role-play if asked; do not claim to be a real ancient eyewitness. Use the supplied historical evidence and admit uncertainty.",
             "greeting": "Salve! Welcome to the Forum. Are you here to explore the market, hear about daily life, or investigate the city's buildings?",
-            "introduction": f"I'm {object_name[:80]}, a fictional resident in this Roman reconstruction. We can use this role-play to explore daily life, while Marcus can help distinguish evidence from interpretation.",
+            "introduction": f"I'm {object_name[:80]}, a fictional resident in this Roman reconstruction. We can use this role-play to explore daily life, while Aurelius can help distinguish evidence from interpretation.",
             "invitation": "Would you like to talk about the market, public life in the Forum, or how water reached the city?",
         })
     return persona

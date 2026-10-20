@@ -102,7 +102,7 @@ public sealed class CafeWalkController : MonoBehaviour
         // A click on an input can arrive one frame before TMP marks it focused.
         // Keep keyboard locomotion available while the cursor merely hovers over
         // the HUD; stop only when the learner is actually typing in a field.
-        if (IsTypingIntoUi())
+        if (IsTypingIntoUi() || LumenAccessibility.MenuOpen)
         {
             SetCursorLocked(false);
             MoveCharacter(Vector3.zero);
@@ -118,15 +118,15 @@ public sealed class CafeWalkController : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null)
         {
-            moveInput.x = (keyboard.dKey.isPressed ? 1f : 0f) - (keyboard.aKey.isPressed ? 1f : 0f);
-            moveInput.y = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
+            moveInput=LumenAccessibility.ReadMovement(keyboard);
+            lookInput=new Vector2((keyboard.numpad6Key.isPressed?1:0)-(keyboard.numpad4Key.isPressed?1:0),(keyboard.numpad8Key.isPressed?1:0)-(keyboard.numpad2Key.isPressed?1:0))*Time.unscaledDeltaTime*450;
             sprint = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
             unlock = keyboard.escapeKey.wasPressedThisFrame;
         }
         Mouse mouse = Mouse.current;
         if (mouse != null)
         {
-            if (Cursor.lockState == CursorLockMode.Locked) lookInput = mouse.delta.ReadValue();
+            if (Cursor.lockState == CursorLockMode.Locked) lookInput += mouse.delta.ReadValue();
             // Recover from the Editor or a scene leaving the cursor captured:
             // a left click is always the user's route back to the on-screen UI.
             // Right-clicking the world is the explicit gesture for mouse-look.
@@ -145,7 +145,7 @@ public sealed class CafeWalkController : MonoBehaviour
         if (unlock) SetCursorLocked(false);
         if (relock) SetCursorLocked(true);
 
-        if (Cursor.lockState == CursorLockMode.Locked && view != null)
+        if (view != null && (Cursor.lockState == CursorLockMode.Locked || lookInput.sqrMagnitude>0))
         {
             lookInput = Vector2.ClampMagnitude(lookInput, 40f);
             transform.Rotate(Vector3.up, lookInput.x * lookSensitivity, Space.World);

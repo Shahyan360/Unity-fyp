@@ -2320,8 +2320,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3947320078167140016}
-  - component: {fileID: 2218294304672036352}
   - component: {fileID: 5989177514580063439}
+  - component: {fileID: 2218294304672036352}
   m_Layer: 0
   m_Name: Tailored clothing
   m_TagString: Untagged
@@ -2344,6 +2344,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3065100000951419325}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5989177514580063439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538713907625889628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4940d25edbb8c98488fbc403e9698885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TailoredClothingMesh
 --- !u!137 &2218294304672036352
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -2489,18 +2501,6 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.02180788, y: 0.030014679, z: -0.000000029802322}
     m_Extent: {x: 1.145233, y: 0.40645432, z: 0.9195638}
   m_DirtyAABB: 0
---- !u!114 &5989177514580063439
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538713907625889628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4940d25edbb8c98488fbc403e9698885, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TailoredClothingMesh
 --- !u!1 &7677171365485940120
 GameObject:
   m_ObjectHideFlags: 0

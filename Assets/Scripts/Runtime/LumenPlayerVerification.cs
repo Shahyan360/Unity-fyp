@@ -245,7 +245,15 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         Check(frame.missingComponents==0,name+" has no missing components");
         Check(frame.errorMaterials==0,name+" has no missing/error material shaders");
         yield return new WaitForEndOfFrame();
-        ScreenCapture.CaptureScreenshot(Path.Combine(output,frame.captureFile));
+        var capture=ScreenCapture.CaptureScreenshotAsTexture();
+        if(capture==null)Check(false,"No rendered capture for "+name);
+        else
+        {
+            var pixels=capture.GetPixels32();int lit=0;byte low=255,high=0;
+            for(int i=0;i<pixels.Length;i+=97){var p=pixels[i];byte brightness=(byte)((p.r+p.g+p.b)/3);if(brightness>8)lit++;low=Math.Min(low,brightness);high=Math.Max(high,brightness);}
+            Check(lit>pixels.Length/97*.04f&&high-low>20,"Rendered capture contains visible scene detail: "+name);
+            File.WriteAllBytes(Path.Combine(output,frame.captureFile),capture.EncodeToPNG());Destroy(capture);
+        }
         yield return new WaitForEndOfFrame();yield return null;
         File.WriteAllText(Path.Combine(output,"journey.json"),JsonUtility.ToJson(report,true));
     }

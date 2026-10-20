@@ -25,25 +25,29 @@ public sealed class ScenarioTransitionService : MonoBehaviour
         { "museum", "Classroom" }
     };
 
-    public static void LoadScenario(string scenario)
+    public static void LoadScenario(string scenario)=>RequestTravel(scenario);
+    public static void LoadHome(string sceneName="HomeScene")=>RequestTravel("home");
+    public static WorldActionExecution RequestTravel(string scenario)
     {
-        string normalized = ScenarioRuntimeManager.NormalizeScenario(scenario ?? string.Empty);
-        if (!SceneByScenario.TryGetValue(normalized, out string sceneName))
-        {
-            Debug.LogWarning("Scenario request was ignored because it did not match a configured experience: " + scenario);
-            return;
-        }
-
-        string previous = PlayerPrefs.GetString(ScenarioRuntimeManager.SelectedScenarioKey, string.Empty);
-        bool switchVariantInSameScene = previous != normalized && SceneManager.GetActiveScene().name == sceneName;
-        PlayerPrefs.SetString(ScenarioRuntimeManager.SelectedScenarioKey, normalized);
-        PlayerPrefs.Save();
-        Service().Begin(sceneName, DisplayName(normalized), switchVariantInSameScene);
-    }
-
-    public static void LoadHome(string sceneName = "HomeScene")
-    {
-        Service().Begin(string.IsNullOrWhiteSpace(sceneName) ? "HomeScene" : sceneName, "Your worlds are ready");
+        string normalized=ScenarioRuntimeManager.NormalizeScenario(scenario??"");
+        var result=new WorldActionExecution{handled=true,target=normalized};
+        string sceneName="HomeScene";
+        if(normalized!="home"&&!SceneByScenario.TryGetValue(normalized,out sceneName))
+        {result.Set("failed","That world is not available.");return result;}
+        if(SceneUtility.GetBuildIndexByScenePath("Assets/Scenes/"+sceneName+".unity")<0)
+        {result.Set("failed","This world is not included in the installed build.");return result;}
+        var service=Service();
+        if(service.transitioning){result.Set("failed","Another world is still loading. Please wait.");return result;}
+        string previous=ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);
+        bool sameScene=SceneManager.GetActiveScene().name==sceneName;
+        result.accepted=true;WorldStateContext.LastTransition=result;
+        if(sameScene&&(normalized=="home"||previous==normalized))
+        {result.Set("completed","You are already in "+(normalized=="home"?"Home":DisplayName(normalized))+".");return result;}
+        Object.FindAnyObjectByType<SocialCoachingController>()?.EndPractice();
+        if(normalized!="home"){PlayerPrefs.SetString(ScenarioRuntimeManager.SelectedScenarioKey,normalized);PlayerPrefs.Save();}
+        result.Set("loading","Opening "+(normalized=="home"?"Home":DisplayName(normalized))+". Arrival is pending.");
+        service.Begin(sceneName,normalized=="home"?"Your worlds are ready":DisplayName(normalized),sameScene);
+        return result;
     }
 
     private static ScenarioTransitionService Service()
@@ -88,14 +92,18 @@ public sealed class ScenarioTransitionService : MonoBehaviour
         curtain.alpha = 0f;
         yield return Fade(1f, 0.24f);
 
-        AsyncOperation load = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+        AsyncOperation load=null;
+        try {load=SceneManager.LoadSceneAsync(sceneName,LoadSceneMode.Single);}
+        catch(System.Exception) {WorldStateContext.LastTransition?.Set("failed","The world could not load. Please retry from Home.");}
         if (load == null)
         {
+            WorldStateContext.LastTransition?.Set("failed","The world could not load. Please retry.");
             transitioning = false;
             yield return Fade(0f, 0.2f);
             yield break;
         }
         while (!load.isDone) yield return null;
+        WorldStateContext.LastTransition?.Set("completed","Arrived in "+sceneName+" / "+ScenarioRuntimeManager.GetScenarioForScene(sceneName)+".");
         yield return new WaitForSecondsRealtime(0.08f);
         yield return Fade(0f, 0.32f);
         curtain.gameObject.SetActive(false);

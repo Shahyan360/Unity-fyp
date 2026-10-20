@@ -14,7 +14,7 @@ public static class LumenPreferences
     static LumenPreferences()
     {
         string[] args = Environment.GetCommandLineArgs();
-        foreach (string flag in new[] { "-lumen-test-profile", "-lumen-verify-dir", "-lumen-conversation-dir", "-lumen-image-dir" })
+        foreach (string flag in new[] { "-lumen-test-profile", "-lumen-verify-dir", "-lumen-conversation-dir", "-lumen-image-dir", "-lumen-metrics-dir", "-lumen-soak-dir" })
         {
             int i = Array.IndexOf(args, flag);
             if (i < 0 || i + 1 >= args.Length) continue;
@@ -27,6 +27,21 @@ public static class LumenPreferences
                 if (store?.entries != null) foreach (var entry in store.entries) values[entry.key] = entry.value;
             }
             break;
+        }
+        if(testFile==null&&Application.isEditor)
+        {
+            string implementation=Path.GetFullPath(Path.Combine(Application.dataPath,"../.."));
+            if(File.Exists(Path.Combine(implementation,"Reports","IMPLEMENTATION_BRIEF.md")))
+            {
+                string directory=Path.Combine(implementation,"Evidence","EditorProfile");Directory.CreateDirectory(directory);
+                testFile=Path.Combine(directory,"isolated-preferences.json");
+                if(File.Exists(testFile))
+                {
+                    var store=JsonUtility.FromJson<Store>(File.ReadAllText(testFile));
+                    if(store?.entries!=null)foreach(var entry in store.entries)values[entry.key]=entry.value;
+                }
+                if(!values.ContainsKey("Lumen.VoiceEnabled"))values["Lumen.VoiceEnabled"]="0";
+            }
         }
     }
     public static bool HasKey(string key) => IsIsolated ? values.ContainsKey(key) : UnityEngine.PlayerPrefs.HasKey(key);

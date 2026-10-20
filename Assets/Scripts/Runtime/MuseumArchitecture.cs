@@ -44,9 +44,9 @@ public static class MuseumArchitecture
         Painting(gallery,436535,"Wheat Field with Cypresses","Vincent van Gogh / 1889",new Vector3(16,3.2f,8.30f),gold);
         Painting(gallery,436105,"The Death of Socrates","Jacques Louis David / 1787",new Vector3(24,3.2f,8.30f),gold);
         Painting(gallery,11417,"Washington Crossing the Delaware","Emanuel Leutze / 1851",new Vector3(32,3.2f,8.30f),gold);
-        Label(gallery,"NATURAL HISTORY",new Vector3(-24,5.2f,8.72f),5,new Vector2(16,1));
-        Label(gallery,"PAINTING / MEMORY / PERSPECTIVE",new Vector3(24,5.9f,8.20f),4,new Vector2(23,1));
-        Label(gallery,"HUMAN STORIES",new Vector3(0,5.2f,34.72f),5,new Vector2(16,1));
+        Label(gallery,"NATURAL HISTORY",new Vector3(-24,5.2f,8.72f),3,new Vector2(16,1));
+        Label(gallery,"PAINTING / MEMORY / PERSPECTIVE",new Vector3(24,5.9f,8.20f),2.8f,new Vector2(23,1));
+        Label(gallery,"HUMAN STORIES",new Vector3(0,5.2f,34.72f),3,new Vector2(16,1));
         Label(gallery,"NATURAL HISTORY  <     HUMAN STORIES  ^     >  PAINTINGS",new Vector3(0,3.5f,7.8f),3.2f,new Vector2(18,1));
         var olive=Resources.Load<GameObject>("LumenCollection/CityOlivePlanter");
         if(olive!=null)foreach(Vector3 p in new[]{new Vector3(-8,0,-6),new Vector3(8,0,-6),new Vector3(13,0,7),new Vector3(35,0,7)})
@@ -108,8 +108,12 @@ public static class MuseumArchitecture
         var exhibit=Object.Instantiate(prefab,parent,false);exhibit.transform.localPosition=p;exhibit.transform.localScale=Vector3.one*scale;
         exhibit.name=title;var data=exhibit.AddComponent<ObjectMetadata>();data.objectName=title;data.displayName=title;data.scenario="museum";data.category="Interpretive skeletal reconstruction";data.isInteractable=true;
         data.description="An original schematic skeletal reconstruction made for this exhibit. It shows the spine, ribs, limbs, tail and open skull structure. It is not a scanned specimen or a scientifically exact anatomical reconstruction.";data.descriptionSummary=data.description;
-        Label(parent,title,p+new Vector3(0,1.1f,-2.0f),2.4f,new Vector2(8,.6f));
-        Label(parent,"ORIGINAL INTERPRETIVE MODEL / NOT A SCANNED SPECIMEN",p+new Vector3(0,.65f,-2.0f),1.4f,new Vector2(8,.4f));
+        Box(parent,"Exhibit caption backing",p+new Vector3(0,.87f,-2.0f),new Vector3(8.2f,.84f,.045f),Mat("Skeleton caption slate",new Color(.045f,.075f,.08f)),false);
+        Label(parent,title,p+new Vector3(0,1.07f,-2.04f),1.65f,new Vector2(8,.34f));
+        Label(parent,"ORIGINAL INTERPRETIVE MODEL / NOT A SCANNED SPECIMEN",p+new Vector3(0,.70f,-2.04f),1.05f,new Vector2(8,.29f));
+        LearningModelInspection.MakeSelectable(exhibit);
+        var spot=new GameObject("Skeleton exhibit lighting");spot.transform.SetParent(parent,false);spot.transform.localPosition=p+new Vector3(0,4.8f,-2.8f);spot.transform.LookAt(parent.TransformPoint(p+Vector3.up*1.5f));
+        var light=spot.AddComponent<Light>();light.type=LightType.Spot;light.spotAngle=65;light.range=10;light.intensity=9;light.color=new Color(.96f,.94f,.87f);light.shadows=LightShadows.None;
     }
 
     private static void Painting(Transform parent,int number,string title,string artist,Vector3 position,Material frame)
@@ -118,7 +122,7 @@ public static class MuseumArchitecture
         float width=5.8f,height=width*texture.height/texture.width;
         var quad=GameObject.CreatePrimitive(PrimitiveType.Quad);quad.name=title;quad.transform.SetParent(parent,false);quad.transform.localPosition=position;quad.transform.localScale=new Vector3(width,height,1);
         var template=Resources.Load<Material>("MuseumPaintings/PaintingSurface");
-        var material=template!=null?new Material(template):new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+        var material=template!=null?LumenRuntimeResources.Own(new Material(template)):LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Unlit")));
         material.mainTexture=texture;quad.GetComponent<Renderer>().sharedMaterial=material;
         foreach(int s in new[]{-1,1})
         {
@@ -132,6 +136,7 @@ public static class MuseumArchitecture
         Label(parent,artist+" / The Met / Public Domain",caption-Vector3.up*.17f,1.4f,new Vector2(6.4f,.28f));
         var data=quad.AddComponent<ObjectMetadata>();data.objectName=title;data.displayName=title;data.scenario="museum";data.category="Historical painting";data.isInteractable=true;
         data.description=title+" by "+artist+". Public-domain image from The Metropolitan Museum of Art Open Access collection, object "+number+". Interpret the painting as an artist's composition, not a photographic record.";data.descriptionSummary=data.description;
+        LearningModelInspection.MakeSelectable(quad);
     }
     private static GameObject Box(Transform parent,string name,Vector3 p,Vector3 scale,Material material,bool collision)
     {
@@ -142,5 +147,5 @@ public static class MuseumArchitecture
         var go=new GameObject(content,typeof(TextMeshPro));go.transform.SetParent(parent,false);go.transform.localPosition=p;
         var t=go.GetComponent<TextMeshPro>();t.text=content;t.fontSize=size;t.color=new Color(.88f,.80f,.63f);t.alignment=TextAlignmentOptions.Center;t.rectTransform.sizeDelta=dimensions;
     }
-    private static Material Mat(string name,Color color)=>new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color};
+    private static Material Mat(string name,Color color)=>LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color});
 }

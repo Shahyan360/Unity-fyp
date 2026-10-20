@@ -28,7 +28,7 @@ public sealed class BlenderWorldCollection : MonoBehaviour
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         Vector3 feet = view.transform.position - Vector3.up * 1.62f;
         Vector3 candidate = feet + forward * 4f - right * 2.8f;
-        if (sceneName.StartsWith("Home")) candidate = new Vector3(-4f,0.03f,39f);
+        if (sceneName.StartsWith("Home")) candidate = new Vector3(0f,0.03f,39.7f);
         else if (sceneName == "Museum") candidate = new Vector3(52.5f,0f,54f); // Interior astronomy corner; keep the arrival path clear.
         if (NavMesh.SamplePosition(candidate,out NavMeshHit nav,2f,NavMesh.AllAreas) && Mathf.Abs(nav.position.y-feet.y)<1f)
             candidate=nav.position;
@@ -56,7 +56,7 @@ public sealed class BlenderWorldCollection : MonoBehaviour
         var metadata=model.AddComponent<ObjectMetadata>(); metadata.displayName="Solar System";metadata.objectName="Solar System";
         metadata.scenario="classroom";metadata.category="Astronomy model";metadata.isInteractable=true;
         metadata.description="A modern orrery: the Sun and eight planets, with deliberately compressed sizes and distances. Earth is third from the Sun. The rods and rings are model mechanisms, not physical tracks in space.";
-        metadata.descriptionSummary=metadata.description;metadata.interactionHint="Ask Ada how the Solar System works";
+        metadata.descriptionSummary=metadata.description;metadata.interactionHint="Ask Professor Theo how the Solar System works";
         return true;
     }
 }

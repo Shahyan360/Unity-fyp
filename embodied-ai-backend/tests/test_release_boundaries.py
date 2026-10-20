@@ -1,5 +1,10 @@
 from app import LocalStore, create_app
-from gemini_live import live_config
+from gemini_live import live_config, allowed_origin
+
+
+def test_origin_must_be_an_origin_not_a_url_with_credentials_or_path():
+    for origin in ("http://user@localhost", "http://localhost/path", "http://localhost?query", "http://localhost#fragment", "http://localhost:99999", "http://localhost:invalid"):
+        assert not allowed_origin(origin)
 
 
 def test_idle_sessions_expire_without_reusing_private_history():

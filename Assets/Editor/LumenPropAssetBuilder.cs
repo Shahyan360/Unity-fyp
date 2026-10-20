@@ -109,4 +109,6 @@ public static class LumenPropAssetBuilder
         }
         AssetDatabase.SaveAssets();
     }
+
+    public static void BuildFinalizedExhibits()=>Build(new[]{"TheropodSkeleton","HornedDinosaurSkeleton","ArenaPracticeSword"});
 }

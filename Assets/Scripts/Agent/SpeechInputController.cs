@@ -40,7 +40,7 @@ public sealed class SpeechInputController:MonoBehaviour
     private void Awake()
     {
         if(Instance!=null&&Instance!=this){Destroy(this);return;}Instance=this;
-        listening=PlayerPrefs.GetInt("Lumen.VoiceEnabled",1)!=0;
+        listening=PlayerPrefs.GetInt("Lumen.VoiceEnabled",0)!=0;
         if(GetComponent<GeminiLiveConversation>()==null)gameObject.AddComponent<GeminiLiveConversation>();
     }
     private IEnumerator Start()
@@ -122,7 +122,7 @@ public sealed class SpeechInputController:MonoBehaviour
         if(live!=null&&live.Selected)
         {
             if(forced&&!held)live.StopPlayback();
-            live.SendMicrophone(samples);state=live.State;lastHeard=live.LastHeard;
+            live.SendMicrophone(samples);state=live.Ready?"Listening / cloud conversation":"Microphone ready / assistant unavailable";lastHeard=live.LastHeard;
             return;
         }
         bool signal=forced||InputLevel>Mathf.Max(minimumLevel,noise*3.3f);
@@ -205,12 +205,12 @@ public sealed class SpeechInputController:MonoBehaviour
         var canvas=statusCanvas.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=120;
         var scaler=statusCanvas.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);
         var button=new GameObject("Toggle microphone",typeof(RectTransform),typeof(Image),typeof(Button));button.transform.SetParent(statusCanvas.transform,false);
-        var rect=button.GetComponent<RectTransform>();rect.anchorMin=new Vector2(.025f,.007f);rect.anchorMax=new Vector2(.975f,.038f);rect.offsetMin=rect.offsetMax=Vector2.zero;
+        var rect=button.GetComponent<RectTransform>();rect.anchorMin=new Vector2(.025f,.007f);rect.anchorMax=new Vector2(.975f,.041f);rect.offsetMin=rect.offsetMax=Vector2.zero;
         button.GetComponent<Image>().color=new Color(.035f,.10f,.12f,.96f);button.GetComponent<Button>().onClick.AddListener(ToggleListening);
         var label=new GameObject("Microphone status",typeof(RectTransform),typeof(TextMeshProUGUI));label.transform.SetParent(button.transform,false);
         statusText=label.GetComponent<TextMeshProUGUI>();statusText.rectTransform.anchorMin=Vector2.zero;statusText.rectTransform.anchorMax=Vector2.one;
         statusText.rectTransform.offsetMin=new Vector2(12,0);statusText.rectTransform.offsetMax=new Vector2(-12,0);statusText.font=TMP_Settings.defaultFontAsset;
-        statusText.fontSize=14;statusText.color=new Color(.72f,.92f,.86f);statusText.alignment=TextAlignmentOptions.MidlineLeft;statusText.raycastTarget=false;
+        statusText.fontSize=18;statusText.color=new Color(.72f,.92f,.86f);statusText.alignment=TextAlignmentOptions.MidlineLeft;statusText.raycastTarget=false;
     }
     private void OnDisable(){if(Instance==this)StopMicrophone();}
     private void OnDestroy(){if(Instance!=this)return;StopMicrophone();if(statusCanvas!=null)Destroy(statusCanvas);Instance=null;}

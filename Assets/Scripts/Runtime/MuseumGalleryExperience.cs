@@ -118,6 +118,7 @@ public static class MuseumGalleryExperience
         metadata.description=description; metadata.descriptionSummary=description;
         metadata.scenario="museum"; metadata.category="Interpretive museum exhibit"; metadata.isInteractable=true;
         metadata.interactionHint="Press E to ask about "+label;
+        LearningModelInspection.MakeSelectable(display);
         AddWorldLabel(label.ToUpperInvariant(),position+new Vector3(0f,1.72f,-.8f),.38f,ivory.color,new Vector2(3.7f,.4f));
     }
 
@@ -190,6 +191,7 @@ public static class MuseumGalleryExperience
         GameObject trim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         trim.name = name + " · brass inlay"; trim.transform.SetParent(display.transform, false); trim.transform.localPosition = new Vector3(0f, 0.66f, 0f); trim.transform.localScale = new Vector3(1.55f, 0.025f, 1.55f); trim.GetComponent<Renderer>().sharedMaterial = brass; Object.Destroy(trim.GetComponent<Collider>());
         build(display.transform);
+        LearningModelInspection.MakeSelectable(display);
         AddWorldLabel(name.ToUpperInvariant(), new Vector3(position.x, position.y + 3.15f, position.z - 0.7f), 0.52f, ivory.color, new Vector2(3.5f, 0.42f));
         AddWorldLabel(subtitle, new Vector3(position.x, position.y + 2.83f, position.z - 0.7f), 0.28f, brass.color, new Vector2(3.6f, 0.3f));
     }
@@ -363,7 +365,7 @@ public static class MuseumGalleryExperience
     private static Material MakeMaterial(string name, Color color, bool emissive = false)
     {
         Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Unlit/Color");
-        Material material = new Material(shader) { name = name, color = color };
+        Material material = LumenRuntimeResources.Own(new Material(shader) { name = name, color = color });
         if (emissive && material.HasProperty("_EmissionColor")) { material.EnableKeyword("_EMISSION"); material.SetColor("_EmissionColor", color * 0.3f); }
         return material;
     }

@@ -138,6 +138,9 @@ public static class LumenCharacterTailoring
             masked.SetTriangles(kept,sub);
         }
         int faceCount=masked.blendShapeCount;
+        var compact=LumenMeshCompaction.Compact(masked,out string compactionEvidence);
+        UnityEngine.Object.DestroyImmediate(masked);masked=compact;
+        File.WriteAllText(Working+"/"+style+"/facial-compaction.txt",compactionEvidence);
         SaveMesh(mesh,folder+"/Garments.asset");SaveMesh(masked,folder+"/FacialBody.asset");
         var root=new GameObject(style+" tailored wardrobe");var definition=root.AddComponent<TailoredCharacterWardrobe>();
         definition.character=data.character;definition.garments=AssetDatabase.LoadAssetAtPath<Mesh>(folder+"/Garments.asset");
@@ -165,6 +168,12 @@ public static class LumenCharacterTailoring
     {
         var current=AssetDatabase.LoadAssetAtPath<Mesh>(path);
         if(current==null)AssetDatabase.CreateAsset(mesh,path);
-        else{EditorUtility.CopySerialized(mesh,current);UnityEngine.Object.DestroyImmediate(mesh);}
+        else
+        {
+            // Invalidate the old vertex streams before copying a new layout.
+            // CopySerialized alone leaves a stale GPU stride on an already loaded mesh.
+            current.Clear(false);EditorUtility.CopySerialized(mesh,current);current.UploadMeshData(false);
+            EditorUtility.SetDirty(current);UnityEngine.Object.DestroyImmediate(mesh);
+        }
     }
 }

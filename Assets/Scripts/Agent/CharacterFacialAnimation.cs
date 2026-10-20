@@ -14,6 +14,7 @@ public sealed class CharacterFacialAnimation : MonoBehaviour
     }
     private readonly List<Shape> shapes = new List<Shape>();
     private readonly float[] samples = new float[256];
+    private readonly float[] spectrum = new float[128];
     private readonly float[] values = new float[8];
     private AudioSource speech;
     private Func<float> nativeLevel;
@@ -85,11 +86,21 @@ public sealed class CharacterFacialAnimation : MonoBehaviour
             float level=nativeLevel!=null?nativeLevel():Mathf.Sqrt(square / samples.Length);
             targetAmplitude = Mathf.Clamp01((level - 0.006f) * 11f);
         }
-        amplitude = Mathf.Lerp(amplitude, targetAmplitude, step);
-        values[0] = amplitude * 72f;
-        // RMS follows actual audio/silence. The secondary mouth shapes approximate articulation, not phoneme alignment.
-        values[1] = amplitude * (12f + 12f * Mathf.Sin(now * 8.2f));
-        values[2] = amplitude * (7f + 7f * Mathf.Sin(now * 5.1f + 1.2f));
+        float articulationStep=1f-Mathf.Exp(-Time.unscaledDeltaTime*(targetAmplitude>amplitude?20f:32f));
+        amplitude = Mathf.Lerp(amplitude, targetAmplitude, articulationStep);
+        if(!speaking||targetAmplitude<.012f)amplitude=Mathf.MoveTowards(amplitude,0,Time.unscaledDeltaTime*6);
+        values[0] = amplitude * 52f;
+        // Audio-shape approximation, not phoneme/viseme alignment. Spectral balance
+        // replaces free-running sinusoidal lips, and quiet closures settle promptly.
+        float low=0,total=0;
+        if(speaking)
+        {
+            speech.GetSpectrumData(spectrum,0,FFTWindow.Hanning);
+            for(int i=1;i<48;i++){total+=spectrum[i];if(i<7)low+=spectrum[i];}
+        }
+        float rounded=total>.00001f?Mathf.Clamp01(low/total):0;
+        values[1] = amplitude * rounded * 18f;
+        values[2] = amplitude * rounded * 8f;
         if (now >= nextBlink)
         {
             blinkStarted = now;

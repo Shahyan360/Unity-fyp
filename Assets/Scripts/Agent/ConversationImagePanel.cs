@@ -1,3 +1,4 @@
+using PlayerPrefs = LumenPreferences;
 using System;
 using System.Collections;
 using System.Text;
@@ -36,7 +37,8 @@ public sealed class ConversationImagePanel : MonoBehaviour
     public bool HasImage=>texture!=null;
     public int ImagesShown {get;private set;}
     public bool RequestedForTurn {get;private set;}
-    public bool CanShowForQuestion=>!string.IsNullOrWhiteSpace(question)&&(automaticImages||RequestsVisual(question));
+    public bool CanShowForQuestion=>!string.IsNullOrWhiteSpace(question)&&!SuppressesVisual(question)&&PlayerPrefs.GetInt("Lumen.VisualAids",1)!=0&&(automaticImages||RequestsVisual(question));
+    public static bool SuppressesVisual(string text)=>System.Text.RegularExpressions.Regex.IsMatch(text??"",@"(?i)\b(verbal(?:ly)?[ -]only|words?[ -]only|without (?:any )?(?:images?|pictures?|visuals?)|no (?:more )?(?:images?|pictures?|photos?|visuals?))\b|\b(don'?t|do not|stop)\s+(show|showing|display|displaying|need|want)\b");
 
     public static bool RequestsVisual(string text)
     {
@@ -56,7 +58,7 @@ public sealed class ConversationImagePanel : MonoBehaviour
         panelRect=(RectTransform)panel.transform;
         Label(panel.transform,"LOOK CLOSER",new Vector2(.045f,.91f),new Vector2(.65f,.985f),13,new Color(.42f,.85f,.8f));
         expandLabel=Button(panel.transform,"+",new Vector2(.77f,.912f),new Vector2(.87f,.982f),()=>SetExpanded(!expanded)).GetComponentInChildren<TMP_Text>();
-        Button(panel.transform,"X",new Vector2(.88f,.912f),new Vector2(.98f,.982f),()=>panel.SetActive(false));
+        Button(panel.transform,"X",new Vector2(.88f,.912f),new Vector2(.98f,.982f),()=>{CancelSearch();panel.SetActive(false);});
         title=Label(panel.transform,"A picture for your question",new Vector2(.045f,.81f),new Vector2(.955f,.91f),21,Color.white);
         title.overflowMode=TextOverflowModes.Ellipsis;
         var well=Box(panel.transform,"Image area",new Vector2(.045f,.285f),new Vector2(.955f,.805f),new Color(.94f,.95f,.94f));
@@ -77,12 +79,18 @@ public sealed class ConversationImagePanel : MonoBehaviour
     public void BeginQuestion(string text,bool automatic=true)
     {
         EnsureUi();DockBesideSpeaker();question=text??"";automaticImages=automatic;RequestedForTurn=false;
+        if(SuppressesVisual(question)){PlayerPrefs.SetInt("Lumen.VisualAids",0);PlayerPrefs.Save();}
+        else if(RequestsVisual(question)){PlayerPrefs.SetInt("Lumen.VisualAids",1);PlayerPrefs.Save();}
         CancelSearch();ClearImage();current=null;State="Choosing topic";
         title.text="A picture for your question";status.text="Choosing a relevant image…";credits.text="Your explanation will continue while the image loads.";
         if(!CanShowForQuestion){State="Idle";status.text="Ask for a picture or visual explanation when you need one.";credits.text="Images in the café are optional.";}
         panel.SetActive(CanShowForQuestion);
     }
-    public void UpdateQuestion(string text){question=text??"";}
+    public void UpdateQuestion(string text)
+    {
+        question=text??"";
+        if(SuppressesVisual(question)){PlayerPrefs.SetInt("Lumen.VisualAids",0);PlayerPrefs.Save();CancelSearch();if(panel!=null)panel.SetActive(false);}
+    }
     public void RequestImage(string query,string backendUrl)
     {
         EnsureUi();DockBesideSpeaker();RequestedForTurn=true;backend=backendUrl.TrimEnd('/');topic=(query??"").Trim();

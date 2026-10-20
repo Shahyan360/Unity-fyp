@@ -41,6 +41,14 @@ public sealed class CafeOrderExperience : MonoBehaviour
     private AudioSource orderSounds;
     private AudioClip orderPlacedCue;
     private AudioClip orderReadyCue;
+    private Coroutine preparation;
+    public string OrderState=>orderReady?"Ready for simulated collection":orderInProgress?"Preparing simulated order":"No pending order";
+    public void CancelOrder()
+    {
+        if(preparation!=null)StopCoroutine(preparation);preparation=null;orderReady=orderInProgress=false;
+        for(int i=0;i<quantities.Length;i++){quantities[i]=0;if(itemQuantityLabels[i]!=null)itemQuantityLabels[i].text="0";}
+        if(statusLabel!=null)statusLabel.text="Order cancelled. You can begin again.";RefreshTotal();
+    }
 
     public bool IsOpen => modal != null && modal.activeSelf;
 
@@ -51,7 +59,8 @@ public sealed class CafeOrderExperience : MonoBehaviour
         if (orderSounds == null) orderSounds = canvas.gameObject.AddComponent<AudioSource>();
         orderSounds.playOnAwake = false;
         orderSounds.spatialBlend = 0f;
-        orderSounds.volume = 0.34f;
+        orderSounds.volume = 0.34f*LumenPreferences.GetInt("Lumen.UIVolume",80)/100f;
+        LumenAudioMix.Route(orderSounds,"UI");
         orderPlacedCue = CreateTone("CafeOrderPlaced", 660f, 0.12f);
         orderReadyCue = CreateChord("CafeOrderReady", 784f, 988f, 0.42f);
         BuildMenu(canvas.transform);
@@ -65,6 +74,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         modal.SetActive(true);
+        LumenAccessibility.MenuOpen=true;
         modal.transform.SetAsLastSibling();
         RefreshTotal();
     }
@@ -73,6 +83,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
     {
         if (modal == null) return;
         modal.SetActive(false);
+        LumenAccessibility.MenuOpen=false;
         if (!wasCursorVisible && cursorBeforeModal == CursorLockMode.Locked)
         {
             Cursor.lockState = CursorLockMode.Locked;
@@ -97,7 +108,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         group.blocksRaycasts = true;
 
         Image panel = MakePanel(modal.transform, "CafeMenuPanel", new Color(0.075f, 0.09f, 0.115f, 1f),
-            new Vector2(0.28f, 0.06f), new Vector2(0.72f, 0.94f));
+            new Vector2(0.15f, 0.06f), new Vector2(0.85f, 0.94f));
         AddText(panel.transform, "MenuEyebrow", "THE CORNER TABLE  /  PRACTICE ORDER", 12, new Color(0.95f, 0.67f, 0.40f), FontStyles.Bold,
             new Vector2(0.065f, 0.92f), new Vector2(0.90f, 0.985f), TextAlignmentOptions.Left);
         AddText(panel.transform, "MenuTitle", "A little something?", 31, new Color(0.97f, 0.94f, 0.88f), FontStyles.Bold,
@@ -127,6 +138,8 @@ public sealed class CafeOrderExperience : MonoBehaviour
         Button close = MakeButton(panel.transform, "CloseMenu", "CLOSE", new Color(0.18f, 0.23f, 0.28f),
             new Vector2(0.79f, 0.92f), new Vector2(0.93f, 0.975f), true);
         close.onClick.AddListener(Hide);
+        var cancel=MakeButton(panel.transform,"CancelOrder","CANCEL / RESTART",new Color(.18f,.23f,.28f),new Vector2(.57f,.92f),new Vector2(.78f,.975f),true);
+        cancel.onClick.AddListener(CancelOrder);
         modal.SetActive(false);
     }
 
@@ -195,12 +208,13 @@ public sealed class CafeOrderExperience : MonoBehaviour
         RefreshTotal();
         if (orderSounds != null && orderPlacedCue != null) orderSounds.PlayOneShot(orderPlacedCue);
         if (chat != null) chat.SubmitWorldPrompt("I just placed a simulated café order: " + summary + ". It is order number " + currentOrderNumber + " for " + serviceMethod.ToLowerInvariant() + ". Respond warmly as the café companion.", FindBarista());
-        StartCoroutine(PrepareOrder());
+        preparation=StartCoroutine(PrepareOrder());
     }
 
     private IEnumerator PrepareOrder()
     {
         yield return new WaitForSeconds(8f);
+        preparation=null;
         orderInProgress = false;
         orderReady = true;
         FindBarista()?.GetComponent<AmbientNpcRoutine>()?.ReactToOrder(true);

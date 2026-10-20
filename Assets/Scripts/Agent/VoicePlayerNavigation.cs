@@ -22,7 +22,7 @@ public sealed class VoicePlayerNavigation:MonoBehaviour
     {
         if(corners==null)return;
 #if ENABLE_INPUT_SYSTEM
-        var k=Keyboard.current;if(k!=null&&(k.wKey.isPressed||k.aKey.isPressed||k.sKey.isPressed||k.dKey.isPressed||k.escapeKey.wasPressedThisFrame)){Cancel();return;}
+        var k=Keyboard.current;if(k!=null&&(LumenAccessibility.ReadMovement(k).sqrMagnitude>0||k.escapeKey.wasPressedThisFrame||LumenAccessibility.MenuOpen)){Cancel();return;}
 #endif
         if(corner>=corners.Length){Cancel();return;}
         var delta=corners[corner]-transform.position;delta.y=0;

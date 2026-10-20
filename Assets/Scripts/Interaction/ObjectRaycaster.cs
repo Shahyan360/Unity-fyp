@@ -47,6 +47,7 @@ public class ObjectRaycaster : MonoBehaviour
 
         if (CurrentObject != null)
         {
+            CurrentObject.GetComponentInParent<LearningModelInspection>()?.Select();
             SetDetectedObjectLabel(CurrentObject.GetDisplayName());
         }
         else

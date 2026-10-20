@@ -194,7 +194,10 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
         WalkableHomeHub.Ensure();
         Material homeGalaxy = Resources.Load<Material>("LumenGalaxySky");
-        if (homeGalaxy != null) RenderSettings.skybox = homeGalaxy;
+        if (homeGalaxy != null)
+        {
+            var sky=LumenRuntimeResources.Own(new Material(homeGalaxy));sky.SetFloat("_Exposure",.30f);RenderSettings.skybox=sky;
+        }
         Camera homeCamera = Camera.main;
         if (homeCamera != null)
         {
@@ -219,11 +222,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
         Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.13f, 0.94f), true);
         Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.035f), new Vector2(0.455f, 0.265f), Vector2.zero, Vector2.zero);
-        CreateText(guidePanel.transform, "GuidePromptTitle", "LUMEN  /  YOUR GUIDE", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
+        CreateText(guidePanel.transform, "GuidePromptTitle", "KAI  /  YOUR COMPANION", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
             new Vector2(0.045f, 0.77f), new Vector2(0.95f, 0.97f), TextAlignmentOptions.Left);
         CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask anything. I’ll help you find a place to begin.", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
             new Vector2(0.045f, 0.59f), new Vector2(0.95f, 0.79f), TextAlignmentOptions.Left);
-        targetText = CreateText(guidePanel.transform, "GuideConversation", "Hi! I’m Lumen. What are you curious about?", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
+        targetText = CreateText(guidePanel.transform, "GuideConversation", "Welcome. Choose a world, or ask Kai where to begin.", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
             new Vector2(0.045f, 0.30f), new Vector2(0.95f, 0.60f), TextAlignmentOptions.Left);
 
         TMP_InputField input = CreateInput(guidePanel.transform,
@@ -276,11 +279,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             targetText.lineSpacing = 2f;
             send.onClick.RemoveListener(home.SendLocalMessage);
             send.onClick.AddListener(home.SendLocalMessage);
-            send.onClick.AddListener(scenarioPanel.Reveal);
+            // Destination choices open only from the Worlds button.
             input.onSubmit.AddListener(_ => SubmitHomeMessage(home));
-            input.onSelect.AddListener(_ => scenarioPanel.Reveal());
+            // Focusing a message field keeps the conversation visible.
             input.onValueChanged.AddListener(value => {
-                if (!string.IsNullOrWhiteSpace(value)) scenarioPanel.Reveal();
+                // No automatic panel expansion while typing.
             });
         }
         // The authored home canvas can leave one of its hidden input fields
@@ -288,6 +291,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         // navigation is live immediately; clicking the new chat field reselects it.
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         // Enter the existing walkable portal garden directly; no opaque opening overlay.
+        topBar.gameObject.SetActive(false);
+        WorldVisitControls.Install(canvas,"HomeScene");
         CharacterSelectionControl.Install(canvas,"HomeScene");
     }
 
@@ -390,8 +395,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
     {
         GameObject root = new GameObject("LumenGuideVisual");
         root.transform.SetParent(parent, false);
-        Material shell = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")) { color = new Color(0.22f, 0.36f, 0.48f) };
-        Material accent = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")) { color = new Color(0.37f, 0.91f, 0.85f) };
+        Material shell = LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")) { color = new Color(0.22f, 0.36f, 0.48f) });
+        Material accent = LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")) { color = new Color(0.37f, 0.91f, 0.85f) });
         GameObject body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         body.name = "Lumen shell"; body.transform.SetParent(root.transform, false); body.transform.localPosition = new Vector3(0f, 0.82f, 0f); body.transform.localScale = new Vector3(0.55f, 0.63f, 0.42f); body.GetComponent<Renderer>().sharedMaterial = shell; Object.Destroy(body.GetComponent<Collider>());
         GameObject head = GameObject.CreatePrimitive(PrimitiveType.Sphere);

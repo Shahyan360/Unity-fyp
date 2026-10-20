@@ -25,7 +25,13 @@ public static class LumenFinalizationBuild
         catch(Exception error) { File.WriteAllText(Path.Combine(root,"Evidence","baseline-build-error.txt"),error.ToString()); Debug.LogException(error); }
     }
     public static void Baseline() => Build("Baseline");
-    public static void Candidate() => Build("Candidate");
+    public static void Candidate()
+    {
+        PlayerSettings.productName="Lumen";PlayerSettings.companyName="";PlayerSettings.bundleVersion="0.2.0";
+        PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=720;PlayerSettings.resizableWindow=true;
+        var timing=typeof(PlayerSettings).GetProperty("enableFrameTimingStats");if(timing!=null&&timing.CanWrite)timing.SetValue(null,true);
+        Build("Candidate");
+    }
     private static void Build(string stage)
     {
         if(EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play Mode first.");
@@ -34,7 +40,7 @@ public static class LumenFinalizationBuild
         Directory.CreateDirectory(output);
         File.WriteAllText(Path.Combine(root,"Evidence","latest-build-path.txt"),output);
         var options=new BuildPlayerOptions {
-            scenes=EditorBuildSettings.scenes.Where(s=>s.enabled).Select(s=>s.path).ToArray(),
+            scenes=stage=="Baseline"?EditorBuildSettings.scenes.Where(s=>s.enabled).Select(s=>s.path).ToArray():new[]{"Assets/Scenes/HomeScene.unity","Assets/Scenes/Classroom.unity","Assets/Scenes/HistoricalPlace.unity","Assets/Scenes/Cafestore.unity"},
             target=BuildTarget.StandaloneWindows64,locationPathName=Path.Combine(output,"Lumen.exe"),
             options=BuildOptions.DetailedBuildReport
         };

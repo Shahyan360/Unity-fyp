@@ -130,7 +130,7 @@ public static class CompactRomanGallery
 
     private static Material Material(string name,Color color,float metallic=0f)
     {
-        var m=new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color};
+        var m=LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color});
         m.SetFloat("_Metallic",metallic);m.SetFloat("_Smoothness",.25f);return m;
     }
 }

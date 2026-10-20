@@ -25,7 +25,7 @@ public sealed class RomanVisitorAccess:MonoBehaviour
         }
         // A gradual accessible approach replaces the original unwalkable seating steps.
         var root=new GameObject("Arena visitor entrance");
-        var material=new Material(Shader.Find("Universal Render Pipeline/Lit")){color=new Color(.56f,.48f,.36f)};
+        var material=LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){color=new Color(.56f,.48f,.36f)});
         var ramp=GameObject.CreatePrimitive(PrimitiveType.Cube);ramp.name="Arena entrance ramp";ramp.transform.SetParent(root.transform);
         ramp.transform.position=new Vector3(0,.33f,-7.5f);ramp.transform.localScale=new Vector3(2.7f,.16f,9f);ramp.transform.rotation=Quaternion.Euler(-5,0,0);ramp.GetComponent<Renderer>().sharedMaterial=material;
         var deck=GameObject.CreatePrimitive(PrimitiveType.Cube);deck.name="Arena viewing terrace";deck.transform.SetParent(root.transform);
