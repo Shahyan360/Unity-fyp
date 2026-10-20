@@ -92,6 +92,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         yield return new WaitForSecondsRealtime(4);
         Check(SceneManager.GetActiveScene().name == "HomeScene", "Startup opens HomeScene");
         yield return Capture("01-opening");
+        yield return Capture("01b-opening-world",.5f,true);
         // Exercise the real portal component, independent of decorative button text.
         var portal = FindObjectsByType<HomeHubPortal>().FirstOrDefault(p=>p.scenario=="ancient_rome");
         Check(portal!=null,"Rome portal exists");
@@ -100,6 +101,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         yield return WaitScene("HistoricalPlace");
         SetView(new Vector3(0,1.8f,-28), Quaternion.identity);
         yield return Capture("02-rome-streets");
+        yield return Capture("02b-rome-world",.5f,true);
         Check(FindObjectsByType<RomanArenaPerformance>().Length == 1, "Arena performance installed");
         Check(GameObject.Find("Cassius") != null && GameObject.Find("Titus") != null, "Both arena performers spawned");
         Check(FindObjectsByType<MeshRenderer>().Any(r => r.name == "Seated Roman audience"), "Baked seated audience renders");
@@ -111,6 +113,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         ScenarioTransitionService.LoadScenario("museum");
         yield return WaitScene("Classroom","museum");
         yield return Capture("05-museum-arrival");
+        yield return Capture("05b-museum-world",.5f,true);
         Check(GameObject.Find("Natural history wing") != null && GameObject.Find("Historical collections") != null && GameObject.Find("Painting gallery") != null, "Three connected museum wings exist");
         foreach (int number in new[] { 436535, 436105, 11417 })
         {
@@ -157,13 +160,16 @@ public sealed class LumenPlayerVerification : MonoBehaviour
                     actor.enabled=true;actor.RefreshVisual();actor.PlayAction("point");
                     yield return Capture("09-gesture-"+label,.3f);
                     var speech=FindAnyObjectByType<SpeechOutputController>();
-                    speech.SpeakAs("Hello. Come and explore with me. There is always something interesting to discover together.",guide.VoiceName,guide.DisplayName,actor,guide.SpeechRate,guide.VoicePitch);
+                    speech.SpeakAs("Peter baked a blueberry muffin. Mum packed a paper bag. Come and explore with me.",guide.VoiceName,guide.DisplayName,actor,guide.SpeechRate,guide.VoicePitch);
                     float timeout=Time.realtimeSinceStartup+32;
                     while(!speech.IsSpeaking&&Time.realtimeSinceStartup<timeout)yield return null;
                     Check(speech.IsSpeaking,label+" local speech starts without a backend request ("+speech.PlaybackStage+")");
                     SetView(new Vector3(84,1.50f,59.85f),Quaternion.Euler(0,0,0));
                     yield return Capture("09-speaking-"+label);
                     Check(report.views[report.views.Count-1].maximumJaw>1,label+" mouth animates with actual audio");
+                    speech.CancelSpeech();yield return new WaitForSecondsRealtime(.6f);
+                    yield return Capture("09-silence-"+label,.3f);
+                    Check(report.views[report.views.Count-1].maximumJaw<1,label+" jaw settles after manual speech cancellation");
                     SetView(new Vector3(84,1.3f,57.3f),Quaternion.Euler(4,0,0));
                 }
             }
@@ -173,12 +179,14 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         ScenarioTransitionService.LoadScenario("cafe");
         yield return WaitScene("Cafestore");
         yield return Capture("10-cafe");
+        yield return Capture("10b-cafe-world",.5f,true);
         Check(FindAnyObjectByType<CafeOrderExperience>() != null, "Cafe order experience installed");
         Check(FindAnyObjectByType<ScenarioCharacterIdentity>()?.DisplayName == "Maya", "Cafe default guide is Maya");
         ScenarioTransitionService.LoadScenario("classroom");
         yield return WaitScene("Classroom","classroom");
         Check(ClassroomLearningExhibit.ShowModel("Solar System"), "Science Solar System exhibit opens");
         yield return Capture("11-science");
+        yield return Capture("11b-science-world",.5f,true);
         ScenarioTransitionService.LoadHome();
         yield return WaitScene("HomeScene");
         yield return Capture("12-return-home");
@@ -203,7 +211,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         if (player != null) player.enabled = false;
         if (Camera.main != null) Camera.main.transform.SetPositionAndRotation(position,rotation);
     }
-    private IEnumerator Capture(string name,float duration=1.5f)
+    private IEnumerator Capture(string name,float duration=1.5f,bool hideHud=false)
     {
         string scene=SceneManager.GetActiveScene().name;
         string variant=ScenarioRuntimeManager.GetScenarioForScene(scene);
@@ -250,6 +258,8 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         report.views.Add(frame);
         Check(frame.missingComponents==0,name+" has no missing components");
         Check(frame.errorMaterials==0,name+" has no missing/error material shaders");
+        var hidden=hideHud?FindObjectsByType<Canvas>(FindObjectsInactive.Exclude).Where(c=>c.enabled&&c.renderMode!=RenderMode.WorldSpace).ToArray():new Canvas[0];
+        foreach(var overlay in hidden)overlay.enabled=false;
         yield return new WaitForEndOfFrame();
         var capture=ScreenCapture.CaptureScreenshotAsTexture();
         if(capture==null)Check(false,"No rendered capture for "+name);
@@ -260,6 +270,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
             Check(lit>pixels.Length/97*.04f&&high-low>20,"Rendered capture contains visible scene detail: "+name);
             File.WriteAllBytes(Path.Combine(output,frame.captureFile),capture.EncodeToPNG());Destroy(capture);
         }
+        foreach(var overlay in hidden)if(overlay!=null)overlay.enabled=true;
         yield return new WaitForEndOfFrame();yield return null;
         File.WriteAllText(Path.Combine(output,"journey.json"),JsonUtility.ToJson(report,true));
     }

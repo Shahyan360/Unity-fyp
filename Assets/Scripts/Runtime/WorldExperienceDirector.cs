@@ -225,7 +225,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.065f), new Vector2(0.575f, 0.34f), Vector2.zero, Vector2.zero);
         CreateText(guidePanel.transform, "GuidePromptTitle", "KAI  /  YOUR COMPANION", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
             new Vector2(0.045f, 0.80f), new Vector2(0.95f, 0.98f), TextAlignmentOptions.Left);
-        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask a question or choose a portal.", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
+        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask anything · PgUp/PgDn: scroll", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
             new Vector2(0.045f, 0.66f), new Vector2(0.95f, 0.80f), TextAlignmentOptions.Left);
         targetText = CreateText(guidePanel.transform, "GuideConversation", "Welcome. Choose a world, or ask Kai where to begin.", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
             new Vector2(0.045f, 0.30f), new Vector2(0.95f, 0.60f), TextAlignmentOptions.Left);
@@ -662,19 +662,19 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         Image panel = CreateImage(root, "LocalGuideChat", new Color(0.045f, 0.067f, 0.095f, 0.94f), true);
         Rect(panel.rectTransform, new Vector2(0.53f, 0.17f), new Vector2(0.975f, 0.86f), Vector2.zero, Vector2.zero);
         CreateText(panel.transform, "ChatEyebrow", "YOUR COMPANION", 12, new Color(0.56f, 0.87f, 0.77f), FontStyles.Bold,
-            new Vector2(0.06f, 0.925f), new Vector2(0.94f, 0.985f), TextAlignmentOptions.Left);
+            new Vector2(0.06f, 0.935f), new Vector2(0.94f, 0.995f), TextAlignmentOptions.Left);
         string scene = SceneManager.GetActiveScene().name;
         bool isMuseum = string.Equals(config.defaultScenario, "museum", System.StringComparison.OrdinalIgnoreCase);
         string welcome = isMuseum ? "Museum discoveries"
             : scene == "HistoricalPlace" ? "Explore Rome"
             : scene == "Cafestore" ? "Talk and practise" : "Explore a model";
         TMP_Text chatTitle = CreateText(panel.transform, "ChatTitle", welcome, 19, Paper, FontStyles.Bold,
-            new Vector2(0.06f, 0.865f), new Vector2(0.94f, 0.945f), TextAlignmentOptions.Left);
+            new Vector2(0.06f, 0.855f), new Vector2(0.94f, 0.935f), TextAlignmentOptions.Left);
         chatTitle.enableAutoSizing = true;
         chatTitle.fontSizeMin = 14f;
         chatTitle.fontSizeMax = 19f;
         TMP_Text status = CreateText(panel.transform, "ChatStatus", "LOCAL GUIDE READY", 12, new Color(0.56f, 0.87f, 0.77f), FontStyles.Bold,
-            new Vector2(0.06f, 0.815f), new Vector2(0.94f, 0.86f), TextAlignmentOptions.Left);
+            new Vector2(0.06f, 0.775f), new Vector2(0.94f, 0.855f), TextAlignmentOptions.Left);
         speechOutput.BindCaption(status);
 
         GameObject viewportObject = new GameObject("ChatViewport", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(RectMask2D), typeof(ScrollRect));
@@ -738,8 +738,9 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             float gap = .03f;
             float minX = .05f + (i%2) * (chipWidth + gap);
             float maxX = minX + chipWidth;
-            Button chip = CreateButton(panel.transform, "QuickPrompt" + i, quickPrompts[i], new Color(0.14f, 0.19f, 0.22f),
-                new Vector2(minX, .73f-(i/2)*.08f), new Vector2(maxX, .805f-(i/2)*.08f), true);
+            string chipLabel=quickPrompts[i].Replace("Show ","").Replace("Explain the Forum","The Forum").Replace("Roman architecture","Architecture").Replace("Start a conversation","Say hello");
+            Button chip = CreateButton(panel.transform, "QuickPrompt" + i, chipLabel, new Color(0.14f, 0.19f, 0.22f),
+                new Vector2(minX, .69f-(i/2)*.08f), new Vector2(maxX, .765f-(i/2)*.08f), true);
             TMP_Text chipText = chip.GetComponentInChildren<TMP_Text>();
             if (chipText != null)
             {
@@ -751,7 +752,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             }
             chip.onClick.AddListener(() => chatManager.SubmitWorldPrompt(quickPrompts[index]));
         }
-        Rect(viewportRect, new Vector2(0.045f, 0.20f), new Vector2(0.955f, 0.63f), Vector2.zero, Vector2.zero);
+        Rect(viewportRect, new Vector2(0.045f, 0.20f), new Vector2(0.955f, 0.595f), Vector2.zero, Vector2.zero);
     }
 
     private void Update()

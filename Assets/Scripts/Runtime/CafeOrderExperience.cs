@@ -47,7 +47,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
     {
         if(preparation!=null)StopCoroutine(preparation);preparation=null;orderReady=orderInProgress=false;
         for(int i=0;i<quantities.Length;i++){quantities[i]=0;if(itemQuantityLabels[i]!=null)itemQuantityLabels[i].text="0";}
-        if(statusLabel!=null)statusLabel.text="Order cancelled. You can begin again.";RefreshTotal();
+        if(statusLabel!=null)statusLabel.text="Cancelled. Start again when ready.";RefreshTotal();
     }
 
     public bool IsOpen => modal != null && modal.activeSelf;
@@ -108,51 +108,49 @@ public sealed class CafeOrderExperience : MonoBehaviour
         group.blocksRaycasts = true;
 
         Image panel = MakePanel(modal.transform, "CafeMenuPanel", new Color(0.075f, 0.09f, 0.115f, 1f),
-            new Vector2(0.15f, 0.06f), new Vector2(0.85f, 0.94f));
-        AddText(panel.transform, "MenuEyebrow", "THE CORNER TABLE  /  PRACTICE ORDER", 12, new Color(0.95f, 0.67f, 0.40f), FontStyles.Bold,
-            new Vector2(0.065f, 0.92f), new Vector2(0.90f, 0.985f), TextAlignmentOptions.Left);
+            new Vector2(0.055f, 0.035f), new Vector2(0.945f, 0.965f));
+        AddText(panel.transform, "MenuEyebrow", "CAFE / PRACTICE ORDER", 12, new Color(0.95f, 0.67f, 0.40f), FontStyles.Bold,
+            new Vector2(0.045f, 0.935f), new Vector2(0.55f, 0.995f), TextAlignmentOptions.Left);
         AddText(panel.transform, "MenuTitle", "A little something?", 31, new Color(0.97f, 0.94f, 0.88f), FontStyles.Bold,
-            new Vector2(0.065f, 0.84f), new Vector2(0.91f, 0.93f), TextAlignmentOptions.Left);
-        AddText(panel.transform, "MenuDescription", "Choose a drink or a treat. This is a simulation — no real payment is taken.", 14, new Color(0.73f, 0.77f, 0.79f), FontStyles.Normal,
-            new Vector2(0.065f, 0.785f), new Vector2(0.92f, 0.85f), TextAlignmentOptions.Left);
+            new Vector2(0.045f, 0.84f), new Vector2(0.94f, 0.935f), TextAlignmentOptions.Left);
+        AddText(panel.transform, "MenuDescription", "Simulation only. No real payment.", 14, new Color(0.73f, 0.77f, 0.79f), FontStyles.Normal,
+            new Vector2(0.045f, 0.79f), new Vector2(0.94f, 0.84f), TextAlignmentOptions.Left);
 
         for (int i = 0; i < Menu.Length; i++) BuildItemRow(panel.transform, i);
 
-        AddText(panel.transform, "ServiceHeading", "HOW WOULD YOU LIKE IT?", 12, new Color(0.72f, 0.77f, 0.79f), FontStyles.Bold,
-            new Vector2(0.065f, 0.205f), new Vector2(0.93f, 0.245f), TextAlignmentOptions.Left);
         Button pickup = MakeButton(panel.transform, "PickupChoice", "PICK UP", new Color(0.22f, 0.63f, 0.58f),
-            new Vector2(0.065f, 0.145f), new Vector2(0.47f, 0.21f), true);
+            new Vector2(0.045f, 0.11f), new Vector2(0.47f, 0.18f), true);
         Button table = MakeButton(panel.transform, "TableChoice", "TABLE SERVICE", new Color(0.18f, 0.23f, 0.28f),
-            new Vector2(0.49f, 0.145f), new Vector2(0.93f, 0.21f), true);
+            new Vector2(0.49f, 0.11f), new Vector2(0.95f, 0.18f), true);
         pickup.onClick.AddListener(() => { serviceMethod = "Pickup"; RefreshTotal(); });
         table.onClick.AddListener(() => { serviceMethod = "Table service"; RefreshTotal(); });
         serviceLabel = AddText(panel.transform, "ServiceLabel", "Pickup selected", 12, new Color(0.70f, 0.87f, 0.80f), FontStyles.Normal,
-            new Vector2(0.065f, 0.112f), new Vector2(0.46f, 0.15f), TextAlignmentOptions.Left);
+            new Vector2(0.045f, 0.062f), new Vector2(0.46f, 0.11f), TextAlignmentOptions.Left);
         totalLabel = AddText(panel.transform, "OrderTotal", "Total  ·  Rs 0", 17, new Color(0.97f, 0.94f, 0.88f), FontStyles.Bold,
-            new Vector2(0.50f, 0.112f), new Vector2(0.93f, 0.15f), TextAlignmentOptions.Right);
+            new Vector2(0.50f, 0.062f), new Vector2(0.95f, 0.11f), TextAlignmentOptions.Right);
         statusLabel = AddText(panel.transform, "OrderStatus", "", 13, new Color(0.61f, 0.87f, 0.74f), FontStyles.Normal,
-            new Vector2(0.065f, 0.055f), new Vector2(0.55f, 0.11f), TextAlignmentOptions.Left);
+            new Vector2(0.045f, 0.005f), new Vector2(0.55f, 0.062f), TextAlignmentOptions.Left);
         placeOrderButton = MakeButton(panel.transform, "PlaceOrder", "PLACE ORDER  ·  Rs 0", new Color(0.95f, 0.69f, 0.42f),
-            new Vector2(0.57f, 0.045f), new Vector2(0.93f, 0.112f), true);
+            new Vector2(0.57f, 0.005f), new Vector2(0.95f, 0.062f), true);
         placeOrderButton.onClick.AddListener(PlaceOrder);
         Button close = MakeButton(panel.transform, "CloseMenu", "CLOSE", new Color(0.18f, 0.23f, 0.28f),
-            new Vector2(0.79f, 0.92f), new Vector2(0.93f, 0.975f), true);
+            new Vector2(0.81f, 0.935f), new Vector2(0.95f, 0.995f), true);
         close.onClick.AddListener(Hide);
-        var cancel=MakeButton(panel.transform,"CancelOrder","CANCEL / RESTART",new Color(.18f,.23f,.28f),new Vector2(.57f,.92f),new Vector2(.78f,.975f),true);
+        var cancel=MakeButton(panel.transform,"CancelOrder","RESET",new Color(.18f,.23f,.28f),new Vector2(.63f,.935f),new Vector2(.79f,.995f),true);
         cancel.onClick.AddListener(CancelOrder);
         modal.SetActive(false);
     }
 
     private void BuildItemRow(Transform parent, int index)
     {
-        float top = 0.775f - index * 0.092f;
-        float bottom = top - 0.081f;
+        float top = 0.78f - index * 0.098f;
+        float bottom = top - 0.094f;
         Image row = MakePanel(parent, "MenuItem_" + index, new Color(0.11f, 0.13f, 0.16f, 1f),
             new Vector2(0.055f, bottom), new Vector2(0.945f, top));
         AddText(row.transform, "ItemName", Menu[index].name, 16, new Color(0.95f, 0.93f, 0.88f), FontStyles.Bold,
-            new Vector2(0.035f, 0.51f), new Vector2(0.64f, 0.94f), TextAlignmentOptions.Left);
+            new Vector2(0.035f, 0.50f), new Vector2(0.64f, 0.995f), TextAlignmentOptions.Left);
         AddText(row.transform, "ItemDetails", Menu[index].details, 12, new Color(0.66f, 0.71f, 0.75f), FontStyles.Normal,
-            new Vector2(0.035f, 0.06f), new Vector2(0.67f, 0.53f), TextAlignmentOptions.Left);
+            new Vector2(0.035f, 0.005f), new Vector2(0.67f, 0.50f), TextAlignmentOptions.Left);
         AddText(row.transform, "ItemPrice", "Rs " + Menu[index].price, 13, new Color(0.92f, 0.72f, 0.49f), FontStyles.Bold,
             new Vector2(0.66f, 0.28f), new Vector2(0.82f, 0.77f), TextAlignmentOptions.Right);
         Button minus = MakeButton(row.transform, "Minus", "−", new Color(0.20f, 0.25f, 0.29f), new Vector2(0.835f, 0.18f), new Vector2(0.89f, 0.82f), true);
@@ -180,7 +178,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         if (placeOrderButton != null)
         {
             TMP_Text buttonText = placeOrderButton.GetComponentInChildren<TMP_Text>();
-            if (buttonText != null) buttonText.text = orderReady ? "COLLECT ORDER  ·  #" + currentOrderNumber : orderInProgress ? "PREPARING  ·  #" + currentOrderNumber : "PLACE ORDER  ·  Rs " + total;
+            if (buttonText != null) buttonText.text = orderReady ? "COLLECT  #" + currentOrderNumber : orderInProgress ? "PREPARING  #" + currentOrderNumber : "ORDER  ·  Rs " + total;
             placeOrderButton.interactable = orderReady || (!orderInProgress && total > 0);
         }
         if (serviceLabel != null) serviceLabel.text = serviceMethod + " selected";
@@ -190,7 +188,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
     {
         if (orderReady)
         {
-            statusLabel.text = "Order #" + currentOrderNumber + " collected. Enjoy — and thank you!";
+            statusLabel.text = "Order #" + currentOrderNumber + " collected. Thank you!";
             orderReady = false;
             orderInProgress = false;
             for (int i = 0; i < quantities.Length; i++) { quantities[i] = 0; itemQuantityLabels[i].text = "0"; }
@@ -204,7 +202,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         orderInProgress = true;
         FindBarista()?.GetComponent<AmbientNpcRoutine>()?.ReactToOrder();
         string summary = BuildOrderSummary();
-        statusLabel.text = "Order #" + currentOrderNumber + " sent to the barista · " + serviceMethod.ToLowerInvariant() + ".";
+        statusLabel.text = "Order #" + currentOrderNumber + " / preparing";
         RefreshTotal();
         if (orderSounds != null && orderPlacedCue != null) orderSounds.PlayOneShot(orderPlacedCue);
         if (chat != null) chat.SubmitWorldPrompt("I just placed a simulated café order: " + summary + ". It is order number " + currentOrderNumber + " for " + serviceMethod.ToLowerInvariant() + ". Respond warmly as the café companion.", FindBarista());
@@ -218,7 +216,7 @@ public sealed class CafeOrderExperience : MonoBehaviour
         orderInProgress = false;
         orderReady = true;
         FindBarista()?.GetComponent<AmbientNpcRoutine>()?.ReactToOrder(true);
-        if (statusLabel != null) statusLabel.text = serviceMethod == "Pickup" ? "Order #" + currentOrderNumber + " is ready at the counter." : "Order #" + currentOrderNumber + " is on its way to your table.";
+        if (statusLabel != null) statusLabel.text = "Order #" + currentOrderNumber + (serviceMethod=="Pickup"?" / ready at counter":" / table service ready");
         if (orderSounds != null && orderReadyCue != null) orderSounds.PlayOneShot(orderReadyCue);
         FindBarista()?.GetComponent<AmbientNpcRoutine>()?.ReactToOrder(true);
         RefreshTotal();

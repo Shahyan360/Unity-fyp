@@ -64,6 +64,13 @@ public sealed class LumenAccessibility : MonoBehaviour
         }
 #if ENABLE_INPUT_SYSTEM
         var keyboard=Keyboard.current;
+        if(keyboard!=null&&(keyboard.pageUpKey.wasPressedThisFrame||keyboard.pageDownKey.wasPressedThisFrame))
+        {
+            // Read a long conversation or notebook without requiring a mouse wheel.
+            var container=GameObject.Find("VisitSettings")??GameObject.Find("LocalGuideChat")??GameObject.Find("GuidePromptPanel");
+            var scroll=container!=null?container.GetComponentInChildren<ScrollRect>():null;
+            if(scroll!=null)scroll.verticalNormalizedPosition=Mathf.Clamp01(scroll.verticalNormalizedPosition+(keyboard.pageUpKey.wasPressedThisFrame?.25f:-.25f));
+        }
         if(keyboard!=null&&keyboard.tabKey.wasPressedThisFrame)
         {
             var system=EventSystem.current;if(system==null)return;

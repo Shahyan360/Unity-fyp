@@ -14,7 +14,7 @@ public sealed class CharacterSelectionControl:MonoBehaviour
         var portraitObject=new GameObject("Portrait",typeof(RectTransform),typeof(UnityEngine.UI.RawImage),typeof(UnityEngine.UI.AspectRatioFitter));portraitObject.transform.SetParent(portraitWell.transform,false);
         var portrait=portraitObject.GetComponent<UnityEngine.UI.RawImage>();portrait.raycastTarget=false;
         var aspect=portraitObject.GetComponent<UnityEngine.UI.AspectRatioFitter>();aspect.aspectMode=UnityEngine.UI.AspectRatioFitter.AspectMode.FitInParent;
-        var name=Label(menu.transform,"",new Vector2(.41f,.84f),new Vector2(.96f,.96f),23);
+        var name=Label(menu.transform,"",new Vector2(.41f,.835f),new Vector2(.96f,.98f),23);
         var role=Label(menu.transform,"",new Vector2(.41f,.72f),new Vector2(.96f,.84f),18);
         void RefreshPortrait()
         {

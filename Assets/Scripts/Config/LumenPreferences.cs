@@ -14,7 +14,7 @@ public static class LumenPreferences
     static LumenPreferences()
     {
         string[] args = Environment.GetCommandLineArgs();
-        foreach (string flag in new[] { "-lumen-test-profile", "-lumen-verify-dir", "-lumen-conversation-dir", "-lumen-image-dir", "-lumen-metrics-dir", "-lumen-soak-dir", "-lumen-functional-dir", "-lumen-live-walk-dir" })
+        foreach (string flag in new[] { "-lumen-test-profile", "-lumen-verify-dir", "-lumen-conversation-dir", "-lumen-image-dir", "-lumen-images-dir", "-lumen-metrics-dir", "-lumen-soak-dir", "-lumen-functional-dir", "-lumen-live-walk-dir" })
         {
             int i = Array.IndexOf(args, flag);
             if (i < 0 || i + 1 >= args.Length) continue;

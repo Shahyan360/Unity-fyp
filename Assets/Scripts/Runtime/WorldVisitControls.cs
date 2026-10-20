@@ -13,7 +13,7 @@ public sealed class WorldVisitControls:MonoBehaviour
     {
         string title=scene.StartsWith("Home")?"LUMEN / DISCOVER":scene=="HistoricalPlace"?"ANCIENT ROME":scene=="Cafestore"?"THE CAFE":ScenarioRuntimeManager.GetScenarioForScene(scene)=="museum"?"MUSEUM":"CLASSROOM";
         var header=Panel(root,"VisitHeader",new Vector2(.025f,.925f),new Vector2(.545f,.985f));
-        Label(header.transform,title,new Vector2(.035f,.10f),new Vector2(.73f,.90f),22);
+        Label(header.transform,title,new Vector2(.035f,.025f),new Vector2(.73f,.975f),22);
         var open=Button(header.transform,"VISIT",new Vector2(.76f,.08f),new Vector2(.97f,.92f));
         drawer=Panel(root,"VisitSettings",new Vector2(.025f,.075f),new Vector2(.59f,.915f));
         Label(drawer.transform,"YOUR VISIT",new Vector2(.045f,.92f),new Vector2(.95f,.985f),25);
