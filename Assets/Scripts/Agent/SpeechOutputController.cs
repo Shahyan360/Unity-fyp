@@ -157,7 +157,6 @@ public sealed class SpeechOutputController : MonoBehaviour
         // Optional portable neural speech install. Keep large models outside the Unity project.
         string piperRoot = Environment.GetEnvironmentVariable("LUMEN_PIPER_HOME");
         if (string.IsNullOrWhiteSpace(piperRoot)) piperRoot = Path.Combine(Application.dataPath,"../Runtime/Piper");
-        if (!Directory.Exists(piperRoot)&&Application.isEditor) piperRoot = @"D:\LumenTools\Piper";
         string piper = Path.Combine(piperRoot, "piper", "piper.exe");
         string model = Path.Combine(piperRoot, "voices", "en_GB-vctk-medium.onnx");
         bool neural = File.Exists(piper) && File.Exists(model) && File.Exists(model + ".json");

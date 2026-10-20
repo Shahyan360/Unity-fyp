@@ -1,4 +1,4 @@
-param([switch]$CheckOnly,[string]$PlayerPath,[int]$Port=5000)
+param([switch]$CheckOnly,[string]$PlayerPath,[int]$Port=5000,[string[]]$PlayerArguments=@())
 $ErrorActionPreference='Stop'
 $releaseRoot=Split-Path -Parent $PSScriptRoot
 $backendRoot=Join-Path $releaseRoot 'embodied-ai-backend'
@@ -11,6 +11,22 @@ if($Port -lt 1024 -or $Port -gt 65535){throw 'Choose a local service port from 1
 $address="http://127.0.0.1:$Port"
 function Read-Health {try{Invoke-RestMethod -Uri "$address/health" -TimeoutSec 4}catch{$null}}
 function Is-Lumen($health){$health -and $health.status -eq 'ok' -and $health.service -eq 'embodied-ai-local' -and $health.contract_version -ge 2}
+function Stop-LumenOwnedService($rootProcess) {
+    if(-not $rootProcess -or $rootProcess.HasExited){return}
+    # A Windows venv interpreter can be a redirector with an actual Python child.
+    # Establish descendants and creation identities, then stop only that owned tree.
+    $all=@(Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId,CreationDate)
+    $rootRecord=$all|Where-Object {$_.ProcessId -eq $rootProcess.Id -and [Math]::Abs(($_.CreationDate-$rootProcess.StartTime).TotalSeconds) -lt 1}
+    if(-not $rootRecord){Write-Warning 'Service identity changed; preserved the process.';return}
+    $nodes=[System.Collections.Generic.List[object]]::new();$nodes.Add($rootRecord)
+    for($index=0;$index -lt $nodes.Count;$index++) {
+        foreach($child in $all|Where-Object {$_.ParentProcessId -eq $nodes[$index].ProcessId -and $_.CreationDate -ge $rootRecord.CreationDate}){$nodes.Add($child)}
+    }
+    for($index=$nodes.Count-1;$index -ge 0;$index--) {
+        $record=$nodes[$index];$current=Get-CimInstance Win32_Process -Filter ('ProcessId='+$record.ProcessId) -Property ProcessId,CreationDate
+        if($current -and $current.CreationDate -eq $record.CreationDate){Stop-Process -Id $record.ProcessId -ErrorAction SilentlyContinue}
+    }
+}
 $health=Read-Health
 if($CheckOnly){[pscustomobject]@{ServiceReady=[bool](Is-Lumen $health);PythonAvailable=(Test-Path -LiteralPath $python);PlayerAvailable=(Test-Path -LiteralPath $PlayerPath);ServiceAddress=$address};return}
 if(-not(Test-Path -LiteralPath $PlayerPath)){throw 'Lumen.exe is missing. Run this launcher from the complete release folder.'}
@@ -34,10 +50,12 @@ try {
     }
     $env:LUMEN_BACKEND_URL=$address
     if(-not $env:LUMEN_PIPER_HOME){$env:LUMEN_PIPER_HOME=Join-Path $releaseRoot 'Runtime\Piper'}
-    $player=Start-Process -FilePath $PlayerPath -WorkingDirectory $releaseRoot -PassThru
+    $launch=@{FilePath=$PlayerPath;WorkingDirectory=$releaseRoot;PassThru=$true}
+    if($PlayerArguments.Count -gt 0){$launch.ArgumentList=$PlayerArguments}
+    $player=Start-Process @launch
     $player.WaitForExit()
 } finally {
     $env:LUMEN_BACKEND_URL=$oldBackend;$env:LUMEN_PIPER_HOME=$oldPiper
     # Stop only the child service created here; preserve any existing service.
-    if($ownedService -and -not $ownedService.HasExited){Stop-Process -Id $ownedService.Id}
+    Stop-LumenOwnedService $ownedService
 }

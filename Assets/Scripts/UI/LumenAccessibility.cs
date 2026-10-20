@@ -52,7 +52,7 @@ public sealed class LumenAccessibility : MonoBehaviour
                 var canvas=label.canvas;if(canvas==null)continue;
                 float scale=TextTier==1?1.18f:TextTier==2?1.35f:1;
                 label.enableAutoSizing=false;
-                label.fontSize=Mathf.Max(size*scale,16/Mathf.Max(.4f,canvas.scaleFactor));
+                label.fontSize=Mathf.Max(size,16/Mathf.Max(.4f,canvas.scaleFactor))*scale;
             }
             foreach(var button in FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Include))
             {

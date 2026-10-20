@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Linq;
+using TMPro;
+using UnityEngine.AI;
 
 public sealed class CafeVisualFinishing:MonoBehaviour
 {
@@ -16,12 +19,23 @@ public sealed class CafeVisualFinishing:MonoBehaviour
             for(int i=0;i<4;i++)Primitive(PrimitiveType.Sphere,"Small table greenery",p+new Vector3(Mathf.Sin(i*1.7f)*.06f,.20f,Mathf.Cos(i*1.7f)*.06f),new Vector3(.08f,.20f,.08f),leaf);
             count++;
         }
-        var counter=GameObject.Find("Counter_Top");var surface=counter!=null?counter.GetComponent<Renderer>():null;
-        if(surface!=null)
+        var quiet=GameObject.Find("UpperTable_1");
+        if(quiet!=null)
         {
-            Vector3 p=surface.bounds.center;p.y=surface.bounds.max.y+.04f;
-            Primitive(PrimitiveType.Cube,"Pastry display tray",p,new Vector3(1.1f,.06f,.45f),wood);
-            for(int i=0;i<4;i++)Primitive(PrimitiveType.Capsule,"Fresh baked croissant",p+new Vector3(-.36f+i*.24f,.12f,0),new Vector3(.18f,.09f,.13f),pastry);
+            var top=quiet.GetComponentsInChildren<Renderer>().OrderByDescending(r=>r.bounds.max.y).FirstOrDefault();
+            if(top!=null)
+            {
+                Vector3 p=top.bounds.center;float floor=top.bounds.max.y-.78f;
+                var marker=new GameObject("Quiet conversation table");marker.transform.SetParent(transform,true);marker.transform.position=new Vector3(p.x,floor,p.z-1.1f);
+                bool walkable=NavMesh.SamplePosition(marker.transform.position,out var hit,.8f,NavMesh.AllAreas);
+                if(walkable)marker.transform.position=hit.position;
+                var data=marker.AddComponent<ObjectMetadata>();data.objectName=data.displayName="Quiet table";data.category=walkable?"Destination":"Cafe furniture";data.isInteractable=true;data.scenario="cafe";
+                data.description="The upper-floor quiet table is a place for relaxed conversation. Practice is optional. Use the stairs to reach this floor; no lift is represented here.";data.descriptionSummary=data.description;
+                var label=new GameObject("Quiet corner wayfinding",typeof(TextMeshPro));label.transform.SetParent(transform,true);label.transform.position=new Vector3(p.x,floor+1.75f,p.z+.35f);
+                var text=label.GetComponent<TextMeshPro>();text.text="A QUIET CORNER";text.fontSize=1.1f;text.color=new Color(.90f,.84f,.69f);text.alignment=TextAlignmentOptions.Center;text.rectTransform.sizeDelta=new Vector2(3.3f,.5f);label.AddComponent<WorldLabelBillboard>();
+                var fillObject=new GameObject("Upper conversation soft fill");fillObject.transform.SetParent(transform,true);fillObject.transform.position=new Vector3(p.x,floor+2.2f,p.z-1);
+                var fill=fillObject.AddComponent<Light>();fill.type=LightType.Point;fill.intensity=1.4f;fill.range=4;fill.color=new Color(1,.91f,.79f);fill.shadows=LightShadows.None;
+            }
         }
     }
     private Material Material(string name,Color color)=>LumenRuntimeResources.Own(new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color});

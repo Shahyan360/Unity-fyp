@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3280557508828102955
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9073021713225575751}
+  - component: {fileID: 8801840634081662170}
+  m_Layer: 0
+  m_Name: RomanGuard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9073021713225575751
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280557508828102955}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8801840634081662170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3280557508828102955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19eb483865f0f4458d1418c59e8a7d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TailoredCharacterWardrobe
+  character: Orion
+  maskedBody: {fileID: 4300000, guid: 324e35fd077d8b34ea99cad24bc88e07, type: 2}
+  garments: {fileID: 4300000, guid: 85d34cf6d4ef1e443a74f9caa32fea8a, type: 2}
+  garmentSurfaces:
+  - {fileID: 2100000, guid: c3752e8e9f1e7b842a2fdfbe63a82572, type: 2}
+  - {fileID: 2100000, guid: dce6abd982c494e4ba0f8411c0d2a55e, type: 2}
+  - {fileID: 2100000, guid: 7ef1c07476ca39c41978b6c93773f091, type: 2}
+  - {fileID: 2100000, guid: 82f69078f920e97449a1781941035e9a, type: 2}
+  - {fileID: 2100000, guid: c3f2f834970222b4baec8f391253cc98, type: 2}
+  nativeSurfaces:
+  - {fileID: 2100000, guid: 3fd7128121710a74d9df816bfcd2996b, type: 2}
+  - {fileID: 2100000, guid: 3e69deac5dafd4f4a8e771a72de61a15, type: 2}
+  - {fileID: 2100000, guid: 9594f0a5b5d84c14dbf3d439cd2a8086, type: 2}

@@ -94,7 +94,8 @@ public static class ClassroomLearningExhibit
                 string shortExplanation=stop>=0?ActiveDescription.Substring(0,stop+1):ActiveDescription;
                 if(shortExplanation.Length>180)shortExplanation=shortExplanation.Substring(0,177)+"...";
                 label.name="ActiveLessonBoard";label.text=topic+"\n"+shortExplanation+"\nSimplified teaching representation; not to scale.";
-                label.enableAutoSizing=true;label.fontSizeMin=1.2f;label.fontSizeMax=2.4f;label.overflowMode=TextOverflowModes.Ellipsis;
+                label.rectTransform.sizeDelta=new Vector2(6.6f,1.65f);label.alignment=TextAlignmentOptions.Center;
+                label.textWrappingMode=TextWrappingModes.Normal;label.enableAutoSizing=true;label.fontSizeMin=1.8f;label.fontSizeMax=2.4f;label.overflowMode=TextOverflowModes.Ellipsis;
             }
         }
         LearningModelInspection.Attach(activeModelRoot,station+Vector3.up*1.35f);

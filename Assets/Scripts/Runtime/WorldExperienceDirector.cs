@@ -118,6 +118,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
     private static void ConfigureClassroomLighting()
     {
+        LumenClassroomFinishing.Apply();
         // The authored classroom has very low ambient illumination. Lift its
         // base exposure so learners can read the room and see each model.
         RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;

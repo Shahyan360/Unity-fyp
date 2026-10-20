@@ -108,9 +108,9 @@ public static class MuseumArchitecture
         var exhibit=Object.Instantiate(prefab,parent,false);exhibit.transform.localPosition=p;exhibit.transform.localScale=Vector3.one*scale;
         exhibit.name=title;var data=exhibit.AddComponent<ObjectMetadata>();data.objectName=title;data.displayName=title;data.scenario="museum";data.category="Interpretive skeletal reconstruction";data.isInteractable=true;
         data.description="An original schematic skeletal reconstruction made for this exhibit. It shows the spine, ribs, limbs, tail and open skull structure. It is not a scanned specimen or a scientifically exact anatomical reconstruction.";data.descriptionSummary=data.description;
-        Box(parent,"Exhibit caption backing",p+new Vector3(0,.87f,-2.0f),new Vector3(8.2f,.84f,.045f),Mat("Skeleton caption slate",new Color(.045f,.075f,.08f)),false);
-        Label(parent,title,p+new Vector3(0,1.07f,-2.04f),1.65f,new Vector2(8,.34f));
-        Label(parent,"ORIGINAL INTERPRETIVE MODEL / NOT A SCANNED SPECIMEN",p+new Vector3(0,.70f,-2.04f),1.05f,new Vector2(8,.29f));
+        Box(parent,"Exhibit caption backing",p+new Vector3(0,.43f,-2.0f),new Vector3(4.9f,.55f,.045f),Mat("Skeleton caption slate",new Color(.045f,.075f,.08f)),false);
+        Label(parent,title,p+new Vector3(0,.55f,-2.04f),1.15f,new Vector2(4.7f,.24f));
+        Label(parent,"ORIGINAL INTERPRETIVE MODEL / NOT A SCANNED SPECIMEN",p+new Vector3(0,.30f,-2.04f),.80f,new Vector2(4.7f,.20f));
         LearningModelInspection.MakeSelectable(exhibit);
         var spot=new GameObject("Skeleton exhibit lighting");spot.transform.SetParent(parent,false);spot.transform.localPosition=p+new Vector3(0,4.8f,-2.8f);spot.transform.LookAt(parent.TransformPoint(p+Vector3.up*1.5f));
         var light=spot.AddComponent<Light>();light.type=LightType.Spot;light.spotAngle=65;light.range=10;light.intensity=9;light.color=new Color(.96f,.94f,.87f);light.shadows=LightShadows.None;

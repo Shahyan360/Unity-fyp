@@ -150,7 +150,8 @@ public static class LumenCharacterTailoring
         // use; the runtime definition above keeps world switching lightweight.
         const string dressedFolder="Assets/Prefabs/LumenAgents";
         Directory.CreateDirectory(dressedFolder);
-        var dressed=UnityEngine.Object.Instantiate(source);dressed.name=data.character;
+        string dressedName=style=="RomanCitizen"?"Aurelius":style=="RomanGuard"?"Lucius":data.character;
+        var dressed=UnityEngine.Object.Instantiate(source);dressed.name=dressedName;
         var dressedBody=dressed.GetComponentInChildren<SkinnedMeshRenderer>();
         dressedBody.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(folder+"/FacialBody.asset");
         for(int i=0;i<dressedBody.sharedMesh.blendShapeCount;i++)
@@ -160,7 +161,7 @@ public static class LumenCharacterTailoring
         var dressedSkin=clothing.AddComponent<SkinnedMeshRenderer>();dressedSkin.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(folder+"/Garments.asset");
         dressedSkin.bones=dressedBody.bones;dressedSkin.rootBone=dressedBody.rootBone;dressedSkin.sharedMaterials=surfaces.ToArray();
         Bounds dressedBounds=dressedBody.localBounds;dressedBounds.Expand(.45f);dressedSkin.localBounds=dressedBounds;
-        PrefabUtility.SaveAsPrefabAsset(dressed,dressedFolder+"/"+data.character+".prefab");UnityEngine.Object.DestroyImmediate(dressed);AssetDatabase.SaveAssets();
+        PrefabUtility.SaveAsPrefabAsset(dressed,dressedFolder+"/"+dressedName+".prefab");UnityEngine.Object.DestroyImmediate(dressed);AssetDatabase.SaveAssets();
         string result=style+": "+vertices.Count+" vertices, "+triangles.Values.Sum(t=>t.Count/3)+" triangles, "+order.Count+" clothing surfaces, "+faceCount+" facial shapes";
         File.WriteAllText(Working+"/"+style+"/unity-import.txt",result);Debug.Log(result);return result;
     }

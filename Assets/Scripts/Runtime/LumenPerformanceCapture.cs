@@ -37,7 +37,7 @@ public sealed class LumenPerformanceCapture:MonoBehaviour
     private void Update()
     {
         if(frames==null)return;double now=Time.realtimeSinceStartupAsDouble;double elapsed=now-started;
-        if(elapsed>1800){Close();enabled=false;return;}
+        if(elapsed>3600){Close();enabled=false;return;}
         long tick=Stopwatch.GetTimestamp();double wall=(tick-previous)*1000.0/Stopwatch.Frequency;previous=tick;
         string nextWorld=SceneManager.GetActiveScene().name+"/"+ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);
         string nextModel=ClassroomLearningExhibit.HasActiveModel?ClassroomLearningExhibit.ActiveModel:"none";

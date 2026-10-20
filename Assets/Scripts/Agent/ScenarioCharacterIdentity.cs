@@ -118,13 +118,13 @@ public sealed class ScenarioCharacterIdentity : MonoBehaviour
         if (animation == null) animation = guide.AddComponent<AgentAnimator>();
         animation.RefreshVisual();
         identity.ApplyAppearance(selected);
-        if (key == "cafe" && guide.transform.Find("Host face fill") == null)
+        if (guide.transform.Find("Host face fill") == null)
         {
             GameObject fillObject = new GameObject("Host face fill");
             fillObject.transform.SetParent(guide.transform, false);
             fillObject.transform.localPosition = new Vector3(0f, 2.1f, 1.1f);
             Light fill = fillObject.AddComponent<Light>();
-            fill.type = LightType.Point; fill.range = 3f; fill.intensity = 1.5f;
+            fill.type = LightType.Point; fill.range = 3f; fill.intensity = key=="cafe"?1.2f:.85f;
             fill.color = new Color(1f, .89f, .76f); fill.shadows = LightShadows.None;
         }
         return identity;

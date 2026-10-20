@@ -30,6 +30,8 @@ public class SocialCoachingController:MonoBehaviour
     public void StartPractice(string mode)
     {
         if(mode!="conversation"&&mode!="interview"&&mode!="presentation")return;
+        if(LumenPreferences.GetInt("Lumen.Offline",0)!=0)
+        {EndPractice();State="Unavailable";CurrentPrompt="Connect the assistant in Visit settings before starting practice. You can keep exploring offline.";return;}
         EndPractice();State="Starting";int ticket=++generation;
         StartCoroutine(Post("/coaching/start",JsonUtility.ToJson(new StartBody{mode=mode}),ticket,result=>
         {

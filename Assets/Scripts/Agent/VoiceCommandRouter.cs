@@ -20,10 +20,12 @@ public static class VoiceCommandRouter
         if(Regex.IsMatch(text,@"\b(?:don't|do not|never|explain|what happens|if someone)\b"))return result;
         var identity=UnityEngine.Object.FindAnyObjectByType<ScenarioCharacterIdentity>();
         var guide=identity!=null?identity.GetComponent<AgentCompanionController>():null;
+        var hubFollower=identity!=null?identity.GetComponent<WalkableGuideFollower>():null;
         var player=UnityEngine.Object.FindAnyObjectByType<CafeWalkController>();
         if(Regex.IsMatch(text,@"^(?:stop|stop moving|stay here|wait here|stay put|stop talking|be quiet)$"))
         {
             guide?.SetVoiceFollow(false);player?.GetComponent<VoicePlayerNavigation>()?.Cancel();
+            if(!text.Contains("talk")&&text!="be quiet")hubFollower?.SetFollowing(false);
             player?.GetComponent<WorldActionExecutionMonitor>()?.Cancel("You stopped the walk.");
             guide?.GetComponent<WorldActionExecutionMonitor>()?.Cancel("You stopped the walk.");
             result.handled=result.accepted=true;result.Set("completed",text.Contains("talk")||text=="be quiet"?"Of course. I'll listen.":"All right. We'll stay here.");
@@ -31,7 +33,7 @@ public static class VoiceCommandRouter
         }
         if(Regex.IsMatch(text,@"^(?:follow me|come with me|keep following me)$"))
         {
-            result.handled=true;result.accepted=guide!=null;guide?.SetVoiceFollow(true);
+            result.handled=true;result.accepted=guide!=null||hubFollower!=null;guide?.SetVoiceFollow(true);hubFollower?.SetFollowing(true);
             result.Set(result.accepted?"completed":"failed",result.accepted?"I'm with you. Lead the way.":"The guide is unavailable here.");return LastExecution=result;
         }
         var command=Regex.Match(text,@"^(?:(?:can|could|would) you )?(go|walk|move|come|take me|move me|walk me|lead me)(?: over)?(?: to)?\s+(.+)$");

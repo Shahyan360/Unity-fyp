@@ -39,6 +39,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     private int retryCount;
     private string activeTurnId="", currentQuestion="";
     private WorldActionExecution activeAction;
+    public string LastToolCommand {get;private set;}="";
     private string emotion="friendly";
     public void SelectPartner(ObjectMetadata person)
     {
@@ -254,6 +255,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         }
         if(e.@event=="command")
         {
+            LastToolCommand=e.name+": "+e.command;
             bool ok=false;string reply="Unsupported command",lifecycle="completed",actionId=e.id;
             if(e.name=="show_image")
             {
@@ -329,7 +331,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         if(!Ready)return false;ClearCallbacks();StopPlayback();activeTurnId=Guid.NewGuid().ToString("N");currentQuestion=text;VisitorConversationMemory.ObservePreference(text);SendWorldContext();receivingVoiceQuestion=false;Images.BeginQuestion(text,scenario!="cafe");ApplyInputEmotion(text);awaitingTypedOutput=true;completed=onDone;partial=onPartial;error=onError;sentAt=Time.realtimeSinceStartup;FirstAudioSeconds=-1;
         Send(new Event{@event="text",text=text,turn_id=activeTurnId});State="Assistant processing";return true;
     }
-    public void Reconnect(){Disconnect();Selected=false;ResetTranscriptTurn();failed=false;retryCount=0;retryAt=0;fingerprint="";State="Assistant reconnecting";}
+    public void Reconnect(){Disconnect();Selected=false;ResetTranscriptTurn();failed=false;retryCount=0;retryAt=0;fingerprint="";State=LumenPreferences.GetInt("Lumen.Offline",0)!=0?"Offline / exhibit labels available":"Assistant reconnecting";}
     private void ResetTranscriptTurn(){FindAnyObjectByType<ChatUIManager>()?.ResetLiveTurn();FindAnyObjectByType<HomeUIManager>()?.ResetLiveTurn();}
     public void SetVoiceMuted(bool muted){if(output!=null)output.mute=muted;}
     public void SetVoiceVolume(float value){if(output!=null)output.volume=Mathf.Clamp01(value);}

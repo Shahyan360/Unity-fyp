@@ -29,6 +29,9 @@ public static class LumenFinalizationBuild
     {
         PlayerSettings.productName="Lumen";PlayerSettings.companyName="";PlayerSettings.bundleVersion="0.2.0";
         PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=720;PlayerSettings.resizableWindow=true;
+        PlayerSettings.fullScreenMode=FullScreenMode.Windowed;
+        string[] releaseScenes={"Assets/Scenes/HomeScene.unity","Assets/Scenes/Classroom.unity","Assets/Scenes/HistoricalPlace.unity","Assets/Scenes/Cafestore.unity"};
+        EditorBuildSettings.scenes=EditorBuildSettings.scenes.Select(scene=>new EditorBuildSettingsScene(scene.path,releaseScenes.Contains(scene.path))).ToArray();
         var timing=typeof(PlayerSettings).GetProperty("enableFrameTimingStats");if(timing!=null&&timing.CanWrite)timing.SetValue(null,true);
         Build("Candidate");
     }

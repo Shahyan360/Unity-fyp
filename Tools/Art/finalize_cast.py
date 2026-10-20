@@ -15,6 +15,7 @@ source=source.replace("[(neck-.25,.308,.193),(neck-.235,.307,.192)]", "[(neck-.4
 source=source.replace("(.018,.025,.032) if mystic", "(.055,.075,.082) if mystic")
 source=source.replace('dist=.00005','dist=.004')
 source=source.replace('scene.render.threads=4','scene.render.threads=2')
+source=source.replace('scene.render.resolution_x=1100;scene.render.resolution_y=1300','scene.render.resolution_x=750 if "--quick" in sys.argv else 1100;scene.render.resolution_y=900 if "--quick" in sys.argv else 1300')
 source=source.replace("            for o in PARTS[-2:]:\n                o.vertex_groups.clear();g=o.vertex_groups.new(name='Bip01 Spine2');g.add(list(range(len(o.data.vertices))),1,'REPLACE')", "            # Mantle retains barycentrically transferred shoulder/spine weights.")
 # Keep Kai's authored native hair silhouette and scalp; the former replacement
 # exposed a white strip and protruding tubular locks in neutral-light review.
@@ -34,8 +35,10 @@ exec(prefix.replace('def create(character,style):','def prepare(character,style)
 def waist_points(z,ease=.006):
     result=[]
     for i in range(64):
-        t=i*math.tau/64;axis=Vector((math.cos(t),math.sin(t),0));hit=BVH.ray_cast(axis*.65+Vector((0,0,z)),-axis,1.2)[0]
-        radius=max(.08,min(.32,hit.dot(axis))) if hit else .17
+        # Begin inside the A-pose wrists: an outside ray can hit a hand/forearm
+        # at waist height and incorrectly expand a skirt toward the arms.
+        t=i*math.tau/64;axis=Vector((math.cos(t),math.sin(t),0));hit=BVH.ray_cast(axis*.29+Vector((0,0,z)),-axis,.55)[0]
+        radius=max(.08,min(.245,hit.dot(axis))) if hit else .17
         result.append((axis,radius+ease))
     return result
 
@@ -58,6 +61,7 @@ def draped_skirt(name,bottom,top,mat,split=0,hem=None):
             t=(i+.5)*math.tau/64
             if split and row<7 and math.sin(t)<-.7 and abs(math.cos(t))*base[i][1]<split:continue
             a=row*64+i;b=row*64+(i+1)%64;ff.append((a,b,b+64,a+64))
+    if max(abs(v[0]) for v in vv)>.29:raise ValueError('Garment ease exceeds torso bounds: '+name)
     mesh=bpy.data.meshes.new(name);mesh.from_pydata(vv,[],ff);mesh.update();o=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(o);finish(o,name,mat)
     if hem:
         mesh.materials.append(hem)

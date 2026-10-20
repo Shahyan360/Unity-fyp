@@ -45,7 +45,7 @@ public sealed class WorldVisitControls:MonoBehaviour
         var visual=Button(drawer.transform,VisualLabel(),new Vector2(.51f,.46f),new Vector2(.95f,.54f));
         visual.onClick.AddListener(()=>{bool on=LumenPreferences.GetInt("Lumen.VisualAids",1)==0;LumenPreferences.SetInt("Lumen.VisualAids",on?1:0);LumenPreferences.Save();if(!on)GeminiLiveConversation.Instance?.Images?.ResetConversation();visual.GetComponentInChildren<TMP_Text>().text=VisualLabel();});
         var connection=Button(drawer.transform,ConnectionLabel(),new Vector2(.045f,.37f),new Vector2(.95f,.45f));
-        connection.onClick.AddListener(()=>{bool offline=LumenPreferences.GetInt("Lumen.Offline",0)==0;LumenPreferences.SetInt("Lumen.Offline",offline?1:0);LumenPreferences.Save();GeminiLiveConversation.Instance?.Reconnect();connection.GetComponentInChildren<TMP_Text>().text=ConnectionLabel();});
+        connection.onClick.AddListener(()=>{bool offline=LumenPreferences.GetInt("Lumen.Offline",0)==0;if(offline)FindAnyObjectByType<SocialCoachingController>()?.EndPractice();LumenPreferences.SetInt("Lumen.Offline",offline?1:0);LumenPreferences.Save();GeminiLiveConversation.Instance?.Reconnect();connection.GetComponentInChildren<TMP_Text>().text=ConnectionLabel();});
         var forget=Button(drawer.transform,"Forget conversation",new Vector2(.045f,.28f),new Vector2(.49f,.36f));
         forget.onClick.AddListener(()=>{VisitorConversationMemory.Reset();FindAnyObjectByType<AIClient>()?.ResetSession();GeminiLiveConversation.Instance?.Reconnect();});
         var reset=Button(drawer.transform,"Reset discoveries",new Vector2(.51f,.28f),new Vector2(.95f,.36f));

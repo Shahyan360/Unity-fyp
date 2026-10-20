@@ -335,6 +335,8 @@ public static class WalkableHomeHub
         AddBox(portal.transform, "Rift depth window", new Vector3(0f, 2.68f, 0.31f), new Vector3(3.72f, 4.92f, 0.08f), darkCore, false);
         AddScenarioPreview(portal.transform, title, accent);
         AddPortalRiftLayers(portal.transform, title, ringBright, ringSoft, accentColor);
+        var plaque=MaterialFor(title+" destination plaque",new Color(.075f,.13f,.14f));
+        AddBox(portal.transform,"Destination name plaque",new Vector3(0,6.06f,.06f),new Vector3(5.6f,.83f,.12f),plaque,false);
 
         GameObject titleObject = new GameObject("Portal title · " + title, typeof(TextMeshPro));
         titleObject.transform.SetParent(portal.transform, false);
@@ -343,14 +345,14 @@ public static class WalkableHomeHub
         label.text = title.ToUpperInvariant();
         // TextMeshPro world-space font sizes are world-unit sized; screen-space
         // values such as 16 overwhelm the metre-wide placard from the spawn view.
-        label.fontSize = 2.7f;
+        label.fontSize = 4.1f;
         label.fontStyle = FontStyles.Bold;
-        label.color = new Color(0.13f, 0.17f, 0.15f);
+        label.color = new Color(.96f,.94f,.87f);
         label.alignment = TextAlignmentOptions.Center;
         label.outlineWidth = 0f;
         label.outlineColor = new Color(1f, 0.97f, 0.88f);
         label.rectTransform.sizeDelta = new Vector2(7.5f, 1.15f);
-        titleObject.AddComponent<WorldLabelBillboard>();
+        // Architectural plaque stays aligned with its doorway.
 
         GameObject subtitleObject = new GameObject("Portal description · " + title, typeof(TextMeshPro));
         subtitleObject.transform.SetParent(portal.transform, false);
@@ -767,11 +769,15 @@ public sealed class WalkableGuideFollower : MonoBehaviour
 {
     private Transform player;
     private Vector3 velocity;
+    private bool following=true;
+    public bool IsFollowing=>following;
+    public void SetFollowing(bool value){following=value;if(!value)velocity=Vector3.zero;}
 
     public void Initialize(Transform playerTransform) => player = playerTransform;
 
     private void Update()
     {
+        if(!following)return;
         if (player == null)
         {
             GameObject found = GameObject.Find("WorldExplorer");

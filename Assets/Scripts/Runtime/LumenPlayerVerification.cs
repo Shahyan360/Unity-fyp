@@ -36,6 +36,12 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     private float deadline;
     private bool finished;
     private string expectedScene="HomeScene", expectedVariant="general_assistant";
+    private static string EvidenceBuildId=>Application.isEditor?"EDITOR_SOURCE_REVIEW":Application.buildGUID;
+    public static bool StartEditorReview(string directory)
+    {
+        if(!Application.isEditor||!LumenPreferences.IsIsolated||FindAnyObjectByType<LumenPlayerVerification>()!=null)return false;
+        var owner=new GameObject("Isolated editor source review");DontDestroyOnLoad(owner);owner.AddComponent<LumenPlayerVerification>().Begin(directory);return true;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void StartIfRequested()
@@ -53,12 +59,12 @@ public sealed class LumenPlayerVerification : MonoBehaviour
     {
         output = Path.GetFullPath(directory);
         Directory.CreateDirectory(output);
-        report = new RunReport { unity = Application.unityVersion, buildId = Application.buildGUID, startedUtc = DateTime.UtcNow.ToString("O") };
+        report = new RunReport { unity = Application.unityVersion, buildId = EvidenceBuildId, startedUtc = DateTime.UtcNow.ToString("O") };
         foreach (string key in new[] { ScenarioRuntimeManager.SelectedScenarioKey, "Lumen.Character.HomeScene", "Lumen.Character.Classroom", "Lumen.Character.Museum", "Lumen.Character.HistoricalPlace", "Lumen.Character.Cafestore" })
             preferences[key] = PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null;
         Application.logMessageReceived += OnLog;
         Application.runInBackground = true;
-        deadline = Time.realtimeSinceStartup + 300;
+        deadline = Time.realtimeSinceStartup + 600;
         StartCoroutine(Journey());
     }
 
@@ -139,7 +145,7 @@ public sealed class LumenPlayerVerification : MonoBehaviour
                 yield return new WaitForSecondsRealtime(.8f);
                 seen.Add(guide.DisplayName);
                 yield return Capture("09-guide-"+i);
-                if(guide.DisplayName=="Kai"||guide.DisplayName=="Orion"||guide.DisplayName=="Professor Theo")
+                // Exercise walking, gesture and actual speech on every named guide.
                 {
                     string label=guide.DisplayName.Replace(" ","-");
                     Check(guide.GetComponentsInChildren<TailoredClothingMesh>().Length==1,label+" uses fitted native clothing");
@@ -206,10 +212,10 @@ public sealed class LumenPlayerVerification : MonoBehaviour
             Check(false,"Capture aborted: expected "+expectedScene+"/"+expectedVariant+", actual "+scene+"/"+variant);
             Finish();StopAllCoroutines();yield break;
         }
-        var frame = new FrameReport { view=name,scene=scene,variant=variant,buildId=Application.buildGUID,
+        var frame = new FrameReport { view=name,scene=scene,variant=variant,buildId=EvidenceBuildId,
             graphics=SystemInfo.graphicsDeviceType.ToString(),width=Screen.width,height=Screen.height,
             cameraPosition=Camera.main.transform.position,cameraEuler=Camera.main.transform.eulerAngles };
-        frame.captureFile=name+"__"+scene+"__"+variant+"__"+Application.buildGUID+".png";
+        frame.captureFile=name+"__"+scene+"__"+variant+"__"+EvidenceBuildId+".png";
         float until = Time.realtimeSinceStartup + duration, total=0;
         var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();
         var facial=identity!=null?identity.GetComponentsInChildren<SkinnedMeshRenderer>().FirstOrDefault(s=>s.sharedMesh.blendShapeCount>0):null;
@@ -268,6 +274,6 @@ public sealed class LumenPlayerVerification : MonoBehaviour
         report.completedUtc=DateTime.UtcNow.ToString("O");report.status=report.errors.Count==0?"Passed":"Failed";
         File.WriteAllText(Path.Combine(output,"journey.json"),JsonUtility.ToJson(report,true));
         Debug.Log("Lumen player acceptance journey: "+report.status+" at "+output);
-        Application.Quit(report.errors.Count==0?0:1);
+        if(!Application.isEditor)Application.Quit(report.errors.Count==0?0:1);else Destroy(gameObject);
     }
 }
