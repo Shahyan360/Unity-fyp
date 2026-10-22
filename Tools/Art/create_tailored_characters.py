@@ -2,9 +2,10 @@
 
 Reads exact Unity rest anatomy/skin weights; renders in Blender and emits a
 portable GLB plus explicit weighted geometry for lossless Unity rig admission.
-All generated files stay on D. Original Rocketbox facial geometry is untouched.
+Generated files use LUMEN_ART_ROOT or the ignored Builds/Art directory.
+Original Rocketbox facial geometry is untouched.
 """
-import bpy, bmesh, json, math, sys, hashlib
+import bpy, bmesh, json, math, sys, hashlib, os
 from pathlib import Path
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
@@ -12,7 +13,7 @@ from mathutils.kdtree import KDTree
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=Path('D:/LumenProject/Art/CharacterTailoring');OUT.mkdir(parents=True,exist_ok=True)
+OUT=Path(os.environ.get('LUMEN_ART_ROOT',str(ROOT/'Builds/Art/CharacterTailoring'))).resolve();OUT.mkdir(parents=True,exist_ok=True)
 
 def v3(p):return Vector((p['x'],-p['z'],p['y']))
 def xyz(p):return {'x':p.x,'y':p.z,'z':-p.y}

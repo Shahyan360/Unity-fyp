@@ -1,5 +1,18 @@
 # Lumen project progress
 
+## Current-machine continuation — 22 October 2026
+
+Read [ReleaseContinuation-2026-10-22](Docs/AI/ReleaseContinuation-2026-10-22.md),
+[the current acceptance matrix](Docs/AI/IssueMatrix-2026-10-22.md), and
+[the reproducible runbook](Docs/AI/ReleaseRunbook.md) before the historical
+checkpoint blocks below. Current branch starts at f0c5701. This computer has
+fresh 86-test backend and relocated Python-runtime evidence. Three character
+defects were reproduced and repaired; preserved before/after previews and exact
+rig/morph buffer comparisons are under ignored Builds/Finalization-20261022.
+The first Windows build failed on stale Editor/player class layouts; the Editor
+was explicitly recompiled. Final player/package acceptance remains required.
+No claim of complete release validation is made by this checkpoint.
+
 Last updated: 2026-10-19 (Asia/Karachi). Live images verified; cafe images are opt-in. Read newest checkpoint first.
 
 ## VERIFIED LIVE IMAGES / CAFE OPT-IN - 19 October 2026 (READ FIRST)

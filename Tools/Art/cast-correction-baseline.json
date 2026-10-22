@@ -1,0 +1,27 @@
+{
+  "assets": [
+    {
+      "path": "Assets/Art/TailoredCharacters/OpeningHero/Garments.asset",
+      "sha256": "ff6d1a02720b99bb37aef37fb50ee317395f4f5273dc34fefd894c3c51cae8be"
+    },
+    {
+      "path": "Assets/Art/TailoredCharacters/RomanCitizen/Garments.asset",
+      "sha256": "5dfa45d148880ba5f646033ed63cc3e5e07d75d0f39511553688631010d8a9f0"
+    },
+    {
+      "path": "Assets/Art/TailoredCharacters/CafeHost/FacialBody.asset",
+      "sha256": "cec9d6c545e9cab77845112e3c252026e0341c68c7821aa30b5c952e55e36abe"
+    },
+    {
+      "path": "Assets/Art/TailoredCharacters/CafeHost/Garments.asset",
+      "sha256": "82c4642bc550ace2951c150290e8422c7ce0742e5124493aca5b84bd83323f0a"
+    }
+  ],
+  "mayaCapUV": {
+    "topMinV": 0.8,
+    "crownMinU": 0.6,
+    "crownMaxV": 0.33
+  },
+  "note": "UV regions identify the cap islands in the retained native head map; skin, eyes and hair remain outside. Generated directly from transferred assets.",
+  "hashFormat": "UTF-8 YAML with CRLF normalized to LF; independent of Git autocrlf."
+}

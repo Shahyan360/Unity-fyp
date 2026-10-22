@@ -11,14 +11,14 @@ public sealed class LumenSoakVerification:MonoBehaviour
 {
     [Serializable] private sealed class Inventory
     {
-        public int cycle,frame,materials,meshes,textures,audioClips;
+        public int cycle,frame,materials,meshes,textures,audioClips,persistentObjects,audioSources,playingSources,liveControllers;
         public string destination;
         public double elapsedSeconds,visitLoadSeconds,homeLoadSeconds;
         public long allocatedBytes,monoBytes,graphicsDriverBytes,workingSetBytes;
     }
     [Serializable] private sealed class Report
     {
-        public string status="Running",build,unity,startedUtc,finishedUtc,cycleDefinition="One cycle: visit a destination, exercise its local content, return Home, unload unused assets, collect managed garbage, then wait14 seconds before inventory. Destinations rotate Rome/Classroom/Cafe/Museum. No provider or microphone use.";
+        public string status="Running",build,unity,startedUtc,finishedUtc,cycleDefinition="One cycle: visit a destination, exercise its local content, return Home, then wait14 seconds before inventory. No forced garbage collection or explicit asset unload. Destinations rotate Rome/Classroom/Cafe/Museum. No provider or microphone use.";
         public int completedCycles;
         public List<string> checks=new List<string>(),errors=new List<string>();
         public List<Inventory> inventories=new List<Inventory>();
@@ -72,9 +72,14 @@ public sealed class LumenSoakVerification:MonoBehaviour
             Check(missing==0,"No missing components in "+destination+" cycle"+cycle);
             yield return new WaitForSecondsRealtime(5);
             yield return Load("home");if(finished)yield break;double home=loadSeconds;
-            yield return Resources.UnloadUnusedAssets();GC.Collect();yield return new WaitForSecondsRealtime(14);
+            yield return new WaitForSecondsRealtime(14);
             var process=System.Diagnostics.Process.GetCurrentProcess();process.Refresh();
             report.inventories.Add(new Inventory{cycle=cycle,frame=Time.frameCount,destination=destination,elapsedSeconds=Time.realtimeSinceStartupAsDouble-started,visitLoadSeconds=visit,homeLoadSeconds=home,allocatedBytes=UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong(),monoBytes=UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(),graphicsDriverBytes=UnityEngine.Profiling.Profiler.GetAllocatedMemoryForGraphicsDriver(),workingSetBytes=process.WorkingSet64,materials=Resources.FindObjectsOfTypeAll<Material>().Length,meshes=Resources.FindObjectsOfTypeAll<Mesh>().Length,textures=Resources.FindObjectsOfTypeAll<Texture>().Length,audioClips=Resources.FindObjectsOfTypeAll<AudioClip>().Length});
+            var inventory=report.inventories[report.inventories.Count-1];
+            inventory.persistentObjects=Resources.FindObjectsOfTypeAll<GameObject>().Count(o=>o.scene.IsValid()&&o.scene.name=="DontDestroyOnLoad");
+            var audio=FindObjectsByType<AudioSource>(FindObjectsInactive.Include);
+            inventory.audioSources=audio.Length;inventory.playingSources=audio.Count(a=>a.isPlaying);
+            inventory.liveControllers=FindObjectsByType<GeminiLiveConversation>(FindObjectsInactive.Include).Length;
             process.Dispose();report.completedCycles=cycle;Save();
         }
         Finish();

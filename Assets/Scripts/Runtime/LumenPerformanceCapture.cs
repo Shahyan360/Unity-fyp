@@ -20,6 +20,7 @@ public sealed class LumenPerformanceCapture:MonoBehaviour
     private double started,nextInventory,settleUntil;
     private string world="",model="";
     private int rows;
+    private bool closed;
     private Func<long> managedAllocated;
     private long previousManaged;
     private int previousCollections;
@@ -79,7 +80,7 @@ public sealed class LumenPerformanceCapture:MonoBehaviour
         if(rows%30==0)
         {
             var values=new List<string>{Number(elapsed),world,model,settling?"1":"0",Screen.width.ToString(),Screen.height.ToString()};
-            foreach(var recorder in renderRecorders)values.Add(recorder.LastValue.ToString());renderCounts.WriteLine(string.Join(",",values));
+            foreach(var recorder in renderRecorders)values.Add(recorder.Valid&&recorder.Count>0?recorder.LastValue.ToString():"-1");renderCounts.WriteLine(string.Join(",",values));
         }
         if(now>=nextInventory)
         {
@@ -90,6 +91,7 @@ public sealed class LumenPerformanceCapture:MonoBehaviour
         }
         if(++rows%120==0){frames.Flush();resources.Flush();renderCounts.Flush();}
     }
-    private void Close(){frames?.Dispose();frames=null;resources?.Dispose();resources=null;renderCounts?.Dispose();renderCounts=null;mainThread.Dispose();batches.Dispose();draws.Dispose();gc.Dispose();foreach(var recorder in renderRecorders)recorder.Dispose();renderRecorders.Clear();}
+    private void Close(){if(closed)return;closed=true;frames?.Dispose();frames=null;resources?.Dispose();resources=null;renderCounts?.Dispose();renderCounts=null;mainThread.Dispose();batches.Dispose();draws.Dispose();gc.Dispose();foreach(var recorder in renderRecorders)recorder.Dispose();renderRecorders.Clear();}
+    private void OnApplicationQuit()=>Close();
     private void OnDestroy()=>Close();
 }

@@ -1,39 +1,86 @@
-# Embodied AI local backend
+# Lumen backend: Gemini live conversations
 
-This is the completed local service for the Unity project. It contains no cloud AI dependency: Unity calls Flask on `127.0.0.1`, and Flask calls the locally installed Ollama model.
+The current Unity client connects to Python at `http://127.0.0.1:5000` and uses
+`/live` for Gemini text and microphone conversations. The key belongs only in
+the Python backend environment. Unity does not need an API key field.
 
-## Start
+## Install once
 
-```powershell
-cd embodied-ai-backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-ollama pull llama3.2:1b
-python app.py
-```
-
-The default `llama3.2:1b` matches the lightweight model used by the current development setup. For more capable hardware, pull `llama3.2:3b` and set `OLLAMA_MODEL=llama3.2:3b` before starting Flask. If a model returns malformed JSON or no answer, the API flags the turn as offline and uses the scenario's curated local knowledge instead of returning an empty generic reply.
-
-## API
-
-The scenario personas are Lumen (hub), Marcus (Ancient Rome), Ada (classroom), Maya (café), and Imani (museum). `GET /characters` returns their catalog. Chat replies include `speaker_id`, `speaker_name`, `speaker_role`, `response_source`, and measured `response_time_ms` alongside the existing Unity contract. Scene changes remain explicit intent routes; mentioning an artifact or a planet alone does not move the user to another world.
-
-From the repository root, run the backend suite with:
+Use Python 3.12. From the repository root:
 
 ```powershell
-.\embodied-ai-backend\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
+py -3.12 -m venv embodied-ai-backend/.venv
+./embodied-ai-backend/.venv/Scripts/python.exe -m pip install --upgrade pip
+./embodied-ai-backend/.venv/Scripts/python.exe -m pip install -r embodied-ai-backend/requirements-voice.txt
 ```
 
-Latest verified run (2026-10-16): 37 cases passed. For Unity runtime/build results and current limitations, see `../PROJECT_PROGRESS.md`.
+Install `requirements-voice.txt`, which includes the basic requirements plus
+Google GenAI, Flask WebSocket support, and local speech recognition. Installing
+only `requirements.txt` does not install everything needed to start this service.
+If `.venv/Scripts/python.exe` already exists, use it directly; Python does not
+need reinstalling just because the Windows Python launcher cannot find it.
 
-Speech synthesis runs in the Unity client. Optional Piper files currently live on `D:\LumenTools\Piper`; `LUMEN_PIPER_HOME` overrides that directory. The client uses installed Windows speech voices when those files are absent. Microphone dictation still requires Windows speech/microphone permissions and is not proven by successful text chat or speech output.
+## Configure the key privately
 
-- `GET /health` - local-service availability
-- `GET /scenarios` - scenario catalog
-- `POST /sessions` - starts an in-memory, private conversation
-- `POST /chat` - unified text / object-aware conversation request
-- `POST /coaching/start` - starts interview, presentation, or casual-conversation practice
-- `GET /sessions/{id}/history` - retrieves the active session's in-memory history
+Create a key in [Google AI Studio](https://aistudio.google.com/apikey).
+Use PowerShell to save it without displaying it or recording its value in history:
 
-When Ollama is not running, `/chat` returns a clearly flagged `offline: true` guidance response. This makes the Unity demo usable and diagnosable without fabricating an AI answer.
+```powershell
+$secureKey = Read-Host 'Paste your Gemini API key' -AsSecureString
+$credential = [System.Net.NetworkCredential]::new('', $secureKey)
+$env:GEMINI_API_KEY = $credential.Password
+[Environment]::SetEnvironmentVariable('GEMINI_API_KEY', $credential.Password, 'User')
+Remove-Variable credential, secureKey
+```
+
+An existing Windows user key is read automatically by the backend.
+Never paste it into chat, Unity scripts, settings committed to Git, or logs.
+
+## Start every time you use Unity
+
+Double-click `Start-Lumen-Backend.cmd` in the repository root, or run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ./Tools/Start-LumenBackend.ps1
+```
+
+Keep that window open. Stop it with Ctrl+C. The launcher preserves an existing
+service on port 5000 instead of killing it. `-CheckOnly` reports setup without
+starting the service or revealing the key.
+
+Check [service health](http://127.0.0.1:5000/health) for `"status": "ok"`.
+Check [Gemini configuration](http://127.0.0.1:5000/live/status) for
+`"configured": true`. Neither response proves that a Gemini conversation works;
+send a short typed question in Unity to verify it.
+
+Open the Unity folder containing this backend, not an older copy.
+Open `Assets/Scenes/HomeScene.unity` in Unity 6000.6.2f1, press Play, and keep
+offline mode disabled. Test typed conversation before enabling the microphone.
+
+## Models and optional offline features
+
+The live model defaults to `gemini-3.8-live`. If your account cannot access it,
+verify the models available to your key and set `GEMINI_LIVE_MODEL` in the
+backend environment. See [Google's Live API guide](https://ai.google.dev/gemini-api/docs/live-api/get-started-sdk).
+
+The legacy `/chat` and `/chat/stream` routes use curated local replies and
+optional Ollama (`llama3.2:1b`). An unavailable Ollama model in `/health` does
+not mean Gemini live is broken. Gemini uses `/live`, not the Ollama chat route.
+
+Gemini microphone audio is sent through the live connection. The separate
+local `/transcribe` feature needs a faster-whisper model in
+`embodied-ai-backend/runtime/models/base.en`, or a directory selected by
+`LUMEN_STT_MODEL`. These model files are not included in this checkout.
+Optional Piper files belong in `Runtime/Piper`, or `LUMEN_PIPER_HOME`;
+Unity falls back to installed Windows voices when Piper is absent.
+
+## Tests
+
+From the repository root:
+
+```powershell
+./embodied-ai-backend/.venv/Scripts/python.exe -m pytest -q -p no:cacheprovider
+```
+
+Tests use local fixtures. Passing tests alone do not verify a real Gemini key,
+microphone permission, Unity compilation, or visual behavior.

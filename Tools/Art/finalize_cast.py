@@ -5,10 +5,8 @@ from pathlib import Path
 import sys, math, json, hashlib
 HERE=Path(__file__).resolve()
 PROJECT=HERE.parents[2]
-IMPLEMENTATION=PROJECT.parent
 source=(HERE.parent/'create_tailored_characters.py').read_text()
 source=source[:source.index('selection=sys.argv')]
-source=source.replace("OUT=Path('D:/LumenProject/Art/CharacterTailoring')", "OUT=Path("+repr(str(IMPLEMENTATION/'Art/CharacterTailoring'))+")")
 # Ease the curator mantle over the shoulders and use interpolated rig weights.
 source=source.replace("[(neck-.25,.305,.19),(neck-.13,.29,.18),(neck-.015,.19,.115),(neck+.015,.09,.083)]", "[(neck-.43,.255,.175),(neck-.31,.275,.175),(neck-.17,.265,.155),(neck-.045,.19,.115),(neck+.012,.091,.083)]")
 source=source.replace("[(neck-.25,.308,.193),(neck-.235,.307,.192)]", "[(neck-.43,.258,.178),(neck-.415,.258,.178)]")
@@ -150,7 +148,8 @@ def custom(character,style):
         body='_body' in DATA['surfaces'][sub]['name']
         uv=[DATA['uv'][i] for i in tri]
         # Exact chef-cap UV islands, including its white rim. Keep native bob.
-        hat=companion and not body and (all(v['y']>.845 for v in uv) or all(v['x']>.60 and v['y']<.26 for v in uv))
+        centre_u=sum(v['x'] for v in uv)/3;centre_v=sum(v['y'] for v in uv)/3
+        hat=companion and not body and (centre_v>.80 or (centre_u>.60 and centre_v<.33))
         if (guard or curator) and not body:
             z=sum(POINTS[i].z for i in tri)/3
             hat=hat or 'opacity' in DATA['surfaces'][sub]['name'] or z>eye+.083
@@ -189,7 +188,7 @@ def custom(character,style):
             theta=j/12*math.pi/2
             for i in range(64):
                 angle=i*math.tau/64;st=math.sin(theta)
-                vv.append((.084*st*math.cos(angle),.040+.100*st*math.sin(angle),eye+.020+.085*math.cos(theta)+.025*max(0,-math.sin(angle))*st))
+                vv.append((.089*st*math.cos(angle),.040+.108*st*math.sin(angle),eye-.030+.135*math.cos(theta)+.025*max(0,-math.sin(angle))*st))
         for j in range(12):
             for i in range(64):a=j*64+i;b=j*64+(i+1)%64;ff.append((a,a+64,b+64,b))
         mesh=bpy.data.meshes.new('Fitted native bob crown');mesh.from_pydata(vv,[],ff);mesh.update()

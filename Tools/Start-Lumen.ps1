@@ -11,6 +11,11 @@ if($Port -lt 1024 -or $Port -gt 65535){throw 'Choose a local service port from 1
 $address="http://127.0.0.1:$Port"
 function Read-Health {try{Invoke-RestMethod -Uri "$address/health" -TimeoutSec 4}catch{$null}}
 function Is-Lumen($health){$health -and $health.status -eq 'ok' -and $health.service -eq 'embodied-ai-local' -and $health.contract_version -ge 2}
+function ConvertTo-LumenProcessArgument([string]$Value) {
+    $escaped=[regex]::Replace($Value,'(\\*)"','$1$1\"')
+    $escaped=[regex]::Replace($escaped,'(\\+)$','$1$1')
+    return '"'+$escaped+'"'
+}
 function Stop-LumenOwnedService($rootProcess) {
     if(-not $rootProcess -or $rootProcess.HasExited){return}
     # A Windows venv interpreter can be a redirector with an actual Python child.
@@ -30,7 +35,7 @@ function Stop-LumenOwnedService($rootProcess) {
 $health=Read-Health
 if($CheckOnly){[pscustomobject]@{ServiceReady=[bool](Is-Lumen $health);PythonAvailable=(Test-Path -LiteralPath $python);PlayerAvailable=(Test-Path -LiteralPath $PlayerPath);ServiceAddress=$address};return}
 if(-not(Test-Path -LiteralPath $PlayerPath)){throw 'Lumen.exe is missing. Run this launcher from the complete release folder.'}
-$ownedService=$null;$oldBackend=$env:LUMEN_BACKEND_URL;$oldPiper=$env:LUMEN_PIPER_HOME
+$ownedService=$null;$playerExit=$null;$oldBackend=$env:LUMEN_BACKEND_URL;$oldPiper=$env:LUMEN_PIPER_HOME
 try {
     if(-not(Is-Lumen $health)) {
         if($health -or (Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)){throw "Another service uses port $Port. Preserve it and choose a different -Port."}
@@ -51,11 +56,13 @@ try {
     $env:LUMEN_BACKEND_URL=$address
     if(-not $env:LUMEN_PIPER_HOME){$env:LUMEN_PIPER_HOME=Join-Path $releaseRoot 'Runtime\Piper'}
     $launch=@{FilePath=$PlayerPath;WorkingDirectory=$releaseRoot;PassThru=$true}
-    if($PlayerArguments.Count -gt 0){$launch.ArgumentList=$PlayerArguments}
+    if($PlayerArguments.Count -gt 0){$launch.ArgumentList=($PlayerArguments|ForEach-Object {ConvertTo-LumenProcessArgument $_}) -join ' '}
     $player=Start-Process @launch
     $player.WaitForExit()
+    $playerExit=$player.ExitCode
 } finally {
     $env:LUMEN_BACKEND_URL=$oldBackend;$env:LUMEN_PIPER_HOME=$oldPiper
     # Stop only the child service created here; preserve any existing service.
     Stop-LumenOwnedService $ownedService
 }
+if($null -ne $playerExit -and $playerExit -ne 0){throw "Lumen stopped with exit code $playerExit. Inspect the player log."}

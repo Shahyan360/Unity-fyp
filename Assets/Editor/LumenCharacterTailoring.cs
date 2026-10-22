@@ -8,7 +8,8 @@ using UnityEngine;
 /// <summary>Exports the exact imported rest anatomy for fitted Blender garments.</summary>
 public static class LumenCharacterTailoring
 {
-    private static string Working => Path.GetFullPath(Path.Combine(Application.dataPath,"../../Art/CharacterTailoring"));
+    private static string Working => Path.GetFullPath(Environment.GetEnvironmentVariable("LUMEN_ART_ROOT")
+        ?? Path.Combine(Application.dataPath,"../Builds/Art/CharacterTailoring"));
     [Serializable] public sealed class Surface { public string name, color, normal;public int[] triangles; }
     [Serializable] public sealed class Bone { public string name;public Vector3 position; }
     [Serializable] public sealed class Weight { public int[] bones;public float[] values; }

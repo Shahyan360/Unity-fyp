@@ -1,5 +1,5 @@
-# Install with D:/LumenTools/VoiceRuntime/Scripts/python.exe to keep the runtime on D.
+# Install using the project's Python virtual environment; see README.md.
 -r requirements.txt
 faster-whisper==1.2.1
-google-genai
+google-genai==2.32.0
 flask-sock==0.7.0
