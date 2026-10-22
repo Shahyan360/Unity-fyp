@@ -157,8 +157,17 @@ public sealed class LumenPlayerVerification : MonoBehaviour
                     var visual=guide.transform.Find("LumenGuideVisual").GetComponentInChildren<Animator>();
                     actor.enabled=false;visual.Play("Armature|Walk_Loop",0,.20f);visual.Update(0);
                     yield return Capture("09-walking-"+label);
+                    SetView(new Vector3(87.7f,1.3f,61),Quaternion.Euler(4,-90,0));
+                    yield return Capture("09-walking-side-"+label,.35f);
+                    SetView(new Vector3(84,1.3f,64.7f),Quaternion.Euler(4,180,0));
+                    yield return Capture("09-walking-rear-"+label,.35f);
+                    SetView(new Vector3(86.5f,1.3f,58.5f),Quaternion.Euler(4,-45,0));
+                    yield return Capture("09-walking-threequarter-"+label,.35f);
+                    SetView(new Vector3(84,1.3f,57.3f),Quaternion.Euler(4,0,0));
                     actor.enabled=true;actor.RefreshVisual();actor.PlayAction("point");
                     yield return Capture("09-gesture-"+label,.3f);
+                    SetView(new Vector3(84,1.3f,64.7f),Quaternion.Euler(4,180,0));
+                    yield return Capture("09-gesture-rear-"+label,.3f);
                     var speech=FindAnyObjectByType<SpeechOutputController>();
                     speech.SpeakAs("Peter baked a blueberry muffin. Mum packed a paper bag. Come and explore with me.",guide.VoiceName,guide.DisplayName,actor,guide.SpeechRate,guide.VoicePitch);
                     float timeout=Time.realtimeSinceStartup+32;
