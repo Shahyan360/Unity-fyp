@@ -129,6 +129,8 @@ def main():
         ('Assets/ImportedAssets/Quaternius/Animations/License.txt', 'Quaternius-Animations-CC0.txt'),
         ('Assets/ImportedAssets/Quaternius/BaseCharacters/License_Standard.txt', 'Quaternius-Standard-CC0.txt'),
         ('Assets/Resources/MuseumPaintings/manifest.json', 'Met-Painting-Credits.json'),
+        ('Assets/ImportedAssets/OnlineModels/README.md', 'NASA-Smithsonian-Source-Notes.md'),
+        ('Docs/AI/Met-Provenance-2026-10-22.json', 'Met-Current-API-Evidence.json'),
     ):
         shutil.copy2(PROJECT / source, dest / 'Notices' / name)
     (dest / 'Start-Lumen.cmd').write_text('@echo off\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Tools\\Start-Lumen.ps1"\n')

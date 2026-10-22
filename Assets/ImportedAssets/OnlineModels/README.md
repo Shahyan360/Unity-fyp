@@ -12,4 +12,4 @@ These source models were downloaded for this Unity project and are imported thro
 
 The Smithsonian states that designated Open Access digital assets are CC0; see its [Open Access FAQ](https://www.si.edu/openaccess/faq). NASA asks users to follow its media usage guidelines and provide appropriate credit. These files are embedded project assets, not a standalone redistributed asset pack.
 
-The files are present in the Unity project but have not yet replaced the procedural classroom exhibits or been placed into a museum scene. They still need prefab/scene placement and links from the exhibit-selection behavior.
+Current continuation: these models are now referenced by the exhibit system and are present in the 22 October 2026 candidate's packed-asset report. The original statement that they had not yet been placed is obsolete. The source links above are transferred provenance notes; they do not recreate the missing original download receipts or certify every legacy asset.

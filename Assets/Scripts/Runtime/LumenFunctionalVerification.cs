@@ -48,6 +48,8 @@ public sealed class LumenFunctionalVerification:MonoBehaviour
         yield return new WaitForSecondsRealtime(3);
         string variant=ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);
         Check(action.Succeeded&&variant==(world=="home"?"general_assistant":world),"Actual world "+world+" = "+SceneManager.GetActiveScene().name+"/"+variant);
+        if(world=="museum"||world=="classroom")
+            Check(GameObject.Find("VisitHeader")?.GetComponentsInChildren<TMP_Text>().Any(t=>t.text==(world=="museum"?"MUSEUM":"CLASSROOM"))==true,"Visible visit header matches "+world+" variant");
         if(!action.Succeeded){Finish();yield break;}
     }
     private IEnumerator Walk(string command,string target)

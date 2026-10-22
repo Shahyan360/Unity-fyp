@@ -11,7 +11,7 @@ public sealed class WorldVisitControls:MonoBehaviour
     {var owner=canvas.gameObject.AddComponent<WorldVisitControls>();owner.Build(canvas.transform,scene);LumenActivityPanel.Install(canvas);}
     private void Build(Transform root,string scene)
     {
-        string title=scene.StartsWith("Home")?"LUMEN / DISCOVER":scene=="HistoricalPlace"?"ANCIENT ROME":scene=="Cafestore"?"THE CAFE":ScenarioRuntimeManager.GetScenarioForScene(scene)=="museum"?"MUSEUM":"CLASSROOM";
+        string title=scene.StartsWith("Home")?"LUMEN / DISCOVER":scene=="HistoricalPlace"?"ANCIENT ROME":scene=="Cafestore"?"THE CAFE":scene=="Museum"||ScenarioRuntimeManager.GetScenarioForScene(scene)=="museum"?"MUSEUM":"CLASSROOM";
         var header=Panel(root,"VisitHeader",new Vector2(.025f,.925f),new Vector2(.545f,.985f));
         Label(header.transform,title,new Vector2(.035f,.025f),new Vector2(.73f,.975f),22);
         var open=Button(header.transform,"VISIT",new Vector2(.76f,.08f),new Vector2(.97f,.92f));

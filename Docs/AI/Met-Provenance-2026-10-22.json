@@ -1,0 +1,35 @@
+[
+  {
+    "objectID": 436535,
+    "title": "Wheat Field with Cypresses",
+    "artist": "Vincent van Gogh",
+    "isPublicDomain": true,
+    "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-42549-001.jpg",
+    "source": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436535",
+    "verifiedUtc": "2026-10-22T03:27:30.1282243Z",
+    "localAsset": "Assets/Resources/MuseumPaintings/Met436535.jpg",
+    "localSha256": "6ea5f31127a0ff818bd6f7f448f65341df8d611613674a88a230cd6afdec3409"
+  },
+  {
+    "objectID": 436105,
+    "title": "The Death of Socrates",
+    "artist": "Jacques Louis David",
+    "isPublicDomain": true,
+    "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-13139-001.jpg",
+    "source": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436105",
+    "verifiedUtc": "2026-10-22T03:27:32.7580730Z",
+    "localAsset": "Assets/Resources/MuseumPaintings/Met436105.jpg",
+    "localSha256": "b13057068ac4cd96a1b0f9710ee570ed471fef4bcd4c4d902ea8f12721f5df69"
+  },
+  {
+    "objectID": 11417,
+    "title": "Washington Crossing the Delaware",
+    "artist": "Emanuel Leutze",
+    "isPublicDomain": true,
+    "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ad/web-large/DP215410.jpg",
+    "source": "https://collectionapi.metmuseum.org/public/collection/v1/objects/11417",
+    "verifiedUtc": "2026-10-22T03:27:33.5786068Z",
+    "localAsset": "Assets/Resources/MuseumPaintings/Met11417.jpg",
+    "localSha256": "c92c3cca3de9f1a4ce6c2fa60f46cd710a88039c2fe833dcb41c39be302f7909"
+  }
+]
