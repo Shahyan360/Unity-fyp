@@ -4,6 +4,16 @@ Status: private acceptance only; public redistribution closure remains incomplet
 The earlier complete shipped-asset ledger was not transferred. A packed-asset
 report identifies residency, not permission. Nothing below invents missing rights.
 
+`ShippedAssetFamilies-2026-10-22.csv` groups the detailed report from supporting
+build `750b464c7b2d4371b8131217c95c7c65`. The corrected cached build's
+`asset-build-residency.tsv` is header-only, so the earlier inventory is not
+presented as a complete exact-build ledger. Notable unresolved legacy families
+include acquisition records for `Assets/AssetProviderForAll/skyboxes` and
+`Assets/Cute_Magic_Stylized_LowPoly_Free_01`. Their source IDs and current stated
+licenses have now been recovered in `AssetStoreSourceEvidence-2026-10-22.md`.
+A name containing Free is not license evidence. The final package checksum inventory identifies physical
+files, not every embedded source asset or its rights.
+
 | Family | Available evidence | Modification / notice | Remaining requirement |
 | --- | --- | --- | --- |
 | Microsoft Rocketbox humans | `Assets/Art/Rocketbox/LICENSE.md`, MIT, Microsoft 2020; native sources and textures present | Retargeted/fitted garments and body masks; retain complete MIT text | Previous pinned download/source receipt is absent |
@@ -12,6 +22,7 @@ report identifies residency, not permission. Nothing below invents missing right
 | Met paintings | Current official collection API identifies all three bundled object IDs as public domain; URLs match the tracked painting manifest; local hashes in `Met-Provenance-2026-10-22.json` | Retain painting credits and source links | Original download chain is absent; current API verification does not recreate that receipt |
 | Quaternius animations and Standard characters | Local `Animations/License.txt` and `BaseCharacters/License_Standard.txt`: CC0 1.0, Quaternius | Both complete notices copied into package | Resolve actual packed residency; do not extend Standard evidence to paid collections |
 | Legacy imported buildings, models and textures | Existing project assets | Do not remove attribution or substitute assumptions | Original vendor/source/license mapping remains unresolved |
+| Cute Magic / space skyboxes | Local AssetOrigin IDs 379394 / 282836 and current matching official pages; both list Standard Unity Asset Store EULA | Source links and recovered IDs retained in package notice; existing usage unchanged | Original acquisition/entitlement records and historical terms remain unverified; other legacy families still need mapping |
 | Fonts / TextMesh Pro | `Assets/TextMesh Pro/Fonts/LiberationSans - OFL.txt`: SIL OFL 1.1, Google 2010 and Red Hat 2012 | Complete notice copied; preserve reserved-name conditions | Final shipped font inventory and any additional vendor-font mapping remain unresolved |
 | CPython | Active installed interpreter includes `LICENSE.txt`; packager copies it | Unmodified interpreter; excludes tests/caches and original site-packages | Review final inventory and all bundled runtime notices |
 | Python dependencies | `RUNTIME_INVENTORY.json` from installed distribution metadata and copied dist-info notices | Google pure Python modules bundled as a zip; no source changes | Metadata alone is not legal clearance; inspect included notices against exact distribution |

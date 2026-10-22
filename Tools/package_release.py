@@ -108,7 +108,9 @@ def main():
     records = copy_runtime(dest, bool(args.stt_model))
     backend = dest / 'embodied-ai-backend'
     backend.mkdir()
-    for source in (PROJECT / 'embodied-ai-backend').glob('*.py'):
+    for name in ('app.py', 'coaching_state.py', 'gemini_live.py', 'live_images.py',
+                 'personas.py', 'run_local.py', 'speech_service.py'):
+        source = PROJECT / 'embodied-ai-backend' / name
         shutil.copy2(source, backend / source.name)
     (backend / 'data').mkdir()
     shutil.copy2(PROJECT / 'Assets/Resources/LumenCharacterIdentities.json', backend / 'data/characters.json')
@@ -121,6 +123,8 @@ def main():
     shutil.copy2(PROJECT / 'Tools/Start-Lumen.ps1', dest / 'Tools/Start-Lumen.ps1')
     shutil.copy2(PROJECT / 'Docs/AI/PackageStartHere.md', dest / 'START_HERE.md')
     shutil.copy2(PROJECT / 'Docs/AI/DistributionLedger-2026-10-22.md', dest / 'DISTRIBUTION_STATUS.md')
+    shutil.copy2(PROJECT / 'Docs/AI/ReleaseAcceptance-2026-10-22.md', dest / 'ACCEPTANCE_REPORT.md')
+    shutil.copy2(PROJECT / 'Docs/AI/PerformanceFindings-2026-10-22.md', dest / 'PERFORMANCE_FINDINGS.md')
     (dest / 'Notices').mkdir()
     shutil.copy2(PROJECT / 'Assets/Art/Rocketbox/LICENSE.md', dest / 'Notices/Microsoft-Rocketbox-MIT.md')
     shutil.copy2(PROJECT / 'Assets/UnityTechnologies/license.txt', dest / 'Notices/UnityTechnologies-license.txt')
@@ -131,12 +135,15 @@ def main():
         ('Assets/Resources/MuseumPaintings/manifest.json', 'Met-Painting-Credits.json'),
         ('Assets/ImportedAssets/OnlineModels/README.md', 'NASA-Smithsonian-Source-Notes.md'),
         ('Docs/AI/Met-Provenance-2026-10-22.json', 'Met-Current-API-Evidence.json'),
+        ('Docs/AI/AssetStoreSourceEvidence-2026-10-22.md', 'Asset-Store-Source-Evidence.md'),
+        ('Docs/AI/ShippedAssetFamilies-2026-10-22.csv', 'Supporting-Shipped-Asset-Families.csv'),
     ):
         shutil.copy2(PROJECT / source, dest / 'Notices' / name)
     (dest / 'Start-Lumen.cmd').write_text('@echo off\npowershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Tools\\Start-Lumen.ps1"\n')
     (dest / 'RUNTIME_INVENTORY.json').write_text(json.dumps({
         'python': sys.version, 'distributions': records,
         'offlineSpeechModel': bool(args.stt_model), 'piperIncluded': bool(args.piper),
+        'windowsSpeechFallback': 'Uses optional installed Windows System.Speech voices; no Windows voices are bundled.',
         'distributionStatus': 'Private acceptance only; asset and runtime redistribution review remains required.'
     }, indent=2), encoding='utf-8')
     (dest / 'PACKAGE_SHA256.txt').write_text('\n'.join(

@@ -55,6 +55,22 @@ Review the 30-cycle post-warmup resource trends; completion is not a leak pass.
 Unavailable timing/counter values are `-1`, not zero. Do not combine callback
 gaps, engine frame intervals and CPU/GPU timings into one metric.
 
+On this Unity/Windows player, the in-player working-set and graphics-driver
+memory APIs returned zero. Treat those as unavailable. After the soak creates
+its report, run this observer in a second PowerShell terminal before cycle 8:
+
+```powershell
+.\Tools\Observe-LumenSoakMemory.ps1 -ReportPath 'Builds\Evidence\Soak-01\harness\soak.json' -OutputPath 'Builds\Evidence\Soak-01\os-process-memory.jsonl'
+```
+
+It identifies that specific soak player, samples Windows resident/private memory
+and handle/thread counts at 1 Hz, and stops when that process exits. It does not
+stop the game or any service. Add `--os-memory` with that JSONL path to the
+analyzer. The analyzer uses the preceding sample within two seconds of each Home
+inventory, avoiding a sample taken after the next destination starts loading.
+The 30-cycle harness is explicitly offline; it does not certify a 30-cycle
+provider/socket soak. The separate live journey exercises provider reconnection.
+
 ## Private portable package
 
 Only package an actual fresh player build:

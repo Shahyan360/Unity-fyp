@@ -1,4 +1,5 @@
 # Unity Project Context
+> Latest corrected-player results: [ReleaseAcceptance-2026-10-22.md](ReleaseAcceptance-2026-10-22.md). Measured frame costs and unresolved tail events: [PerformanceFindings-2026-10-22.md](PerformanceFindings-2026-10-22.md).
 > Current release continuation and missing-evidence inventory: [ReleaseContinuation-2026-10-22.md](ReleaseContinuation-2026-10-22.md). Earlier machine paths and validation claims below are historical.
 > Current machine and Gemini setup: see [LocalSetup-2026-10-22.md](LocalSetup-2026-10-22.md). Historical backend, path and validation claims below may be outdated.
 
