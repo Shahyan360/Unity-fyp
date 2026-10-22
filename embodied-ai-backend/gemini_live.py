@@ -76,6 +76,7 @@ def live_config(scenario, speaker, object_name="", object_description="", voice_
     voice = voices_for_person(speaker, object_name, voice_name)
     image_policy = (
         "Explicit no images, verbal only, without pictures, or a disabled visual-aid preference overrides automatic show_image suggestions. "
+        "A no-pictures request applies to that turn unless the visitor explicitly makes it a lasting preference. When the current visual-aid setting allows images, a later explicit request for a picture supersedes an earlier one-turn verbal-only request. Follow the latest request; do not decline a newly requested picture by recalling that earlier refusal. A persistent disabled image setting remains authoritative. "
         "This preference controls retrieved 2D images only. It does not disable local interactive 3D exhibits or show_model. When a visitor explicitly asks to show a supported 3D model, use show_model even when images are off or they say without images. Never refuse a requested supported 3D model because retrieved images are disabled. "
         + ("In the cafe, do NOT automatically show images. Call show_image only when the visitor explicitly requests a picture, photograph, diagram or visual aid. "
            if scenario == "cafe" else
