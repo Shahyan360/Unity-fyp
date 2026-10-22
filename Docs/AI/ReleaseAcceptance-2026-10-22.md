@@ -1,9 +1,9 @@
 # Lumen Windows acceptance — 22 October 2026
 
-This is a private acceptance candidate. Final player checks are in progress;
-the report will be updated from their receipts before handoff. It is not a
-public release or a certification that all human audio and distribution checks
-are complete.
+This private Windows acceptance candidate has completed the automated checks
+listed below, including actual portable-package runs. Human audio/device checks,
+performance targets and distribution evidence remain open; this is not a public
+release or a claim that every acceptance requirement is closed.
 
 ## What changed
 
@@ -41,7 +41,9 @@ render-recorder samples are recorded as unavailable instead of zero.
 - Private portable directory: `Builds/Portable Acceptance/Lumen-20261022-03`.
 - The build was made before the final documentation commit. Its source receipt
   retains the generated TMP fallback-font cache overlay separately; it is not
-  a claim of a clean worktree. Runtime scripts/configuration match the checkpoint.
+  a claim of a clean worktree. Runtime scripts/configuration match the checkpoint. The generated fallback
+  glyph is now committed too: the committed Unity-input diff matches the saved
+  build overlay byte for byte.
 
 The build succeeded in 2m 58s with one RenderTexture zero-height error and two
 warnings: absent Pipeline runtime configuration and uncompiled Editor changes.
@@ -61,6 +63,9 @@ is retained as supporting evidence, not an exact current asset ledger.
 | Conversation after backend corrections | 69 passed; zero errors |
 | Real-provider walkthrough | 55 checks; 14 questions over 616.58 seconds; owned-backend restart; zero errors |
 | Offline world-transition stability | 30 cycles; zero errors; memory/resource analysis completed |
+| Portable functional launch from an external folder with spaces | 276 checks; zero errors/overflows; launcher cleanup passed |
+| Portable real Gemini conversation | 69 checks; zero errors; launcher cleanup passed |
+| Portable live images after relevance correction | 73 checks; zero errors; launcher cleanup passed |
 
 The conversation failure reproduced an ambiguous image policy: the provider
 treated images-off as disabling local 3D exhibits. The backend now distinguishes
@@ -85,7 +90,8 @@ a verbose DNA-model request selected Rosalind Franklin's portrait. Image lookup
 now strips presentation instructions and requires topical title overlap before
 using either a network result or a cached result. All 89 backend tests passed,
 including the new regression cases; an uncached real request returned a DNA
-structure image. Final portable-player image acceptance remains in progress.
+structure image. Final portable-player image acceptance passed all 73 checks with zero errors;
+the corrected DNA image and final image captures were reviewed.
 The failed and interrupted image receipts remain preserved.
 
 ## Stability and performance
@@ -151,3 +157,31 @@ another Windows user and on another machine remains outstanding.
 Use `ReleaseRunbook.md` for reproduction and `PackageStartHere.md` for launch.
 Raw failed runs and superseded builds remain under `Builds/Finalization-20261022`;
 temporary captures, caches and credentials are excluded from source commits.
+
+
+## Handoff evidence
+
+`ReleaseEvidence-2026-10-22.json` contains compact counts, source identities,
+raw-receipt hashes, memory comparisons and timing definitions without visitor
+conversation transcripts. The portable folder includes `ACCEPTANCE_REPORT.md`,
+`PERFORMANCE_FINDINGS.md`, `Evidence/ReleaseEvidence.json`, runtime/asset notices,
+source/build receipts, `HANDOFF_CHECKPOINT.json` and a verified
+`PACKAGE_SHA256.txt`. The final documentation commit is identified by the new
+branch tip and that handoff receipt, while earlier build/backend commits remain
+explicitly identified above.
+
+The offline package check began before the image-only relevance update; the
+subsequent online and image checks used the updated module. Shared offline
+behavior, the player binary and scene inputs were unchanged. All three actual
+launcher runs exited successfully and stopped only their owned backend. Port
+conflict and argument-quoting fixtures are recorded separately from game results.
+The package inherits this Windows user's configured Gemini key and installed
+Windows voices; it does not establish clean-user portability.
+
+The local before/after and runtime character gallery is
+`Builds/Finalization-20261022/CharacterGallery-Final.html`. Raw captures, failed
+runs, recovery data and build outputs are deliberately excluded from the source
+push. The complete playable folder remains local under
+`Builds/Portable Acceptance/Lumen-20261022-03`; copy the entire folder and run
+`Start-Lumen.cmd`. Public binary publishing and merging the branch are separate
+actions and have not been performed.

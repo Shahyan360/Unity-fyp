@@ -1,0 +1,967 @@
+{
+  "buildGUID": "ce3ac243a7174daab6c13cdaa44a4763",
+  "playerImplementationCommit": "8e00c9ff86222b1742a27a5f5cbfbcf00f0d2852",
+  "backendCorrectionCommit": "a51faac7a2cf216623a0d6b86a39e134cf266601",
+  "naturalMicrophoneTest": false,
+  "checks": {
+    "functional-03": {
+      "status": "Behavior passed; visual and overflow review required",
+      "checks": 276,
+      "errorCount": 0,
+      "receipt": "Builds/Finalization-20261022/functional-03/run.json",
+      "receiptSha256": "a7cad968c44e4a8d8fda7d879f2720df6e49a1b80e5c5d6bd2b6eafe62340f44",
+      "commitAtRun": "8e00c9ff86222b1742a27a5f5cbfbcf00f0d2852",
+      "sourceDiffSha256": "a7ed33051910ba2396e0520528dc1c9d5dd595f54bf67547b2f4e8b50ed690c4",
+      "startedUtc": "2026-10-22T03:44:52Z",
+      "finishedUtc": "2026-10-22T03:50:12Z"
+    },
+    "characters-03": {
+      "status": "Passed",
+      "checks": 269,
+      "errorCount": 0,
+      "receipt": "Builds/Finalization-20261022/characters-03/run.json",
+      "receiptSha256": "0ca8d8f12a8d7d24fffba557d6b68f4b60d2a87c551eb7e1c3e6958a4447b224",
+      "commitAtRun": "8e00c9ff86222b1742a27a5f5cbfbcf00f0d2852",
+      "sourceDiffSha256": "a7ed33051910ba2396e0520528dc1c9d5dd595f54bf67547b2f4e8b50ed690c4",
+      "startedUtc": "2026-10-22T03:50:13Z",
+      "finishedUtc": "2026-10-22T03:52:45Z"
+    },
+    "live-walk-03": {
+      "status": "Passed; performance analysis separate",
+      "checks": 55,
+      "errorCount": 0,
+      "receipt": "Builds/Finalization-20261022/live-walk-03/run.json",
+      "receiptSha256": "13394584fbbf8f54ca5035ae17fa9c3c99b43b537b6b2c977258281cc6980ec7",
+      "commitAtRun": "9a7498fc1d11b60cd8a23c94daa484e0806bd2bb",
+      "sourceDiffSha256": "a1dd91ab81c1981d2a715e07ad271c913971bfb3a0b30e41c38609933812ccf3",
+      "startedUtc": "2026-10-22T04:03:47Z",
+      "finishedUtc": "2026-10-22T04:14:14Z",
+      "questions": 14,
+      "elapsedSeconds": 616.5804026000001
+    },
+    "soak-03": {
+      "status": "Completed; resource trend analysis required",
+      "checks": 114,
+      "errorCount": 0,
+      "receipt": "Builds/Finalization-20261022/soak-03/run.json",
+      "receiptSha256": "95601bcfccab353dd192454614767552ebaa2ac780c333d4ed657d71f1383238",
+      "commitAtRun": "9a7498fc1d11b60cd8a23c94daa484e0806bd2bb",
+      "sourceDiffSha256": "708be50ccfad0ee34f7ef026a1061d21b6c316064ee6360f0fba154ae89cab72",
+      "startedUtc": "2026-10-22T04:14:14Z",
+      "finishedUtc": "2026-10-22T04:38:57Z",
+      "completedCycles": 30
+    },
+    "conversation-03-policy-retry": {
+      "status": "Passed",
+      "checks": 69,
+      "errorCount": 0,
+      "receipt": "Builds/Finalization-20261022/conversation-03-policy-retry/run.json",
+      "receiptSha256": "1c3726d9a523dd4055295c5d39de2d51b1dcbdd23b005f3c1c30f3e0e3d0d76f",
+      "commitAtRun": "50ca648a1106223d4f35771c5d6a63593ada3f86",
+      "sourceDiffSha256": "357d266084bad70fb69a7f05a859ccd8f212ad87d5961a165d6bedb0e2335494",
+      "startedUtc": "2026-10-22T04:38:58Z",
+      "finishedUtc": "2026-10-22T04:41:39Z"
+    },
+    "Packaged-functional-03": {
+      "status": "Behavior passed; visual and overflow review required",
+      "checks": 276,
+      "errorCount": 0,
+      "ownedBackendStopped": true,
+      "launcherExitCode": 0,
+      "externalWorkingDirectoryWithSpaces": true,
+      "receipt": "Builds/Finalization-20261022/Packaged-functional-03/harness/functional.json",
+      "receiptSha256": "60da4a5b8cc3d068b87b9b1e06d77a990033ce1752023e3273b732802a8f7179",
+      "scopeNote": "Offline package run began before the image-only relevance module was updated; online and image runs use the updated module. Shared offline/scene/player inputs were unchanged."
+    },
+    "Packaged-conversation-03": {
+      "status": "Passed",
+      "checks": 69,
+      "errorCount": 0,
+      "ownedBackendStopped": true,
+      "launcherExitCode": 0,
+      "externalWorkingDirectoryWithSpaces": true,
+      "receipt": "Builds/Finalization-20261022/Packaged-conversation-03/harness/journey.json",
+      "receiptSha256": "92decf0dc93228195c62bf2a70c5bda4b3aaeb7af921c33e208a2d51ecc8b96b"
+    },
+    "Packaged-images-03": {
+      "status": "Passed",
+      "checks": 73,
+      "errorCount": 0,
+      "ownedBackendStopped": true,
+      "launcherExitCode": 0,
+      "externalWorkingDirectoryWithSpaces": true,
+      "receipt": "Builds/Finalization-20261022/Packaged-images-03/harness/journey.json",
+      "receiptSha256": "1a18580eb496cc13cf3a1482aa12334cc5c3b73be4fc4ce5f56df55b716dc50c"
+    },
+    "backend-tests-topic-relevance.xml": {
+      "tests": 89,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "receiptSha256": "a6bdfb67f11140cb534ef1242fc2ee8d720c1eecfcde7c8013b26037e41afcda"
+    },
+    "packaging-final.xml": {
+      "tests": 2,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "receiptSha256": "187338d8aa34d003188aa09b3543817be992f35cd13a2609cd0eaf2d0603ad49"
+    }
+  },
+  "soakAnalysis": {
+    "build": "ce3ac243a7174daab6c13cdaa44a4763",
+    "status": "Completed; resource trend analysis required",
+    "completedCycles": 30,
+    "definition": "One cycle: visit a destination, exercise its local content, return Home, then wait14 seconds before inventory. No forced garbage collection or explicit asset unload. Destinations rotate Rome/Classroom/Cafe/Museum. No provider or microphone use.",
+    "errors": [],
+    "trends": {
+      "allocatedBytes": {
+        "cycles8to12Mean": 428383084.6,
+        "last5Mean": 428304441.4,
+        "delta": -78643.20000004768
+      },
+      "monoBytes": {
+        "cycles8to12Mean": 12260147.2,
+        "last5Mean": 13719961.6,
+        "delta": 1459814.4000000004
+      },
+      "graphicsDriverBytes": {
+        "status": "unavailable",
+        "reason": "Unity player returned zero for every sample; not a zero-memory measurement."
+      },
+      "workingSetBytes": {
+        "status": "unavailable",
+        "reason": "Unity player returned zero for every sample; not a zero-memory measurement."
+      },
+      "materials": {
+        "cycles8to12Mean": 192.0,
+        "last5Mean": 192.0,
+        "delta": 0.0
+      },
+      "meshes": {
+        "cycles8to12Mean": 121.0,
+        "last5Mean": 121.0,
+        "delta": 0.0
+      },
+      "textures": {
+        "cycles8to12Mean": 121.0,
+        "last5Mean": 121.0,
+        "delta": 0.0
+      },
+      "audioClips": {
+        "cycles8to12Mean": 1.0,
+        "last5Mean": 1.0,
+        "delta": 0.0
+      },
+      "persistentObjects": {
+        "cycles8to12Mean": 5.0,
+        "last5Mean": 5.0,
+        "delta": 0.0
+      },
+      "audioSources": {
+        "cycles8to12Mean": 3.0,
+        "last5Mean": 3.0,
+        "delta": 0.0
+      },
+      "liveControllers": {
+        "cycles8to12Mean": 1.0,
+        "last5Mean": 1.0,
+        "delta": 0.0
+      }
+    },
+    "resourceRanges": {
+      "materials": {
+        "min": 192,
+        "max": 192
+      },
+      "meshes": {
+        "min": 120,
+        "max": 121
+      },
+      "textures": {
+        "min": 121,
+        "max": 121
+      },
+      "audioClips": {
+        "min": 1,
+        "max": 1
+      },
+      "persistentObjects": {
+        "min": 5,
+        "max": 5
+      },
+      "audioSources": {
+        "min": 3,
+        "max": 3
+      },
+      "playingSources": {
+        "min": 0,
+        "max": 0
+      },
+      "liveControllers": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "windowsProcessMemory": {
+      "source": "Windows System.Diagnostics.Process, 1 Hz; preceding sample within two seconds of Home inventory",
+      "observedPlayerPids": [
+        20092
+      ],
+      "trends": {
+        "workingSetBytes": {
+          "cycles8to12Samples": 5,
+          "last5Samples": 5,
+          "cycles8to12Mean": 390474956.8,
+          "last5Mean": 317004185.6,
+          "delta": -73470771.19999999
+        },
+        "privateBytes": {
+          "cycles8to12Samples": 5,
+          "last5Samples": 5,
+          "cycles8to12Mean": 818141593.6,
+          "last5Mean": 819228672.0,
+          "delta": 1087078.3999999762
+        },
+        "handles": {
+          "cycles8to12Samples": 5,
+          "last5Samples": 5,
+          "cycles8to12Mean": 922.6,
+          "last5Mean": 930.4,
+          "delta": 7.7999999999999545
+        },
+        "threads": {
+          "cycles8to12Samples": 5,
+          "last5Samples": 5,
+          "cycles8to12Mean": 48.2,
+          "last5Mean": 48.4,
+          "delta": 0.19999999999999574
+        }
+      }
+    },
+    "interpretation": "Trend data requires review; completion alone does not prove absence of leaks."
+  },
+  "performance": {
+    "gateStatus": "No transferred performance protocol/targets found; measurements are not a pass certification",
+    "definitions": {
+      "wall_frame_ms": "Update callback gap measured by Stopwatch; separate from engine timing",
+      "unity_frame_ms": "Unity unscaled frame interval",
+      "cpu_frame_ms": "FrameTimingManager CPU frame time",
+      "gpu_frame_ms": "FrameTimingManager GPU frame time"
+    },
+    "worlds": {
+      "HomeScene/general_assistant": {
+        "wall_frame_ms": {
+          "samples": 3161,
+          "p95": 41.8153,
+          "p99": 44.8613,
+          "max": 210.3024,
+          "over100ms": 1
+        },
+        "unity_frame_ms": {
+          "samples": 3161,
+          "p95": 41.9071,
+          "p99": 44.5476,
+          "max": 206.8047,
+          "over100ms": 1
+        },
+        "cpu_frame_ms": {
+          "samples": 3161,
+          "p95": 41.8915,
+          "p99": 44.7502,
+          "max": 206.8001,
+          "over100ms": 1
+        },
+        "gpu_frame_ms": {
+          "samples": 3156,
+          "p95": 40.0562,
+          "p99": 42.1143,
+          "max": 48.0106,
+          "over100ms": 0
+        }
+      },
+      "HistoricalPlace/ancient_rome": {
+        "wall_frame_ms": {
+          "samples": 1826,
+          "p95": 72.1511,
+          "p99": 77.3071,
+          "max": 103.5268,
+          "over100ms": 1
+        },
+        "unity_frame_ms": {
+          "samples": 1826,
+          "p95": 72.3019,
+          "p99": 76.7769,
+          "max": 103.769,
+          "over100ms": 1
+        },
+        "cpu_frame_ms": {
+          "samples": 1826,
+          "p95": 72.2162,
+          "p99": 76.9995,
+          "max": 103.8213,
+          "over100ms": 1
+        },
+        "gpu_frame_ms": {
+          "samples": 1823,
+          "p95": 70.0038,
+          "p99": 74.6017,
+          "max": 97.6827,
+          "over100ms": 0
+        }
+      },
+      "Classroom/classroom": {
+        "wall_frame_ms": {
+          "samples": 2121,
+          "p95": 58.7758,
+          "p99": 61.5835,
+          "max": 273.3741,
+          "over100ms": 1
+        },
+        "unity_frame_ms": {
+          "samples": 2121,
+          "p95": 58.8151,
+          "p99": 61.4952,
+          "max": 271.5176,
+          "over100ms": 1
+        },
+        "cpu_frame_ms": {
+          "samples": 2121,
+          "p95": 58.9153,
+          "p99": 61.4549,
+          "max": 271.4671,
+          "over100ms": 1
+        },
+        "gpu_frame_ms": {
+          "samples": 2117,
+          "p95": 57.086,
+          "p99": 60.0697,
+          "max": 64.6993,
+          "over100ms": 0
+        }
+      },
+      "Classroom/museum": {
+        "wall_frame_ms": {
+          "samples": 1675,
+          "p95": 73.2396,
+          "p99": 78.8788,
+          "max": 1206.3904,
+          "over100ms": 3
+        },
+        "unity_frame_ms": {
+          "samples": 1675,
+          "p95": 73.2629,
+          "p99": 78.553,
+          "max": 1206.498,
+          "over100ms": 3
+        },
+        "cpu_frame_ms": {
+          "samples": 1675,
+          "p95": 73.2692,
+          "p99": 78.5961,
+          "max": 1206.5473,
+          "over100ms": 2
+        },
+        "gpu_frame_ms": {
+          "samples": 1671,
+          "p95": 71.0456,
+          "p99": 76.7989,
+          "max": 178.7526,
+          "over100ms": 1
+        }
+      },
+      "Cafestore/cafe": {
+        "wall_frame_ms": {
+          "samples": 1823,
+          "p95": 65.0049,
+          "p99": 68.3919,
+          "max": 78.3638,
+          "over100ms": 0
+        },
+        "unity_frame_ms": {
+          "samples": 1823,
+          "p95": 64.7671,
+          "p99": 68.1319,
+          "max": 78.9021,
+          "over100ms": 0
+        },
+        "cpu_frame_ms": {
+          "samples": 1823,
+          "p95": 64.7424,
+          "p99": 68.1297,
+          "max": 78.8736,
+          "over100ms": 0
+        },
+        "gpu_frame_ms": {
+          "samples": 1821,
+          "p95": 62.7245,
+          "p99": 66.2842,
+          "max": 70.5735,
+          "over100ms": 0
+        }
+      }
+    },
+    "steadyRenderCountersByWorld": {
+      "Cafestore/cafe": {
+        "Standard_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 13.0,
+          "max": 14.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Standard_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Standard_Instanced_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "SRP_Batcher_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 2511.0,
+          "max": 2687.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "BRG_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "BRG_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Null_Geometry_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 17.0,
+          "max": 17.0,
+          "positiveSamples": 60,
+          "varies": false
+        },
+        "Null_Geometry_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Triangles_Count": {
+          "samples": 60,
+          "min": 623891.0,
+          "max": 643925.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "SetPass_Calls_Count": {
+          "samples": 60,
+          "min": 72.0,
+          "max": 76.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Shadow_Casters_Count": {
+          "samples": 60,
+          "min": 1144.0,
+          "max": 1284.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Visible_Skinned_Meshes_Count": {
+          "samples": 60,
+          "min": 7.0,
+          "max": 8.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Vertex_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 60,
+          "min": 352.0,
+          "max": 53552.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Index_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 60,
+          "min": 12.0,
+          "max": 2112.0,
+          "positiveSamples": 60,
+          "varies": true
+        }
+      },
+      "Classroom/classroom": {
+        "Standard_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 18.0,
+          "max": 26.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "Standard_Indirect_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Standard_Instanced_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "SRP_Batcher_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 1171.0,
+          "max": 1478.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "BRG_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "BRG_Indirect_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Null_Geometry_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 17.0,
+          "max": 17.0,
+          "positiveSamples": 69,
+          "varies": false
+        },
+        "Null_Geometry_Indirect_Draw_Calls_Count": {
+          "samples": 69,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Triangles_Count": {
+          "samples": 69,
+          "min": 188373.0,
+          "max": 356049.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "SetPass_Calls_Count": {
+          "samples": 69,
+          "min": 62.0,
+          "max": 65.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "Shadow_Casters_Count": {
+          "samples": 69,
+          "min": 697.0,
+          "max": 965.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "Visible_Skinned_Meshes_Count": {
+          "samples": 69,
+          "min": 2.0,
+          "max": 2.0,
+          "positiveSamples": 69,
+          "varies": false
+        },
+        "Vertex_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 69,
+          "min": 8128.0,
+          "max": 23680.0,
+          "positiveSamples": 69,
+          "varies": true
+        },
+        "Index_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 69,
+          "min": 1932.0,
+          "max": 5772.0,
+          "positiveSamples": 69,
+          "varies": true
+        }
+      },
+      "Classroom/museum": {
+        "Standard_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 65.0,
+          "max": 69.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "Standard_Indirect_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Standard_Instanced_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "SRP_Batcher_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 1048.0,
+          "max": 1204.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "BRG_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "BRG_Indirect_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Null_Geometry_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 17.0,
+          "max": 17.0,
+          "positiveSamples": 55,
+          "varies": false
+        },
+        "Null_Geometry_Indirect_Draw_Calls_Count": {
+          "samples": 55,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Triangles_Count": {
+          "samples": 55,
+          "min": 3539409.0,
+          "max": 4221169.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "SetPass_Calls_Count": {
+          "samples": 55,
+          "min": 127.0,
+          "max": 134.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "Shadow_Casters_Count": {
+          "samples": 55,
+          "min": 644.0,
+          "max": 669.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "Visible_Skinned_Meshes_Count": {
+          "samples": 55,
+          "min": 7.0,
+          "max": 10.0,
+          "positiveSamples": 55,
+          "varies": true
+        },
+        "Vertex_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 55,
+          "min": 37792.0,
+          "max": 37792.0,
+          "positiveSamples": 55,
+          "varies": false
+        },
+        "Index_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 55,
+          "min": 9228.0,
+          "max": 9228.0,
+          "positiveSamples": 55,
+          "varies": false
+        }
+      },
+      "HistoricalPlace/ancient_rome": {
+        "Standard_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 13.0,
+          "max": 13.0,
+          "positiveSamples": 60,
+          "varies": false
+        },
+        "Standard_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Standard_Instanced_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "SRP_Batcher_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 2070.0,
+          "max": 5533.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "BRG_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "BRG_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Null_Geometry_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 17.0,
+          "max": 17.0,
+          "positiveSamples": 60,
+          "varies": false
+        },
+        "Null_Geometry_Indirect_Draw_Calls_Count": {
+          "samples": 60,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Triangles_Count": {
+          "samples": 60,
+          "min": 3591835.0,
+          "max": 6357799.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "SetPass_Calls_Count": {
+          "samples": 60,
+          "min": 82.0,
+          "max": 104.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Shadow_Casters_Count": {
+          "samples": 60,
+          "min": 1378.0,
+          "max": 3119.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Visible_Skinned_Meshes_Count": {
+          "samples": 60,
+          "min": 8.0,
+          "max": 22.0,
+          "positiveSamples": 60,
+          "varies": true
+        },
+        "Vertex_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 60,
+          "min": 13600.0,
+          "max": 13600.0,
+          "positiveSamples": 60,
+          "varies": false
+        },
+        "Index_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 60,
+          "min": 1116.0,
+          "max": 1116.0,
+          "positiveSamples": 60,
+          "varies": false
+        }
+      },
+      "HomeScene/general_assistant": {
+        "Standard_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 39.0,
+          "max": 59.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "Standard_Indirect_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Standard_Instanced_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "SRP_Batcher_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 655.0,
+          "max": 909.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "BRG_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "BRG_Indirect_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Null_Geometry_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 17.0,
+          "max": 17.0,
+          "positiveSamples": 103,
+          "varies": false
+        },
+        "Null_Geometry_Indirect_Draw_Calls_Count": {
+          "samples": 103,
+          "min": 0.0,
+          "max": 0.0,
+          "positiveSamples": 0,
+          "varies": false
+        },
+        "Triangles_Count": {
+          "samples": 103,
+          "min": 363951.0,
+          "max": 426609.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "SetPass_Calls_Count": {
+          "samples": 103,
+          "min": 83.0,
+          "max": 89.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "Shadow_Casters_Count": {
+          "samples": 103,
+          "min": 339.0,
+          "max": 523.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "Visible_Skinned_Meshes_Count": {
+          "samples": 103,
+          "min": 2.0,
+          "max": 2.0,
+          "positiveSamples": 103,
+          "varies": false
+        },
+        "Vertex_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 103,
+          "min": 348592.0,
+          "max": 358288.0,
+          "positiveSamples": 103,
+          "varies": true
+        },
+        "Index_Buffer_Upload_In_Frame_Bytes": {
+          "samples": 103,
+          "min": 16584.0,
+          "max": 18936.0,
+          "positiveSamples": 103,
+          "varies": true
+        }
+      }
+    }
+  },
+  "backendPackageCheckpoint": {
+    "backendCommit": "accf67d2ad65ea32d1206fbd9abc292bf9999a90",
+    "files": {
+      "app.py": "3771cb78e495f94371f92897e6d985ec465192f3805b7bcabc265e0d4fca1de7",
+      "coaching_state.py": "d5a2b3a88c1bd913909e7de8fdefbac942bdf6e52c4bf0f73ce090fd333b1b6e",
+      "gemini_live.py": "04a6689e272f128bbca04f03864cb7bc0dd140731cae845dd5aa97d26eb4c03a",
+      "live_images.py": "aa78579f0c993f355bb9fa36671213bf364547ef36bdceb2cb744e012dc45d53",
+      "personas.py": "0fff6c09a8c1c9295577d913d931815b1b5d8ac601899bbbc2d6d0ce55d9b233",
+      "run_local.py": "94e3f3b8eb659dfedb4d36186e484d2dcc08a93f973d9e04d930ec4fa5049487",
+      "speech_service.py": "711d463ba1b155dbee4e1ff60166f9ffe308818897c6d21f5a9f71ab67f5c132"
+    }
+  },
+  "candidateSourceReceipt": {
+    "implementationCommit": "8e00c9ff86222b1742a27a5f5cbfbcf00f0d2852",
+    "branch": "codex/lumen-finalization-20261020",
+    "playerInputsTrackedDiffEmpty": false,
+    "playerInputsDiffSha256": "a7ed33051910ba2396e0520528dc1c9d5dd595f54bf67547b2f4e8b50ed690c4",
+    "recordedUtc": "2026-10-22T03:44:46.842595+00:00",
+    "buildGUID": "ce3ac243a7174daab6c13cdaa44a4763",
+    "sourceOverlay": "SOURCE_INPUTS.patch",
+    "sourceOverlaySha256": "a7ed33051910ba2396e0520528dc1c9d5dd595f54bf67547b2f4e8b50ed690c4",
+    "changedPlayerInputFiles": [
+      "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset"
+    ],
+    "note": "Only the Editor-generated TMP dynamic fallback cache differs from the source checkpoint after build; overlay retained for reproducibility. No runtime script/configuration diff.",
+    "binarySha256": {
+      "Lumen.exe": "af88b840e599661ac63fc10ae27ac77dd97cd46b44df8a7ce60eb0dcfacfc99e",
+      "Lumen_Data\\Managed\\Assembly-CSharp.dll": "ff4fcaf69fbbcde13e63e5d5b75f1c3d7c6d4381bbb46203243a90e1345b74bf",
+      "Lumen_Data\\globalgamemanagers": "0b2dbae0c57e315f15377145ccd4eca204ac4e0fabf5439aceda84364ff07eba"
+    }
+  },
+  "playerSourceAgreement": {
+    "committedPlayerInputsMatchSavedBuildOverlay": true,
+    "overlaySha256": "a7ed33051910ba2396e0520528dc1c9d5dd595f54bf67547b2f4e8b50ed690c4"
+  },
+  "remainingRequirements": [
+    "Human microphone/noise/echo/voice-quality/device-removal acceptance",
+    "Clean Windows user and second target-device portability trial",
+    "Detailed trace of Museum 1.2-second tail event; missing numerical performance targets",
+    "Online 30-cycle connection-leak soak",
+    "Original audit/native Blender reports and complete exact shipped-asset/rights evidence"
+  ],
+  "preservedFailedOrInterruptedRuns": [
+    "conversation-03: 69 checks, one 3D refusal failure before policy fix",
+    "images-03: image-policy and deadline failures before policy fix",
+    "images-03-policy-retry: interrupted during player startup",
+    "images-03-resumed: 73 checks, DNA portrait relevance failure before a51faac"
+  ],
+  "runtimeLogReview": {
+    "namedExceptionPatternCounts": {
+      "functional-03": 0,
+      "characters-03": 0,
+      "live-walk-03": 0,
+      "conversation-03-policy-retry": 0,
+      "Packaged-functional-03": 0,
+      "Packaged-conversation-03": 0,
+      "Packaged-images-03": 0
+    },
+    "scope": "Named managed/missing-reference/index/serialization/compiler patterns only; retained build and shader diagnostics are separate."
+  }
+}

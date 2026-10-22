@@ -39,7 +39,7 @@ From the repository root, using its backend virtual environment:
 & '.\embodied-ai-backend\.venv\Scripts\python.exe' Tools/run_acceptance.py --player 'Builds\YOUR-BUILD\Lumen.exe' --suite functional --output 'Builds\Evidence\Functional-01'
 ```
 
-Repeat with `--suite live-walk`, `images` and `soak`, each with a fresh output
+Repeat with `--suite characters`, `conversation`, `live-walk`, `images` and `soak`, each with a fresh output
 directory. Default private backend port is 5078; choose another `--port` if busy.
 The runner refuses an occupied port and never restarts an existing service.
 Live acceptance uses the dedicated restart window and the existing 14-question
@@ -102,6 +102,26 @@ If startup fails: check port occupancy without stopping unrelated services,
 the complete Runtime/Python folder, backend logs and `/live/status`. For provider
 errors, check the key's model access, quota and Internet connection. Missing
 credentials should produce an honest unavailable response, not a fabricated reply.
+
+For the corrected private package, actual launcher acceptance receipts are in
+`Builds/Finalization-20261022/Packaged-functional-03`,
+`Packaged-conversation-03` and `Packaged-images-03`. Their `launcher-config.json`
+records the exact argument array and external working directory. Reproduce with
+a **new output directory**, copied isolated preferences and the corresponding
+`-lumen-functional-dir`, `-lumen-conversation-dir` or `-lumen-images-dir` flag
+passed through `Start-Lumen.ps1 -PlayerArguments`. Preserve the old evidence.
+The offline functional run began before the image-only relevance change; online
+and image runs use the updated module. Player/scene inputs stayed unchanged.
+The launcher fixture test is separate from these actual game runs.
+
+For an image relevance regression, enable images and ask “Show me the DNA model
+and explain DNA simply.” Check the visible image and its credit, not only the
+spoken answer. The earlier failure was a scientist portrait; the final lookup
+normalizes presentation instructions and rejects titles without topic overlap.
+For the unresolved performance tail, run the 14-question live walkthrough and
+inspect raw Museum Update gaps/Unity intervals. Record the actual hardware,
+viewport and quality. A detailed profiler trace is needed before assigning a
+cause; a diagnostic development build must stay separate from release timings.
 
 ## Human audio checks still needed
 

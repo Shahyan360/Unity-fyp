@@ -7,9 +7,10 @@ Read [the current acceptance report](Docs/AI/ReleaseAcceptance-2026-10-22.md),
 [the reproducible runbook](Docs/AI/ReleaseRunbook.md) before the historical
 checkpoint blocks below. The corrected Windows player has build GUID
 `ce3ac243a7174daab6c13cdaa44a4763`. Fresh functional checks (276), character
-checks (269, 70 views), backend tests (86), and the 14-question/616.58-second
+checks (269, 70 views), backend tests (89), and the 14-question/616.58-second
 real Gemini walkthrough passed. Failed intermediate runs remain preserved.
-The current report records final retry, soak and portable-package receipts,
+Portable functional (276), conversation (69) and live-image (73) checks also
+passed. The current report records final retry, soak and portable-package receipts,
 source identity and remaining human/device, performance and provenance gates.
 Historical paths below refer to the previous computer.
 
