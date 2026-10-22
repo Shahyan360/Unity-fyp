@@ -64,6 +64,42 @@ def test_empty_results_do_not_reuse_previous_image(monkeypatch, tmp_path):
     assert not images.search_image("unfindable topic")["ok"]
 
 
+def test_dna_presentation_request_skips_related_scientist_portrait(monkeypatch, tmp_path):
+    monkeypatch.setenv("LUMEN_IMAGE_CACHE", str(tmp_path))
+    requested_files = []
+    def metadata(session, **params):
+        if "generator" in params:
+            assert params["gsrsearch"] == "DNA"
+            return [{"title": "Rosalind Franklin", "pageimage": "Portrait.jpg", "index": 1},
+                    {"title": "DNA", "pageimage": "DoubleHelix.png", "index": 2}]
+        requested_files.append(params["titles"])
+        return [{"imageinfo": [{"thumburl": "https://upload.wikimedia.org/wikipedia/commons/DNA.png",
+            "descriptionurl": "https://commons.wikimedia.org/wiki/File:DoubleHelix.png",
+            "extmetadata": {"License": {"value": "cc0"}}}]}]
+    monkeypatch.setattr(images, "_json", metadata)
+    monkeypatch.setattr(images, "_download", lambda *args: (b"validated jpeg fixture", 20, 10))
+    result = images.search_image("the DNA model and explain DNA simply")
+    assert result["ok"] and result["title"] == "DNA"
+    assert requested_files == ["File:DoubleHelix.png"]
+
+
+def test_unrelated_cached_portrait_is_not_reused(monkeypatch, tmp_path):
+    monkeypatch.setenv("LUMEN_IMAGE_CACHE", str(tmp_path))
+    key = hashlib.sha256(b"dna").hexdigest()
+    (tmp_path / (key + ".json")).write_text(json.dumps({"ok": True, "title": "Rosalind Franklin",
+        "image_path": "/images/file/" + key}), encoding="utf-8")
+    (tmp_path / (key + ".jpg")).write_bytes(b"portrait")
+    monkeypatch.setattr(images, "_json", lambda *args, **kwargs: [])
+    assert not images.search_image("DNA")["ok"]
+
+
+def test_topic_cleanup_preserves_transformer_meaning():
+    assert images.topic_query("electrical transformer") == "electrical transformer"
+    assert images.topic_query("Transformer (deep learning architecture)") == "Transformer (deep learning architecture)"
+    assert images.topic_matches("electrical transformer", "Transformer")
+    assert images.topic_matches("Transformer (deep learning architecture)", "Transformer (deep learning)")
+
+
 def test_oversized_decoded_image_is_rejected_without_server_error(monkeypatch, tmp_path):
     monkeypatch.setenv("LUMEN_IMAGE_CACHE", str(tmp_path))
     def metadata(session, **params):

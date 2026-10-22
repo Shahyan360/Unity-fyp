@@ -100,8 +100,27 @@ def _download(session, url):
         return stream.getvalue(), output.width, output.height
 
 
-def search_image(query):
+def topic_query(query):
+    """Remove presentation instructions without searching for their biographies."""
     query = clean(query, 160)
+    query = re.split(r"\s+and\s+(?:explain|describe|tell)\b", query, maxsplit=1, flags=re.I)[0]
+    query = re.sub(r"^(?:(?:please|show|me|a|an|the)\s+)+", "", query, flags=re.I)
+    query = re.sub(r"^(?:picture|image|photo|diagram)\s+of\s+", "", query, flags=re.I)
+    query = re.sub(r"\s+(?:model|picture|image|diagram)$", "", query, flags=re.I)
+    return query.strip()
+
+
+def topic_matches(query, title):
+    # Search rank alone can return a scientist's portrait for a molecule request.
+    # Require a topical title word; synonyms may honestly yield no suitable image.
+    ignored = {"the", "a", "an", "of", "and", "for", "to", "in", "is", "what", "how",
+               "please", "show", "me", "explain", "describe", "simply", "model", "image", "picture"}
+    words = set(re.findall(r"\w+", query.casefold())) - ignored
+    return bool(words & set(re.findall(r"\w+", title.casefold())))
+
+
+def search_image(query):
+    query = topic_query(query)
     if not query or len(query) < 2:
         return {"ok": False, "message": "Please name the topic you want to see."}
     identifier = hashlib.sha256(query.casefold().encode("utf-8")).hexdigest()
@@ -112,7 +131,8 @@ def search_image(query):
         if path.exists() and path.with_suffix(".jpg").exists() and time.time() - path.stat().st_mtime < 7 * 86400:
             try:
                 value = json.loads(path.read_text(encoding="utf-8"))
-                if value.get("ok") and value.get("image_path") == "/images/file/" + identifier:
+                if (value.get("ok") and value.get("image_path") == "/images/file/" + identifier
+                        and topic_matches(query, value.get("title", ""))):
                     return {**value, "cached": True}
             except (ValueError, OSError):
                 pass
@@ -124,7 +144,8 @@ def search_image(query):
             pages = _json(session, generator="search", gsrsearch=query, gsrnamespace=0,
                           gsrlimit=3, prop="pageimages|pageprops", piprop="name", ppprop="disambiguation")
             for page in sorted(pages, key=lambda p: p.get("index", 99)):
-                if "disambiguation" in page.get("pageprops", {}) or not page.get("pageimage"):
+                if ("disambiguation" in page.get("pageprops", {}) or not page.get("pageimage")
+                        or not topic_matches(query, page.get("title", ""))):
                     continue
                 infos = _json(session, titles="File:" + page["pageimage"], prop="imageinfo",
                               iiprop="url|extmetadata", iiurlwidth=960,
