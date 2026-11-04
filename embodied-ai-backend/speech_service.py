@@ -51,7 +51,7 @@ class SpeechService:
             audio = np.frombuffer(pcm, dtype=np.int16).astype(np.float32) / 32768
             if float(np.sqrt(np.mean(audio * audio))) < .001:
                 return {"text": "", "duration": duration, "recognition_ms": 0}, 200
-            segments, _ = self.model.transcribe(audio, language="en", beam_size=3,
+            segments, _ = self.model.transcribe(audio, language="en", beam_size=1,
                 condition_on_previous_text=False, temperature=0, vad_filter=True,
                 vad_parameters={"min_silence_duration_ms": 300},
                 initial_prompt="A visitor speaking to Kai, Orion, Professor Theo, Maya, Aurelius or Lucius in a museum, Ancient Rome, science classroom or cafe.")

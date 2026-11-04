@@ -45,7 +45,7 @@ public static class WalkableHomeHub
         GameObject world = new GameObject(WorldName);
         world.transform.position = Vector3.zero;
         Material grass = MaterialFor("Meadow midnight grass", new Color(.15f,.22f,.18f));
-        Material stone = MaterialFor("Warm moonstone limestone", new Color(.62f,.59f,.51f));
+        Material stone = MaterialFor("Warm moonstone limestone", new Color(.56f,.55f,.50f));
         Material brass = MaterialFor("Moonlit brass", new Color(0.75f, 0.47f, 0.18f), true);
         Material cyan = MaterialFor("Classroom nebula cyan", new Color(0.10f, 0.54f, 0.86f), true);
         Material coral = MaterialFor("Rome nebula coral", new Color(0.90f, 0.25f, 0.24f), true);
@@ -110,7 +110,7 @@ public static class WalkableHomeHub
 
     private static void AddPavingJoints(Transform parent,Material stone)
     {
-        var joint=MaterialFor("Recessed limestone joints",new Color(.25f,.26f,.23f));
+        var joint=MaterialFor("Recessed limestone joints",new Color(.36f,.37f,.34f));
         for(int row=0;row<15;row++)
         {
             float z=24+row*2.2f;

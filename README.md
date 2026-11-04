@@ -1,5 +1,10 @@
 # Embodied AI Unity Experience
 
+Conversation now defaults to a local Ollama LLM, with streamed text and local
+speech. Start `Tools/Start-LumenBackend.ps1` before pressing Play. A saved Gemini
+key no longer selects cloud conversation automatically. See
+[local-first setup, research and measurements](Docs/AI/LocalFirstInference-2026-11-02.md).
+
 Current development and verified results are tracked in [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md). The older completion guide contains historical results. The current upgrade includes Ada (science), Marcus (history), and Maya (café), optional local Piper neural speech, and a Blender-authored prop collection; broader environment and release work remains in progress.
 
 Unity `6000.6.2f1` project with three locally guided worlds: Ancient Rome, a science classroom, and a café conversation/order-practice scene.

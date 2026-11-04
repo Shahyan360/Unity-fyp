@@ -59,6 +59,8 @@ public class HomeUIManager : MonoBehaviour
     private string pendingScenario;
     private readonly List<string> chatLines = new List<string>();
     private bool isWaitingForBackend;
+    public event System.Action<ChatResponse> ResponseReceived;
+    private int backendReplyIndex = -1;
     private int liveInputLine=-1,liveOutputLine=-1;
     public void ShowLiveInput(string text)
     {
@@ -226,10 +228,23 @@ public class HomeUIManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(transcription) || userInputField == null) return;
         aiClient?.CancelRequest();FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
+        if (isWaitingForBackend) CompleteBackendLine("Interrupted.");
         isWaitingForBackend=false;
         if(VoiceCommandRouter.TryExecute(transcription,out string reply)){AddUserMessage(transcription);AddAssistantMessage(reply);FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(reply);return;}
         userInputField.text = transcription.Trim();
         SendLocalMessage();
+    }
+
+    public void InterruptLocalReply()
+    {
+        if (isWaitingForBackend)
+        {
+            aiClient?.CancelLocalRequest();
+            CompleteBackendLine("Interrupted.");
+            isWaitingForBackend = false;
+            if (sendButton != null) sendButton.interactable = true;
+        }
+        FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
     }
 
     private void SendMessageToBackend(string userMessage)
@@ -240,6 +255,7 @@ public class HomeUIManager : MonoBehaviour
             ? "general_assistant"
             : homeChatScenario;
 
+        FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
         isWaitingForBackend = true;
 
         if (sendButton != null)
@@ -248,6 +264,7 @@ public class HomeUIManager : MonoBehaviour
         }
 
         AddAssistantMessage("Thinking…");
+        backendReplyIndex = chatLines.Count - 1;
 
         StartCoroutine(aiClient.SendChatMessage(
             userMessage,
@@ -256,12 +273,14 @@ public class HomeUIManager : MonoBehaviour
             homeChatObjectDescription,
             HandleBackendSuccess,
             HandleBackendError,
-            text=>FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(text)));
+            text=>FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(text),
+            UpdateBackendLine));
     }
 
     private void HandleBackendSuccess(ChatResponse response)
     {
-        RemoveLastThinkingMessage();
+        CompleteBackendLine(response.response);
+        ResponseReceived?.Invoke(response);
         isWaitingForBackend = false;
 
         if (sendButton != null)
@@ -269,7 +288,6 @@ public class HomeUIManager : MonoBehaviour
             sendButton.interactable = true;
         }
 
-        AddAssistantMessage(response.response);
         AgentResponseHandler responseHandler = FindAnyObjectByType<AgentResponseHandler>();
         if (responseHandler != null)
         {
@@ -286,7 +304,7 @@ public class HomeUIManager : MonoBehaviour
 
     private void HandleBackendError(string errorMessage)
     {
-        RemoveLastThinkingMessage();
+        CompleteBackendLine("I couldn’t answer just now. Try again or choose a world to explore.");
         isWaitingForBackend = false;
 
         if (sendButton != null)
@@ -294,15 +312,20 @@ public class HomeUIManager : MonoBehaviour
             sendButton.interactable = true;
         }
 
-        AddAssistantMessage("The assistant is unavailable. You can keep exploring, choose offline labels in Visit, or retry from the guide menu.");
     }
 
-    private void RemoveLastThinkingMessage()
+    private void UpdateBackendLine(string text)
     {
-        if (chatLines.Count > 0 && chatLines[chatLines.Count - 1] == "Assistant: Thinking…")
-        {
-            chatLines.RemoveAt(chatLines.Count - 1);
-        }
+        if (backendReplyIndex < 0 || backendReplyIndex >= chatLines.Count) return;
+        string speaker = FindAnyObjectByType<ScenarioCharacterIdentity>()?.DisplayName ?? "Guide";
+        chatLines[backendReplyIndex] = speaker + ": " + text;
+        RefreshTranscript();
+    }
+
+    private void CompleteBackendLine(string text)
+    {
+        UpdateBackendLine(text);
+        backendReplyIndex = -1;
     }
 
     public void SelectScenarioAndLoad(string scenario)
@@ -487,6 +510,12 @@ public class HomeUIManager : MonoBehaviour
             chatLines.RemoveAt(0);
         }
 
+        RefreshTranscript();
+    }
+
+    private void RefreshTranscript()
+    {
+        if (chatOutputText == null) return;
         chatOutputText.text = string.Join("\n", chatLines) + "\n";
         if (autoManageChatLayout) ResizeChatTextToContent();
 
@@ -504,8 +533,7 @@ public class HomeUIManager : MonoBehaviour
         }
 
         chatLines.Clear();
-        chatLines.Add("Guide: Welcome. I can take you to Ancient Rome, open the Classroom, visit the Museum, or bring you into the Café.");
-        chatLines.Add("Guide: Ask me a question, or choose a world above to begin.");
+        chatLines.Add("Guide: Welcome. Ask a question or choose a world.");
         chatOutputText.text = string.Join("\n", chatLines) + "\n";
         if (autoManageChatLayout) ResizeChatTextToContent();
     }
@@ -519,6 +547,7 @@ public class HomeUIManager : MonoBehaviour
 
         // Keep the font size stable and let the Scroll View handle extra text.
         chatOutputText.enableAutoSizing = false;
+        chatOutputText.richText = false;
         chatOutputText.fontSize = 22f;
         chatOutputText.lineSpacing = 5f;
         chatOutputText.paragraphSpacing = 6f;

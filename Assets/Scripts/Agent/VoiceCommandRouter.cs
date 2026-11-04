@@ -5,6 +5,11 @@ using UnityEngine;
 /// <summary>Local command parsing preserves handled state separately from execution success.</summary>
 public static class VoiceCommandRouter
 {
+    public static bool IsReturnHomeRequest(string utterance)
+    {
+        return Regex.IsMatch((utterance ?? "").Trim(), @"^(?:(?:hey )?(?:kai|orion|theo|maya|aurelius|lucius|guide)[, ]+)?(?:please\s+)?(?:(?:can|could|would) you\s+)?(?:(?:take|bring|send) me(?: back)? to |go(?: back)? to |return to |open |back to )(?:the )?(?:lobby|home(?: screen)?|main (?:screen|menu)|hub|atrium)(?: please)?[.!?]*$|^(?:go|take me|bring me) home[.!?]*$", RegexOptions.IgnoreCase);
+    }
+
     public static WorldActionExecution LastExecution {get;private set;}
     public static bool TryExecute(string utterance,out string reply)
     {
@@ -15,6 +20,8 @@ public static class VoiceCommandRouter
     public static WorldActionExecution Execute(string utterance,string turnId="")
     {
         var result=new WorldActionExecution{turnId=turnId,target=utterance??""};
+        if (IsReturnHomeRequest(utterance))
+            return LastExecution = ScenarioTransitionService.RequestTravel("home");
         string text=(utterance??"").ToLowerInvariant().Trim(' ','.','!','?');
         text=Regex.Replace(text,@"^(?:(?:hey )?(?:kai|orion|theo|professor theo|maya|lucius|aurelius|guide)[, ]+)?(?:please )?","");
         if(Regex.IsMatch(text,@"\b(?:don't|do not|never|explain|what happens|if someone)\b"))return result;

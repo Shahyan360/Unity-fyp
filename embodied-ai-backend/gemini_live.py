@@ -29,13 +29,20 @@ class LiveTurn:
     def __init__(self):
         self.spoken = ""
         self.heard = ""
+        self.input_final_sent = False
         self.has_audio = False
         self.pending = set()
 
     def interrupt(self):
         self.spoken = ""
         self.heard = ""
+        self.input_final_sent = False
         self.has_audio = False
+
+    def final_input(self):
+        if not self.input_final_sent and self.heard.strip():
+            self.input_final_sent = True
+            return self.heard
 
     def finish(self):
         if self.pending or not (self.spoken.strip() or self.has_audio):
@@ -102,6 +109,8 @@ def live_config(scenario, speaker, object_name="", object_description="", voice_
             "stay here, stop, or go to a named nearby exhibit. For walking the visitor use move me forward two meters. "
             "Only say you are going somewhere after the tool confirms success. Never move for negated commands or discussions about movement. "
             "Use change_world only when the visitor explicitly asks to switch worlds. "
+            "Lobby, main screen, main menu, hub and atrium all mean the Home world. "
+            "For 'show me the Eiffel Tower', use show_image with topic 'Eiffel Tower'; it is a picture request, not a local 3D model. "
             "The modern cafe is a separate world, never a Roman thermopolium. Rome streets, market and arena viewing terrace are local walk destinations; the arena IS accessible when Unity confirms a complete route. "
             "If the visitor is already in the requested world, say so and ask which local area they mean. In the cafe, going to the cafe does not mean walking to the counter. "
             "Explain travel without executing it when asked hypothetically or negatively. Use ordinary public language such as 'open the modern cafe' or 'walk to the counter'; do not describe sessions, scenarios, movement commands, function names, identifiers or tools. "
@@ -247,6 +256,10 @@ async def bridge(ws, send, key, scenario, speaker, object_name="", object_descri
                             if content.input_transcription and content.input_transcription.text:
                                 turn.heard += content.input_transcription.text
                                 send("input_text", text=turn.heard)
+                            if (content.input_transcription and content.input_transcription.finished) or content.turn_complete:
+                                final_input = turn.final_input()
+                                if final_input is not None:
+                                    send("input_final", text=final_input)
                             if content.output_transcription and content.output_transcription.text:
                                 turn.spoken += content.output_transcription.text
                                 send("output_text", text=turn.spoken)

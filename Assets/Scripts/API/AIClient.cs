@@ -16,7 +16,8 @@ public class AIClient : MonoBehaviour
     public string SessionId {get;private set;}
     public string BackendUrl => (appConfig!=null&&!string.IsNullOrWhiteSpace(appConfig.backendUrl)?appConfig.backendUrl:fallbackBackendUrl).TrimEnd('/');
     private void Awake(){SessionId=sharedSessionId;if(appConfig==null)appConfig=FindAnyObjectByType<AppConfig>();EmbodiedExperienceBootstrap.Ensure(this);}
-    public void CancelRequest(){generation++;interrupted=partial;partial="";activeRequest?.Abort();activeRequest=null;GeminiLiveConversation.Instance?.CancelReply();}
+    public void CancelLocalRequest(){generation++;interrupted=partial;partial="";activeRequest?.Abort();activeRequest=null;}
+    public void CancelRequest(){CancelLocalRequest();GeminiLiveConversation.Instance?.CancelReply();}
     public void AdoptSessionId(string id){if(!string.IsNullOrWhiteSpace(id))SessionId=sharedSessionId=id;}
     public void ResetSession()
     {
@@ -63,7 +64,13 @@ public class AIClient : MonoBehaviour
             onSuccess?.Invoke(new ChatResponse{response=message,action="idle",emotion="friendly",scenario=scenario});yield break;
         }
         var live=GeminiLiveConversation.Instance;
-        if(live!=null&&live.Selected)
+        if (VoiceCommandRouter.IsReturnHomeRequest(query))
+        {
+            var travel = VoiceCommandRouter.Execute(query);
+            onSuccess?.Invoke(new ChatResponse { response=travel.reason, action="idle", emotion="friendly", scenario=scenario, response_source="local-action" });
+            yield break;
+        }
+        if(live!=null&&live.Selected&&!live.VoiceOnly)
         {
             if(!string.IsNullOrWhiteSpace(objectName))
             {
@@ -82,9 +89,20 @@ public class AIClient : MonoBehaviour
             yield break;
         }
         var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();
+        if(VoiceCommandRouter.TryExecute(query,out string acknowledgement))
+        {onSuccess?.Invoke(new ChatResponse{response=acknowledgement,action="idle",emotion="friendly",scenario=scenario,response_source="local-action"});yield break;}
+        if(live!=null&&live.Images!=null)
+        {
+            live.Images.BeginQuestion(query,false);
+            if(ConversationImagePanel.RequestsVisual(query))live.Images.RequestImage(query,BackendUrl);
+        }
+        string memoryContext=VisitorConversationMemory.Context(string.IsNullOrWhiteSpace(objectName)?identity?.ConversationId??"kai":objectName);
+        string worldContext=WorldStateContext.Snapshot();
+        if(memoryContext.Length>800)memoryContext=memoryContext.Substring(0,800);
+        if(worldContext.Length>650)worldContext=worldContext.Substring(0,650);
         var body=new ChatRequest{query=query,scenario=scenario,object_name=objectName,object_description=objectDescription,
             session_id=SessionId,speaker_id=string.IsNullOrWhiteSpace(objectName)&&identity!=null?identity.ConversationId:"",
-            interrupted_response=interrupted,world_context=WorldStateContext.Snapshot()+" "+VisitorConversationMemory.Context(string.IsNullOrWhiteSpace(objectName)?identity?.ConversationId??"kai":objectName),coaching_active=FindAnyObjectByType<SocialCoachingController>()?.IsActive??false};interrupted="";
+            interrupted_response=interrupted,world_context=memoryContext+" "+worldContext,coaching_active=FindAnyObjectByType<SocialCoachingController>()?.IsActive??false};interrupted="";
         using(var request=new UnityWebRequest(BackendUrl+"/chat/stream","POST"))
         {
             var lines=new Lines();request.downloadHandler=lines;
@@ -113,7 +131,7 @@ public class AIClient : MonoBehaviour
             {
                 final.spoken_stream=spoken;
                 if(!string.IsNullOrWhiteSpace(final.session_id))SessionId=sharedSessionId=final.session_id;
-                VisitorConversationMemory.Record(identity!=null?identity.ConversationId:objectName,query,final.response);FindAnyObjectByType<SocialCoachingController>()?.CompleteTurn(query,System.Guid.NewGuid().ToString("N"));partial="";onSuccess?.Invoke(final);
+                VisitorConversationMemory.Record(!string.IsNullOrWhiteSpace(objectName)?objectName:identity!=null?identity.ConversationId:"kai",query,final.response);FindAnyObjectByType<SocialCoachingController>()?.CompleteTurn(query,System.Guid.NewGuid().ToString("N"));partial="";onSuccess?.Invoke(final);
             }
             else onError?.Invoke(error??("Local conversation unavailable. Check the backend on "+BackendUrl+". "+request.error));
         }

@@ -66,6 +66,18 @@ def test_interruption_discards_previous_transcription():
     assert turn.finish() == "New answer"
 
 
+def test_final_input_emitted_once_across_tool_boundaries():
+    turn = LiveTurn()
+    turn.heard = "Take me to the lobby."
+    turn.pending.add("travel")
+    assert turn.final_input() == "Take me to the lobby."
+    assert turn.finish() is None
+    assert turn.final_input() is None
+    turn.interrupt()
+    turn.heard = "Show me Eiffel Tower."
+    assert turn.final_input() == "Show me Eiffel Tower."
+
+
 def test_native_and_loopback_origins_only():
     for origin in ("", "http://localhost:5000", "http://127.0.0.1:5000", "http://[::1]:5000"):
         assert allowed_origin(origin)

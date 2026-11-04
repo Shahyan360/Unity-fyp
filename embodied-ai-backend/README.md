@@ -1,8 +1,9 @@
-# Lumen backend: Gemini live conversations
+# Lumen backend: local-first conversations
 
-The current Unity client connects to Python at `http://127.0.0.1:5000` and uses
-`/live` for Gemini text and microphone conversations. The key belongs only in
-the Python backend environment. Unity does not need an API key field.
+The Unity client connects to Python at `http://127.0.0.1:5000` and defaults to
+`/chat/stream` with a local Ollama model. Local faster-whisper recognizes speech;
+Windows voices or optional Piper speak streamed sentences.
+See [research, setup and measured results](../Docs/AI/LocalFirstInference-2026-11-02.md).
 
 ## Install once
 
@@ -20,7 +21,14 @@ only `requirements.txt` does not install everything needed to start this service
 If `.venv/Scripts/python.exe` already exists, use it directly; Python does not
 need reinstalling just because the Windows Python launcher cannot find it.
 
-## Configure the key privately
+## Optional Gemini Live voice
+
+Set `LUMEN_CONVERSATION_PROVIDER=hybrid` for native Gemini microphone
+conversations and distinct guide voices. Typed answers still go to local Ollama.
+Gemini handles the spoken exchange while Unity executes world actions and
+displays images. If Live cannot connect, voice input uses local faster-whisper.
+The default `local` mode keeps speech and text local. The existing `gemini`
+mode also routes typed conversation through Live.
 
 Create a key in [Google AI Studio](https://aistudio.google.com/apikey).
 Use PowerShell to save it without displaying it or recording its value in history:
@@ -49,9 +57,9 @@ service on port 5000 instead of killing it. `-CheckOnly` reports setup without
 starting the service or revealing the key.
 
 Check [service health](http://127.0.0.1:5000/health) for `"status": "ok"`.
-Check [Gemini configuration](http://127.0.0.1:5000/live/status) for
-`"configured": true`. Neither response proves that a Gemini conversation works;
-send a short typed question in Unity to verify it.
+Check [conversation configuration](http://127.0.0.1:5000/conversation/config) for
+`"provider": "local"`, and `/health` for `configured_model_available=true`.
+Send a short typed question in Unity to verify the integration.
 
 Open the Unity folder containing this backend, not an older copy.
 Open `Assets/Scenes/HomeScene.unity` in Unity 6000.6.2f1, press Play, and keep
@@ -63,9 +71,12 @@ The live model defaults to `gemini-3.8-live`. If your account cannot access it,
 verify the models available to your key and set `GEMINI_LIVE_MODEL` in the
 backend environment. See [Google's Live API guide](https://ai.google.dev/gemini-api/docs/live-api/get-started-sdk).
 
-The legacy `/chat` and `/chat/stream` routes use curated local replies and
-optional Ollama (`llama3.2:1b`). An unavailable Ollama model in `/health` does
-not mean Gemini live is broken. Gemini uses `/live`, not the Ollama chat route.
+The `/chat/stream` route generates ordinary answers with the local model.
+Deterministic identities, world/exhibit actions and preference recall remain local
+application logic. `/chat` retains the older JSON contract for compatibility.
+Override the selected model with `OLLAMA_MODEL`; install it using `ollama pull`.
+The launcher warms the selected model on a separate CUDA 12 Ollama server at
+127.0.0.1:11435 on this machine. Original Ollama on 11434 is preserved.
 
 Gemini microphone audio is sent through the live connection. The separate
 local `/transcribe` feature needs a faster-whisper model in

@@ -16,6 +16,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
 {
     public static GeminiLiveConversation Instance {get;private set;}
     [Serializable] private sealed class Health {public bool configured;public string model;}
+    [Serializable] private sealed class ConversationConfig {public string provider;}
     [Serializable] private sealed class Setup {public string scenario,speaker_id,object_name,object_description,voice_name,session_id,world_context;public bool coaching_active;public string[] people;}
     [Serializable] private sealed class Event {public string @event,text,id,name,command,scenario,voice,state,action_id,turn_id;public bool ok,retryable;}
     private sealed class Wire
@@ -65,6 +66,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     public string ActiveSpeakerName=>Partner!=null?Partner.GetDisplayName():FindAnyObjectByType<ScenarioCharacterIdentity>()?.DisplayName??"Kai";
     public Transform ActiveSpeakerTransform=>ActiveActor()?.transform;
     public bool Selected {get;private set;}
+    public bool VoiceOnly { get; private set; }
     public bool Ready {get;private set;}
     public string State {get;private set;}="Assistant connecting";
     public string LastHeard {get;private set;}="";
@@ -91,10 +93,24 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         {
             var client=GetComponent<AIClient>();if(client!=null)backend=client.BackendUrl;
             if(LumenPreferences.GetInt("Lumen.Offline",0)!=0){Disconnect();Selected=false;State="Offline / exhibit labels available";}
-            else if(LumenPreferences.GetInt("Lumen.Offline",0)!=0){Disconnect();Selected=false;State="Offline / exhibit labels available";}
-            else if(!Selected)
+            else
             {
-                using(var request=UnityWebRequest.Get(backend+"/live/status"))
+                // A saved API key must never silently replace the local answer engine.
+                bool cloudRequested=false;
+                bool localConnected=false;
+                using(var policy=UnityWebRequest.Get(backend+"/conversation/config"))
+                {
+                    policy.timeout=3;yield return policy.SendWebRequest();
+                    if(policy.result==UnityWebRequest.Result.Success)
+                    {
+                        ConversationConfig config=null;try{config=JsonUtility.FromJson<ConversationConfig>(policy.downloadHandler.text);}catch(Exception){}
+                        VoiceOnly = config?.provider == "hybrid";
+                        cloudRequested=config!=null&&(config.provider=="gemini"||VoiceOnly);
+                        localConnected=config!=null&&config.provider=="local";
+                    }
+                }
+                if(!cloudRequested){if(Selected)Disconnect();Selected=false;State=localConnected?"Local assistant connected":"Assistant unavailable";}
+                else if(!Selected)using(var request=UnityWebRequest.Get(backend+"/live/status"))
                 {
                     request.timeout=4;yield return request.SendWebRequest();
                     if(request.result!=UnityWebRequest.Result.Success)State="Assistant unavailable / start the local service";
@@ -209,7 +225,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     {
         Event e=null;try{e=JsonUtility.FromJson<Event>(json);}catch(Exception){}if(e==null)return;
         if(e.@event=="practice_expired"){FindAnyObjectByType<SocialCoachingController>()?.NotifyExpired();return;}
-        if(e.@event=="ready"){VoiceName=e.voice;Ready=true;connecting=false;retryCount=0;State="Assistant ready";SendWorldContext();
+        if(e.@event=="ready"){VoiceName=e.voice;Ready=true;connecting=false;retryCount=0;State=VoiceOnly?"Live voice ready / local text":"Assistant ready";SendWorldContext();
             if(!introduced&&scenario=="cafe"&&Partner==null&&PlayerPrefs.GetInt("Lumen.VoiceEnabled",0)!=0){introduced=true;Send(new Event{@event="text",text="Welcome me briefly to the cafe as my companion, not the barista. Offer a choice of relaxed exploration or optional social practice; do not assume I need training."});}
             return;}
         if(e.@event=="error")
@@ -219,7 +235,39 @@ public sealed class GeminiLiveConversation:MonoBehaviour
             notify?.Invoke("The assistant is unavailable. You can keep exploring and retry.");return;
         }
         if(e.@event=="disconnected"||e.@event=="reconnect"){var notify=error;Disconnect();ScheduleRetry();notify?.Invoke("Connection interrupted. Please retry when the assistant is ready.");return;}
-        if(e.@event=="interrupted"){Interruptions++;StopPlayback();if(!awaitingTypedOutput){error?.Invoke("Reply interrupted; listening to you.");ClearCallbacks();ResetTranscriptTurn();}State="Assistant ready";return;}
+        if(e.@event=="interrupted")
+        {
+            Interruptions++;
+            StopPlayback();
+            if(!awaitingTypedOutput)
+            {
+                error?.Invoke("Reply interrupted; listening to you.");
+                ClearCallbacks();
+                receivingVoiceQuestion=false;
+                ResetTranscriptTurn();
+            }
+            State="Listening";
+            return;
+        }
+        if (e.@event == "input_final")
+        {
+            if (VoiceCommandRouter.IsReturnHomeRequest(e.text))
+            {
+                StopPlayback();
+                var travel = VoiceCommandRouter.Execute(e.text, activeTurnId);
+                if (travel.accepted && !travel.Terminal) CancelReply();
+                return;
+            }
+            string heard = e.text ?? "";
+            if (!Images.RequestedForTurn && ConversationImagePanel.RequestsVisual(heard) &&
+                !System.Text.RegularExpressions.Regex.IsMatch(heard, @"(?i)\b(?:3d|three.dimension(?:al)?|interactive model)\b") &&
+                System.Text.RegularExpressions.Regex.IsMatch(heard, @"(?i)\b(?:eiffel|ifel|eyeful)\s+tow(?:er|el)\b"))
+            {
+                Images.BeginQuestion(e.text, false);
+                Images.RequestImage("Eiffel Tower", backend);
+            }
+            return;
+        }
         if(e.@event=="cancel_commands")
         {
             if(activeAction!=null&&!activeAction.Terminal)
@@ -228,6 +276,16 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         }
         if(e.@event=="input_text")
         {
+            if (VoiceOnly && !receivingVoiceQuestion && !string.IsNullOrWhiteSpace(e.text))
+            {
+                var spoken = FindAnyObjectByType<SpeechOutputController>();
+                if (spoken == null || !SpeechInputController.LooksLikeEcho(e.text, spoken.RecentSpokenText))
+                {
+                    var localChat = FindAnyObjectByType<ChatUIManager>();
+                    if (localChat != null) localChat.InterruptLocalReply();
+                    else FindAnyObjectByType<HomeUIManager>()?.InterruptLocalReply();
+                }
+            }
             turnActive=true;awaitingTypedOutput=false;LastHeard=e.text;currentQuestion=e.text;VisitorConversationMemory.ObservePreference(e.text);State="Assistant processing";if(!receivingVoiceQuestion){activeTurnId=Guid.NewGuid().ToString("N");SendWorldContext();}
             if(completed!=null){error?.Invoke("Reply interrupted; listening to you.");ClearCallbacks();ResetTranscriptTurn();}
             if(!receivingVoiceQuestion){receivingVoiceQuestion=true;Images.BeginQuestion(e.text,scenario!="cafe");}
@@ -243,7 +301,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         }
         if(e.@event=="turn_complete")
         {
-            turnEnded=true;State="Assistant ready";
+            turnEnded=true;State=VoiceOnly?"Live voice ready / local text":"Assistant ready";
             if(string.IsNullOrWhiteSpace(e.text))return; // Empty tool boundaries are not conversational answers.
             LastReply=e.text;Replies++;receivingVoiceQuestion=false;turnActive=false;VisitorConversationMemory.Record(speaker,currentQuestion,e.text);FindAnyObjectByType<SocialCoachingController>()?.CompleteTurn(currentQuestion,activeTurnId);
             Images.CompleteAnswer(e.text,backend);
@@ -260,7 +318,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
             if(e.name=="show_image")
             {
                 ok=Images.CanShowForQuestion&&!string.IsNullOrWhiteSpace(e.command);
-                if(ok)Images.RequestImage(e.command,backend);
+                if(ok&&!Images.RequestedForTurn)Images.RequestImage(e.command,backend);
                 reply=ok?"Image search started in a separate panel. Speak your explanation now; do not claim the image is already visible. The panel will show the image with credits or an unavailable message.":"No image requested. In the cafe keep this answer voice/text only unless the visitor explicitly requests a visual aid.";
             }
             else if(e.name=="move_character")

@@ -23,7 +23,7 @@ public sealed class SpeechInputController:MonoBehaviour
     [SerializeField] private float minimumLevel=.006f;
     private AudioClip microphone;private string device;
     private bool listening,voiced,held,recognizing;
-    private int readAt,preAt,voicedFrames;
+    private int readAt,preAt,voicedFrames,bargeFrames;
     private float noise=.0015f,silence,micStarted,nextCheck;
     private int lastPosition=-1;private float lastCaptureAt;
     private readonly float[] frame=new float[320],pre=new float[4800];
@@ -105,7 +105,12 @@ public sealed class SpeechInputController:MonoBehaviour
                 Consume(frame,forced);
             }
         }
-        if(held&&!forced&&voiced)Flush(true);held=forced;
+        if(held&&!forced)
+        {
+            if(voiced)Flush(true);
+            else if(listening)GeminiLiveConversation.Instance?.PauseMicrophone();
+        }
+        held=forced;
         if(!recognizing&&pending.Count>0)StartCoroutine(Recognize(pending.Dequeue()));
         if(!listening&&!forced&&!recognizing&&pending.Count==0&&microphone!=null)StopMicrophone();
         if(statusText!=null&&Time.unscaledTime>=nextCheck)
@@ -119,9 +124,13 @@ public sealed class SpeechInputController:MonoBehaviour
         float energy=0;foreach(float value in samples)energy+=value*value;
         InputLevel=Mathf.Sqrt(energy/samples.Length);
         var live=GeminiLiveConversation.Instance;
-        if(live!=null&&live.Selected)
+        if(live!=null&&live.Selected&&live.Ready&&!voiced)
         {
-            if(forced&&!held)live.StopPlayback();
+            if(forced&&!held)
+            {
+                InterruptLocalSpeech();
+                live.StopPlayback();
+            }
             live.SendMicrophone(samples);state=live.Ready?"Listening / cloud conversation":"Microphone ready / assistant unavailable";lastHeard=live.LastHeard;
             return;
         }
@@ -129,12 +138,15 @@ public sealed class SpeechInputController:MonoBehaviour
         if(!voiced&&!signal)noise=Mathf.Lerp(noise,InputLevel,.015f);
         if(signal&&!voiced)
         {
-            voiced=true;silence=0;voicedFrames=0;utterance.Clear();
+            voiced=true;silence=0;voicedFrames=0;bargeFrames=0;utterance.Clear();
             for(int i=0;i<pre.Length;i++)utterance.Add(pre[(preAt+i)%pre.Length]);
             FindAnyObjectByType<SpeechOutputController>()?.SetListeningDucked(true);
         }
         foreach(float value in samples){pre[preAt]=value;preAt=(preAt+1)%pre.Length;}
         if(!voiced)return;
+        bargeFrames = signal ? bargeFrames + 1 : 0;
+        if ((forced && !held) || (bargeFrames == 8 && FindAnyObjectByType<SpeechOutputController>()?.IsSpeaking == true))
+            InterruptLocalSpeech();
         utterance.AddRange(samples);if(signal){silence=0;voicedFrames++;}else silence+=.02f;
         state="Hearing you";
         if((!forced&&silence>.55f)||utterance.Count>=16000*12)Flush(forced);
@@ -145,6 +157,13 @@ public sealed class SpeechInputController:MonoBehaviour
         if(voicedFrames>=7&&pending.Count<4)pending.Enqueue(new Capture{wav=EncodeWave(utterance),forced=forced});
         utterance.Clear();state=pending.Count>0?"Understanding your words":"Listening";
         if(pending.Count==0&&!recognizing)FindAnyObjectByType<SpeechOutputController>()?.SetListeningDucked(false);
+    }
+
+    private static void InterruptLocalSpeech()
+    {
+        var chat = FindAnyObjectByType<ChatUIManager>();
+        if (chat != null) chat.InterruptLocalReply();
+        else FindAnyObjectByType<HomeUIManager>()?.InterruptLocalReply();
     }
     public static byte[] EncodeWave(IList<float> samples)
     {

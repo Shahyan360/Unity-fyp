@@ -262,6 +262,14 @@ public class ChatUIManager : MonoBehaviour
         FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
         SetLoadingState(false);ResetLiveTurn();
     }
+
+    public void InterruptLocalReply()
+    {
+        aiClient?.CancelLocalRequest();
+        FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
+        SetLoadingState(false);
+        ResetLiveTurn();
+    }
     private void ShowStreamingText(string text)
     {
         var identity=FindAnyObjectByType<ScenarioCharacterIdentity>();

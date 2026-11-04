@@ -212,7 +212,6 @@ public sealed class WorldExperienceDirector : MonoBehaviour
 
         // Pair the walkable atrium with large, tactile world cards so first-time
         // visitors can either wander to a portal or jump straight into a world.
-        PositionHomeGuide();
 
         Image topBar = CreateImage(root, "AtriumTopBar", new Color(0.035f, 0.07f, 0.13f, 0.91f), true);
         Rect(topBar.rectTransform, new Vector2(0.025f, 0.925f), new Vector2(0.975f, 0.985f), Vector2.zero, Vector2.zero);
@@ -221,11 +220,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         CreateText(topBar.transform, "LocalBadge", "M / MICROPHONE", 13, new Color(0.47f, 0.78f, 0.75f), FontStyles.Bold,
             new Vector2(0.81f, 0.10f), new Vector2(0.975f, 0.90f), TextAlignmentOptions.Right);
 
-        Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.13f, 0.94f), true);
-        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.065f), new Vector2(0.575f, 0.34f), Vector2.zero, Vector2.zero);
-        CreateText(guidePanel.transform, "GuidePromptTitle", "KAI  /  YOUR COMPANION", 18, new Color(0.99f, 0.56f, 0.40f), FontStyles.Bold,
+        Image guidePanel = CreateImage(root, "GuidePromptPanel", new Color(0.035f, 0.07f, 0.12f, 0.99f), true);
+        Rect(guidePanel.rectTransform, new Vector2(0.025f, 0.065f), new Vector2(0.53f, 0.34f), Vector2.zero, Vector2.zero);
+        CreateText(guidePanel.transform, "GuidePromptTitle", "KAI  /  YOUR COMPANION", 18, new Color(1f, 0.79f, 0.49f), FontStyles.Bold,
             new Vector2(0.045f, 0.80f), new Vector2(0.95f, 0.98f), TextAlignmentOptions.Left);
-        CreateText(guidePanel.transform, "GuidePromptIdeas", "Ask anything · PgUp/PgDn: scroll", 14, new Color(0.58f, 0.70f, 0.75f), FontStyles.Normal,
+        CreateText(guidePanel.transform, "GuidePromptIdeas", "Text or voice · PgUp/PgDn to scroll", 14, new Color(0.67f, 0.79f, 0.84f), FontStyles.Normal,
             new Vector2(0.045f, 0.66f), new Vector2(0.95f, 0.80f), TextAlignmentOptions.Left);
         targetText = CreateText(guidePanel.transform, "GuideConversation", "Welcome. Choose a world, or ask Kai where to begin.", 15, new Color(0.84f, 0.91f, 0.90f), FontStyles.Normal,
             new Vector2(0.045f, 0.30f), new Vector2(0.95f, 0.60f), TextAlignmentOptions.Left);
@@ -245,11 +244,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
             12, new Color(0.62f, 0.89f, 0.84f), FontStyles.Bold,
             new Vector2(0.025f, 0.875f), new Vector2(0.975f, 0.915f), TextAlignmentOptions.Center);
         WalkableHomeHub.BindPrompt(hubPortalPrompt);
-        CreateText(root, "VoiceControls", "Controls in VISIT", 12, new Color(0.55f, 0.73f, 0.76f), FontStyles.Bold,
-            new Vector2(0.66f, 0.035f), new Vector2(0.975f, 0.075f), TextAlignmentOptions.Right);
-
-        Button revealWorlds = CreateButton(root, "RevealWorlds", "CHOOSE A WORLD", new Color(0.36f, 0.75f, 0.79f, 0.96f),
-            new Vector2(0.025f, 0.805f), new Vector2(0.665f, 0.865f), true);
+        CreateText(root, "WorldsHint", "Walk to a portal or pick a destination.", 16,
+            new Color(0.74f, 0.85f, 0.89f), FontStyles.Normal,
+            new Vector2(0.032f, 0.748f), new Vector2(0.53f, 0.8f), TextAlignmentOptions.Left);
+        Button revealWorlds = CreateButton(root, "RevealWorlds", "CHOOSE A WORLD", new Color(0.44f, 0.81f, 0.82f),
+            new Vector2(0.025f, 0.805f), new Vector2(0.36f, 0.865f), true);
         scenarioPanel = canvas.gameObject.AddComponent<HomeScenarioPanel>();
         GameObject panelObject = new GameObject("ScenarioRevealPanel", typeof(RectTransform), typeof(CanvasGroup));
         panelObject.transform.SetParent(root, false);
@@ -257,10 +256,8 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         Rect(panelRect, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         CanvasGroup panelGroup = panelObject.GetComponent<CanvasGroup>();
         panelGroup.ignoreParentGroups = true;
-        Image panelBacking = CreateImage(panelObject.transform, "ScenarioPanelBacking", new Color(0.025f, 0.05f, 0.10f, 0.93f), true);
-        Rect(panelBacking.rectTransform, new Vector2(0.025f, 0.295f), new Vector2(0.665f, 0.865f), Vector2.zero, Vector2.zero);
-        CreateText(panelObject.transform, "AdventureHeadline", "PICK A WORLD  /  FOLLOW YOUR CURIOSITY", 18, new Color(0.82f, 0.95f, 0.92f), FontStyles.Bold,
-            new Vector2(0.055f, 0.805f), new Vector2(0.635f, 0.846f), TextAlignmentOptions.Center);
+        Image panelBacking = CreateImage(panelObject.transform, "ScenarioPanelBacking", new Color(0.025f, 0.05f, 0.10f, 1f), true);
+        Rect(panelBacking.rectTransform, new Vector2(0.025f, 0.35f), new Vector2(0.665f, 0.865f), Vector2.zero, Vector2.zero);
         scenarioPanel.Initialize(panelRect, revealWorlds);
         revealWorlds.transform.SetAsLastSibling();
         BuildWorldCard(panelObject.transform, 0, "01", "Ancient Rome", "Walk the Forum, meet its people, and uncover the city's stories.", "HISTORY", new Color(0.97f, 0.42f, 0.30f), "ancient_rome");
@@ -505,11 +502,11 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         const float leftMargin = 0.025f;
         const float cardWidth = 0.305f;
         const float gapX = 0.018f;
-        const float cardHeight = 0.225f;
+        const float cardHeight = 0.198f;
         int column = index % 2;
         int row = index / 2;
         float left = leftMargin + column * (cardWidth + gapX);
-        float bottom = row == 0 ? 0.568f : 0.331f;
+        float bottom = row == 0 ? 0.592f : 0.380f;
         Image card = CreateImage(parent, "WorldCard_" + scenario, new Color(0.055f, 0.085f, 0.12f, 0.94f), true);
         card.raycastTarget = true;
         Rect(card.rectTransform, new Vector2(left, bottom - 0.02f), new Vector2(left + cardWidth, bottom + cardHeight - 0.02f), Vector2.zero, Vector2.zero);
@@ -540,18 +537,6 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         string concise=index==0?"Forum, market and arena":index==1?"Explore science in 3D":index==2?"Coffee and conversation":"History, art and nature";
         CreateText(card.transform, "CardDescription", concise, 12, Muted, FontStyles.Normal,
             new Vector2(0.06f, 0.035f), new Vector2(0.94f, 0.51f), TextAlignmentOptions.Left);
-    }
-
-    private static void PositionHomeGuide()
-    {
-        Camera viewCamera = Camera.main;
-        GameObject guide = GameObject.Find("HomeAgent");
-        if (viewCamera == null || guide == null) return;
-        if (guide.GetComponent<AgentAnimator>() == null) guide.AddComponent<AgentAnimator>();
-
-        Vector3 viewportPosition = viewCamera.WorldToViewportPoint(guide.transform.position);
-        if (viewportPosition.z <= 0f) return;
-        guide.transform.position = viewCamera.ViewportToWorldPoint(new Vector3(0.84f, 0.40f, viewportPosition.z));
     }
 
     private void BuildIcon(Transform card, int index, Color accent)

@@ -1,0 +1,50 @@
+{
+  "aqueducts": {
+    "scenarios": ["ancient_rome", "general_assistant"],
+    "reference": "Roman aqueducts brought fresh water from elevated springs into towns using gravity. The channels usually followed a gentle downhill slope. Their arches kept the channel at the required height across valleys.",
+    "train": ["How did Romans get water into their cities?", "How did aqueducts move water without pumps?", "What supplied fresh water to Roman towns?", "Why did aqueducts use arches and slopes?", "Where did ancient Rome get drinking water?", "How did gravity carry water through an aqueduct?"],
+    "held_out": ["How did Romans get fresh water into towns?", "How could an aqueduct carry water uphill without a pump?"]
+  },
+  "lunar_phases": {
+    "scenarios": ["classroom", "general_assistant"],
+    "reference": "The Moon orbits Earth. The Sun lights about half of the Moon, and from Earth we see different fractions of that illuminated half as the Moon moves along its orbit. Earth's shadow causes lunar eclipses, not the usual Moon phases.",
+    "train": ["Why do we see phases of the Moon?", "Why does the Moon change shape?", "How does the Moon look different over a month?", "Why is the Moon a crescent sometimes?", "Does Earth's shadow cause lunar phases?", "Why does a full moon look different from a new moon?"],
+    "held_out": ["What makes the moon look different throughout the month?", "Explain why the Moon has phases in simple terms."]
+  },
+  "sleep_learning": {
+    "scenarios": ["classroom", "general_assistant"],
+    "reference": "Sleep helps the brain consolidate memories formed while awake. Enough rest also supports attention and can help students retain new information.",
+    "train": ["Why is sleep important for learning?", "How does rest help students retain information?", "Why does sleep improve memory?", "Does getting enough sleep help my brain remember?", "Why do tired students struggle to concentrate?", "How does sleeping help us learn and remember?"],
+    "held_out": ["Why does getting enough rest help students retain information?", "How can sleep help my memory after studying?"]
+  },
+  "forum": {
+    "scenarios": ["ancient_rome", "general_assistant"],
+    "reference": "The Roman Forum was a civic center with public meeting places, markets, law courts, basilicas, temples and monuments. Its buildings and uses changed over centuries.",
+    "train": ["What did people do in the Roman Forum?", "Why was the Forum important to Romans?", "What happened in the Forum in ancient Rome?", "Was the Forum a market or a civic center?", "What buildings surrounded the Roman Forum?", "What was the Forum used for?"],
+    "held_out": ["Why did Roman citizens gather in the Forum?", "Was the ancient Forum used for public meetings?"]
+  },
+  "museum_replicas": {
+    "scenarios": ["museum", "general_assistant"],
+    "reference": "Lumen's museum is a teaching gallery. It displays digital replicas, models and interpretations of artifacts and specimens. It does not contain physical originals.",
+    "train": ["Are museum objects originals or replicas?", "Does the gallery show real artifacts?", "Are the museum specimens original?", "Are the exhibits copies?", "Are these objects actual antiques?", "Is the museum filled with replicas and models?"],
+    "held_out": ["Are the specimens originals or replicas?", "Does this museum contain original objects?"]
+  },
+  "museum_visit": {
+    "scenarios": ["general_assistant", "museum"],
+    "reference": "In the museum, you can explore digital artifact replicas, natural history specimens and paintings. Try asking about the Rosetta Stone or the Antikythera Mechanism.",
+    "train": ["What can I learn in the museum?", "What can I see in the museum?", "What kinds of exhibits are in the museum?", "Tell me about the museum galleries", "What does the museum teach?", "Can you describe what is available in the museum?"],
+    "held_out": ["Do not take me to the museum. What can I learn there?", "What could I explore inside the museum?"]
+  },
+  "simulated_orders": {
+    "scenarios": ["cafe"],
+    "reference": "The café menu and orders are a simulation for practice. Visitors can place a pretend order at the menu, and the application cannot charge a card or take real payments.",
+    "train": ["Can you charge my card for this order?", "Does it cost real money to order coffee?", "Can I pay for the order?", "How do I buy a drink in the cafe?", "Are cafe orders simulated?", "Do you accept cash or credit cards?"],
+    "held_out": ["Can you take my order and charge my card?", "Do I have to pay real money for coffee here?"]
+  },
+  "sky_scattering": {
+    "scenarios": ["classroom", "general_assistant"],
+    "reference": "Air molecules scatter shorter visible wavelengths, such as blue, more strongly than red. This sends blue light toward us from many directions and makes the daytime sky appear blue.",
+    "train": ["Why does the sky look blue?", "What gives the daytime sky its blue color?", "Why is the sky blue in daylight?", "How does air scatter blue sunlight?", "Why is the sky blue instead of red?", "Explain Rayleigh scattering and blue skies"],
+    "held_out": ["What makes a clear sky appear blue?", "Why do we see blue in the daytime sky?"]
+  }
+}
