@@ -12,6 +12,53 @@ public sealed class LumenInteractionVerification : MonoBehaviour
     [Serializable] public sealed class Report { public List<string> checks=new List<string>(); public List<string> errors=new List<string>(); }
     private readonly Report report=new Report();
     private void Check(bool passed,string message) { report.checks.Add((passed?"PASS ":"FAIL ")+message);if(!passed)report.errors.Add(message); }
+    private IEnumerator CheckObjectReply(ChatUIManager chat, ObjectMetadata person)
+    {
+        var camera=Camera.main;
+        var target=GameObject.CreatePrimitive(PrimitiveType.Cube);
+        target.transform.position=new Vector3(0,1000,0);
+        var metadata=target.AddComponent<ObjectMetadata>();
+        metadata.displayName="Verification cube";metadata.description="A cube with six square faces.";metadata.category="Object";
+        var position=camera.transform.position;var rotation=camera.transform.rotation;
+        GeminiLiveConversation.Instance.SelectPartner(person);
+        camera.transform.position=target.transform.position+Vector3.back*2;camera.transform.LookAt(target.transform);
+        Physics.SyncTransforms();
+        ChatResponse reply=null;Action<ChatResponse> received=r=>reply=r;chat.ResponseReceived+=received;
+        chat.SubmitWorldPrompt("Explain how this shape could be used in a building.");
+        float until=Time.realtimeSinceStartup+15;
+        while(reply==null&&Time.realtimeSinceStartup<until)yield return null;
+        chat.ResponseReceived-=received;
+        var transcript=(TMPro.TMP_Text)typeof(ChatUIManager).GetField("tmpChatOutput",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(chat);
+        Check(reply!=null&&(reply.response_source=="ollama"||reply.response_source=="local-reference")&&reply.spoken_stream&&
+            transcript.text.Contains(reply.speaker_name+": "+reply.response),
+            "Streamed object answer belongs to guide while another person remains selected"+
+            " (source="+(reply!=null?reply.response_source:"no reply")+
+            ", streamed="+(reply!=null&&reply.spoken_stream)+")");
+        camera.transform.SetPositionAndRotation(position,rotation);Destroy(target);
+        GeminiLiveConversation.Instance.SelectPartner(null);
+
+        // A failed streaming request must not reuse its transcript slot next turn.
+        var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+        var show=typeof(ChatUIManager).GetMethod("ShowStreamingText",flags);
+        show.Invoke(chat,new object[]{"Preserved partial reply"});
+        typeof(ChatUIManager).GetMethod("HandleChatError",flags).Invoke(chat,new object[]{"Verification interruption"});
+        show.Invoke(chat,new object[]{"Separate next reply"});
+        Check(transcript.text.Contains("Preserved partial reply")&&transcript.text.Contains("Separate next reply"),
+            "Next streamed reply preserves a failed turn's partial transcript");
+        chat.InterruptLocalReply();
+
+        var guide=FindAnyObjectByType<ScenarioCharacterIdentity>();
+        string originalStyle=CharacterWardrobe.Styles.First(style=>CharacterWardrobe.Label(style)==guide.DisplayName);
+        string alternativeStyle=CharacterWardrobe.Styles.First(style=>CharacterWardrobe.Label(style)!=guide.DisplayName);
+        guide.ApplyAppearance(alternativeStyle);
+        ChatResponse namedReply=null;string namedError="";
+        var client=FindAnyObjectByType<AIClient>();
+        yield return client.SendChatMessage("Who are you?","museum",guide.DisplayName,guide.Role,
+            result=>namedReply=result,error=>namedError=error);
+        Check(namedReply!=null&&namedError==""&&namedReply.speaker_id==guide.ConversationId&&namedReply.speaker_name==guide.DisplayName,
+            "Addressing the selected guide by name preserves its switched identity");
+        guide.ApplyAppearance(originalStyle);
+    }
     public static void Begin() { var go=new GameObject("Interaction regression checks");DontDestroyOnLoad(go);go.AddComponent<LumenInteractionVerification>().StartCoroutine(go.GetComponent<LumenInteractionVerification>().Run()); }
     private IEnumerator Run()
     {
@@ -54,6 +101,8 @@ public sealed class LumenInteractionVerification : MonoBehaviour
                 chat.ResponseReceived-=received;
                 GeminiLiveConversation.Instance.SelectPartner(null);
             }
+            if(world=="museum"&&chat!=null&&camera!=null&&people.Length>0)
+                yield return CheckObjectReply(chat,people[0]);
         }
         LumenPreferences.SetInt("Lumen.VisualAids",1);
         var client=FindAnyObjectByType<AIClient>();
@@ -84,6 +133,7 @@ public sealed class LumenInteractionVerification : MonoBehaviour
             Check(arrivalImages.HasImage&&arrivalImages.Topic.ToLowerInvariant().Contains("atom"),"Question image survives automatic world travel");
         }
         var path=Path.Combine(Application.dataPath,"../Builds/InteractionVerification.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path,JsonUtility.ToJson(report,true));
         LumenPreferences.SetInt("Lumen.VisualAids",previousVisuals);
 #if UNITY_EDITOR

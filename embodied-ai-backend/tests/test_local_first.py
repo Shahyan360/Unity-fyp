@@ -16,7 +16,9 @@ def test_hybrid_uses_local_text_and_gemini_voice(monkeypatch):
     config = create_app({"TESTING": True}).test_client().get("/conversation/config").get_json()
     assert config["provider"] == "hybrid"
     assert config["answer_engine"] == "ollama"
-    assert config["voice_engine"] == "gemini-live"
+    assert config["voice_engine"] == "gemini-tts"
+    assert config["recognition_engine"] == "faster-whisper"
+    assert config["cloud_answers"] is False
 
 
 def test_lobby_aliases_are_explicit_navigation():

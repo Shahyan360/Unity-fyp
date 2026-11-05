@@ -314,7 +314,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         if (services == null) services = new GameObject("HomeBackendClient");
         if (services.GetComponent<AppConfig>() == null) services.AddComponent<AppConfig>();
         if (services.GetComponent<AIClient>() == null) services.AddComponent<AIClient>();
-        if (services.GetComponent<SpeechOutputController>() == null) services.AddComponent<SpeechOutputController>();
+        if (FindAnyObjectByType<SpeechOutputController>() == null) services.AddComponent<SpeechOutputController>();
         if (services.GetComponent<AgentResponseHandler>() == null) services.AddComponent<AgentResponseHandler>();
         if (services.GetComponent<SpeechInputController>() == null) services.AddComponent<SpeechInputController>();
     }

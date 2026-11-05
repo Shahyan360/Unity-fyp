@@ -1,4 +1,4 @@
-"""Resident local neural voice. One bounded synthesis at a time."""
+"""Configured speech: resident local voice or bounded Gemini TTS requests."""
 import json
 import atexit
 import os
@@ -6,6 +6,8 @@ import queue
 import subprocess
 import threading
 import uuid
+import wave
+import requests
 from pathlib import Path
 
 from flask import jsonify, request, Response
@@ -16,8 +18,21 @@ def register_neural_voice(app):
     executable = root / "piper" / "piper.exe"
     model = root / "voices" / "en_GB-vctk-medium.onnx"
     output = Path(__file__).resolve().parent / "runtime" / ("neural-speech-" + uuid.uuid4().hex + ".wav")
-    speakers = json.loads(Path(str(model) + ".json").read_text(encoding="utf-8"))["speaker_id_map"] if Path(str(model)+".json").is_file() else {}
+    # Voice files are optional, and an interrupted installation must not stop chat.
+    speakers = {}
+    try:
+        config = json.loads(Path(str(model) + ".json").read_text(encoding="utf-8"))
+        mapping = config.get("speaker_id_map") if isinstance(config, dict) else None
+        if isinstance(mapping, dict) and mapping and all(
+            isinstance(label, str) and type(number) is int and number >= 0
+            for label, number in mapping.items()
+        ):
+            speakers = mapping
+    except (OSError, ValueError):
+        pass
     lock = threading.Lock()
+    # Allow a new turn while a cancelled client's cloud request finishes.
+    cloud_slots = threading.BoundedSemaphore(2)
     state = {"process": None, "reader": None, "ready": False}
     completed = queue.Queue(maxsize=4)
 
@@ -53,7 +68,7 @@ def register_neural_voice(app):
         return output.read_bytes()
 
     def warm():
-        if not executable.is_file() or not model.is_file():
+        if not speakers or not executable.is_file() or not model.is_file():
             return
         with lock:
             try:
@@ -73,6 +88,9 @@ def register_neural_voice(app):
 
     @app.get("/speech/config")
     def config():
+        if app.config.get("CONVERSATION_PROVIDER") == "hybrid":
+            from gemini_speech import api_key, model_name
+            return jsonify(engine="gemini-tts", ready=bool(api_key()), model=model_name())
         return jsonify(engine="piper", ready=state["ready"])
 
     @app.post("/speech/synthesize")
@@ -81,10 +99,24 @@ def register_neural_voice(app):
         text = payload.get("text") if isinstance(payload, dict) else None
         if not isinstance(text, str) or not text.strip() or len(text) > 2000:
             return jsonify(error="Supply 1 to 2000 text characters."), 400
+        if app.config.get("CONVERSATION_PROVIDER") == "hybrid":
+            if not cloud_slots.acquire(blocking=False):
+                return jsonify(error="Speech synthesis is busy."), 503
+            try:
+                from gemini_speech import synthesize as cloud_synthesize
+                audio = cloud_synthesize(text, str(payload.get("speaker_id", ""))[:80],
+                    str(payload.get("object_name", ""))[:100], str(payload.get("voice_name", ""))[:40])
+                return Response(audio, mimetype="audio/wav", headers={"X-Lumen-Speech-Engine": "gemini-tts"})
+            except (requests.RequestException, ValueError, KeyError, TypeError, wave.Error, EOFError):
+                # Provider exception messages can contain request URLs or keys.
+                return jsonify(error="Gemini speech is unavailable. The local answer is still available."), 503
+            finally:
+                cloud_slots.release()
         if not state["ready"] or not lock.acquire(blocking=False):
             return jsonify(error="Neural voice is warming or busy."), 503
         try:
-            return Response(synthesize(text, str(payload.get("speaker", "p226"))), mimetype="audio/wav")
+            return Response(synthesize(text, str(payload.get("speaker", "p226"))), mimetype="audio/wav",
+                            headers={"X-Lumen-Speech-Engine": "piper"})
         except (OSError, queue.Empty, subprocess.SubprocessError):
             stop()
             threading.Thread(target=warm, daemon=True).start()
@@ -93,5 +125,5 @@ def register_neural_voice(app):
             lock.release()
 
     atexit.register(stop)
-    if not app.config.get("TESTING"):
+    if not app.config.get("TESTING") and app.config.get("CONVERSATION_PROVIDER") != "hybrid":
         threading.Thread(target=warm, daemon=True).start()

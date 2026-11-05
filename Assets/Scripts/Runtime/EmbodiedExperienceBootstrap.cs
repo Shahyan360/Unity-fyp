@@ -27,7 +27,7 @@ public static class EmbodiedExperienceBootstrap
                 assistant.AddComponent<AgentCompanionController>();
             }
 
-            if (assistant.GetComponent<SpeechOutputController>() == null)
+            if (Object.FindAnyObjectByType<SpeechOutputController>() == null)
             {
                 assistant.AddComponent<SpeechOutputController>();
             }

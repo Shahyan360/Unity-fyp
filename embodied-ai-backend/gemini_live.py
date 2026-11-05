@@ -146,9 +146,12 @@ def register_live(app):
         origin = request.headers.get("Origin", "")
         if not allowed_origin(origin):
             ws.close(); return
-        key = api_key()
         def send(event, **values):
             ws.send(json.dumps({"event": event, **values}, ensure_ascii=False))
+        if app.config.get("CONVERSATION_PROVIDER") != "gemini":
+            send("error", text="Live answer generation is disabled in this mode. Use local chat and the speech endpoint.")
+            return
+        key = api_key()
         if not key:
             send("error", text="Save GEMINI_API_KEY in Windows user environment variables.")
             return

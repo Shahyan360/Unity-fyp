@@ -15,11 +15,13 @@ too many mistakes. The selected model still has small-model quality limits.
 
 Calling Gemini and a local model in parallel does not make local inference faster.
 Showing Gemini's answer first would make the cloud model the real answer engine.
-The default therefore makes no Gemini answer requests. The later voice demo
-selects `LUMEN_CONVERSATION_PROVIDER=hybrid` explicitly. Gemini Live recognizes
-microphone input and voices that conversation, Ollama generates typed answers,
-and Unity executes actions. The `gemini` comparison mode also uses Live for typed
-input. Image retrieval remains a separate, attributed network capability.
+The default therefore makes no Gemini answer requests. As updated on 5 November,
+`LUMEN_CONVERSATION_PROVIDER=hybrid` uses local faster-whisper recognition and
+Ollama answers for both microphone and typed input, then sends only answer text
+to Gemini TTS for speech. Gemini Live is disabled in hybrid. The separate `gemini`
+mode retains Live answer generation. Image retrieval remains a separate,
+attributed network capability. Earlier Live voice measurements below describe
+the historical implementation, not the current hybrid pipeline.
 
 The project contributes character direction, bounded private history, explicit
 visitor preferences, local knowledge retrieval, grounded world state, action

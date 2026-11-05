@@ -105,11 +105,11 @@ public sealed class GeminiLiveConversation:MonoBehaviour
                     {
                         ConversationConfig config=null;try{config=JsonUtility.FromJson<ConversationConfig>(policy.downloadHandler.text);}catch(Exception){}
                         VoiceOnly = config?.provider == "hybrid";
-                        cloudRequested=config!=null&&(config.provider=="gemini"||VoiceOnly);
-                        localConnected=config!=null&&config.provider=="local";
+                        cloudRequested=config!=null&&config.provider=="gemini";
+                        localConnected=config!=null&&(config.provider=="local"||VoiceOnly);
                     }
                 }
-                if(!cloudRequested){if(Selected)Disconnect();Selected=false;State=localConnected?"Local assistant connected":"Assistant unavailable";}
+                if(!cloudRequested){if(Selected)Disconnect();Selected=false;State=localConnected?(VoiceOnly?"Local answers / Gemini speech":"Local assistant connected"):"Assistant unavailable";}
                 else if(!Selected)using(var request=UnityWebRequest.Get(backend+"/live/status"))
                 {
                     request.timeout=4;yield return request.SendWebRequest();

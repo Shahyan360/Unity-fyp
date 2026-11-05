@@ -81,6 +81,20 @@ def copy_runtime(destination, offline_speech=False):
     return sorted(records, key=lambda r: r['name'])
 
 
+def copy_backend(destination):
+    """Stage the service and its grounding data without local caches or secrets."""
+    backend = destination / 'embodied-ai-backend'
+    backend.mkdir()
+    for name in ('app.py', 'coaching_state.py', 'gemini_live.py', 'live_images.py',
+                 'neural_voice.py', 'gemini_speech.py', 'personas.py', 'run_local.py', 'speech_service.py'):
+        shutil.copy2(PROJECT / 'embodied-ai-backend' / name, backend / name)
+    (backend / 'data').mkdir()
+    shutil.copy2(PROJECT / 'Assets/Resources/LumenCharacterIdentities.json', backend / 'data/characters.json')
+    shutil.copytree(PROJECT / 'embodied-ai-backend/data/knowledge', backend / 'data/knowledge',
+                    ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    return backend
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build', type=Path, required=True)
@@ -106,14 +120,7 @@ def main():
         else:
             shutil.copy2(item, dest / item.name)
     records = copy_runtime(dest, bool(args.stt_model))
-    backend = dest / 'embodied-ai-backend'
-    backend.mkdir()
-    for name in ('app.py', 'coaching_state.py', 'gemini_live.py', 'live_images.py',
-                 'personas.py', 'run_local.py', 'speech_service.py'):
-        source = PROJECT / 'embodied-ai-backend' / name
-        shutil.copy2(source, backend / source.name)
-    (backend / 'data').mkdir()
-    shutil.copy2(PROJECT / 'Assets/Resources/LumenCharacterIdentities.json', backend / 'data/characters.json')
+    backend = copy_backend(dest)
     if args.stt_model:
         shutil.copytree(args.stt_model, backend / 'runtime/models/base.en',
                         ignore=shutil.ignore_patterns('.cache', '__pycache__', '*.pyc'))

@@ -643,7 +643,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         cloud = app.config["CONVERSATION_PROVIDER"] == "gemini"
         return jsonify(provider=app.config["CONVERSATION_PROVIDER"], model=app.config["OLLAMA_MODEL"],
                        answer_engine="gemini" if cloud else "ollama", cloud_answers=cloud,
-                       voice_engine="gemini-live" if cloud or app.config["CONVERSATION_PROVIDER"] == "hybrid" else "local")
+                       voice_engine="gemini-live" if cloud else "gemini-tts" if app.config["CONVERSATION_PROVIDER"] == "hybrid" else "local",
+                       recognition_engine="gemini-live" if cloud else "faster-whisper")
 
     @app.get("/voice/health")
     def voice_health():

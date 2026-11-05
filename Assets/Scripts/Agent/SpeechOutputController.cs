@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 
-/// <summary>Offline Windows text-to-speech with visible live captions.</summary>
+/// <summary>Speaks application replies through configured TTS, with local Windows fallback.</summary>
 public sealed class SpeechOutputController : MonoBehaviour
 {
     [SerializeField] private TMP_Text liveCaption;
@@ -22,6 +22,7 @@ public sealed class SpeechOutputController : MonoBehaviour
     private System.Diagnostics.Process synthesisProcess;
     private AgentAnimator activeCharacter;
     private AudioClip activeClip;
+    private UnityWebRequest synthesisRequest;
     private struct QueuedSpeech {public string text,voice,label;public AgentAnimator character;public int rate;public float pitch;}
     private readonly System.Collections.Generic.Queue<QueuedSpeech> queue=new System.Collections.Generic.Queue<QueuedSpeech>();
     private Coroutine queueRoutine;
@@ -56,13 +57,16 @@ public sealed class SpeechOutputController : MonoBehaviour
             var item=queue.Dequeue();activeCharacter=item.character;speaker.pitch=item.pitch;
             if(liveCaption!=null)liveCaption.text=item.label.ToUpperInvariant()+"  /  SPEAKING";
             clearAt=Time.unscaledTime+captionSeconds;
-            yield return SynthesizeAndPlay(item.text,item.voice,item.rate);
+            yield return SynthesizeAndPlay(item.text,item.voice,item.rate,item.label);
         }
         queueRoutine=null;
     }
 #endif
     public bool IsSpeaking => speaker != null && speaker.isPlaying;
     public string PlaybackStage { get; private set; } = "Idle";
+    public string LastSpeechEngine { get; private set; } = "";
+    public string ConfiguredSpeechEngine { get; private set; } = "";
+    public bool IsSpeechPending => speechRoutine != null || queueRoutine != null;
     public void SetVoiceMuted(bool muted)
     {
         if (speaker != null) speaker.mute = muted;
@@ -121,14 +125,15 @@ public sealed class SpeechOutputController : MonoBehaviour
         StopCurrentSpeech();
         activeCharacter = character;
         speaker.pitch = Mathf.Clamp(pitch, 0.9f, 1.1f);
-        speechRoutine = StartCoroutine(SynthesizeAndPlay(text, voiceName, Mathf.Clamp(rate, -5, 5)));
+        speechRoutine = StartCoroutine(SynthesizeAndPlay(text, voiceName, Mathf.Clamp(rate, -5, 5), speakerLabel));
 #endif
     }
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-    [Serializable] private sealed class NeuralVoiceConfig { public bool ready; }
-    [Serializable] private sealed class NeuralVoiceRequest { public string text, speaker; }
+    [Serializable] private sealed class NeuralVoiceConfig { public bool ready; public string engine; }
+    [Serializable] private sealed class NeuralVoiceRequest { public string text, speaker, speaker_id, object_name, voice_name; }
     private bool neuralReady;
+    private string speechEngine="piper";
     private IEnumerator Start()
     {
         var client=GetComponent<AIClient>();
@@ -145,12 +150,13 @@ public sealed class SpeechOutputController : MonoBehaviour
                     NeuralVoiceConfig config=null;
                     try { config=JsonUtility.FromJson<NeuralVoiceConfig>(request.downloadHandler.text); } catch(Exception) {}
                     neuralReady=config!=null&&config.ready;
+                    if(config!=null)speechEngine=ConfiguredSpeechEngine=config.engine??"piper";
                 }
             }
             yield return new WaitForSecondsRealtime(10);
         }
     }
-    private IEnumerator SynthesizeAndPlay(string text, string voiceName, int rate)
+    private IEnumerator SynthesizeAndPlay(string text, string voiceName, int rate, string speakerLabel)
     {
         if(neuralReady)
         {
@@ -161,26 +167,33 @@ public sealed class SpeechOutputController : MonoBehaviour
             using(var request=UnityWebRequestMultimedia.GetAudioClip(url,AudioType.WAV))
             {
                 request.method="POST";
-                request.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(new NeuralVoiceRequest{text=text,speaker=voice})));
+                request.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(new NeuralVoiceRequest{
+                    text=text,speaker=voice,speaker_id=identity!=null?identity.ConversationId:"",
+                    object_name=identity==null?speakerLabel:"",voice_name=identity!=null?identity.CloudVoiceName:""})));
                 request.SetRequestHeader("Content-Type","application/json");
-                request.timeout=12;
-                PlaybackStage="Local neural synthesis";
+                request.timeout=speechEngine=="gemini-tts"?40:12;
+                synthesisRequest=request;
+                PlaybackStage=speechEngine=="gemini-tts"?"Gemini speech synthesis":"Local neural synthesis";
                 yield return request.SendWebRequest();
+                synthesisRequest=null;
                 if(request.result==UnityWebRequest.Result.Success)
                 {
                     activeClip=DownloadHandlerAudioClip.GetContent(request);
                     speaker.clip=activeClip;speaker.pitch=1f;speaker.Play();
                     if(activeCharacter!=null)activeCharacter.BeginSpeech(speaker);
-                    PlaybackStage="Playing local neural voice";
+                    LastSpeechEngine=request.GetResponseHeader("X-Lumen-Speech-Engine")??"piper";
+                    PlaybackStage=LastSpeechEngine=="gemini-tts"?"Playing Gemini voice":"Playing local neural voice";
                     while(speaker.isPlaying)yield return null;
                     if(activeCharacter!=null)activeCharacter.EndSpeech();
-                    speaker.clip=null;Destroy(activeClip);activeClip=null;
+                    speaker.clip=null;Destroy(activeClip);activeClip=null;activeCharacter=null;speechRoutine=null;
                     yield break;
                 }
+                if(speechEngine=="gemini-tts")Debug.LogWarning("Gemini speech is unavailable; using the local voice for this answer.");
             }
         }
 
         PlaybackStage = "Starting local synthesis";
+        LastSpeechEngine = "windows";
         activeWavePath = Path.Combine(Path.GetTempPath(), "LumenSpeech-" + Guid.NewGuid().ToString("N") + ".wav");
         string textBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
         string pathBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(activeWavePath));
@@ -283,6 +296,11 @@ public sealed class SpeechOutputController : MonoBehaviour
 
     private void StopCurrentSpeech()
     {
+        if(synthesisRequest!=null)
+        {
+            var pending=synthesisRequest;synthesisRequest=null;
+            try{pending.Abort();}catch(ObjectDisposedException){}
+        }
         if (speaker != null) speaker.Stop();
         if (activeCharacter != null) activeCharacter.EndSpeech();
         activeCharacter = null;

@@ -104,7 +104,7 @@ public class AIClient : MonoBehaviour
         if(worldContext.Length>650)worldContext=worldContext.Substring(0,650);
         var body=new ChatRequest{query=query,scenario=scenario,object_name=objectName,object_description=objectDescription,
             object_category=live!=null&&live.Partner!=null&&live.Partner.GetDisplayName()==objectName?"Person":target!=null&&target.GetDisplayName()==objectName?target.category:"",
-            session_id=SessionId,speaker_id=string.IsNullOrWhiteSpace(objectName)&&identity!=null?identity.ConversationId:"",
+            session_id=SessionId,speaker_id=identity!=null&&(string.IsNullOrWhiteSpace(objectName)||objectName==identity.DisplayName)?identity.ConversationId:"",
             interrupted_response=interrupted,world_context=memoryContext+" "+worldContext,coaching_active=FindAnyObjectByType<SocialCoachingController>()?.IsActive??false};interrupted="";
         using(var request=new UnityWebRequest(BackendUrl+"/chat/stream","POST"))
         {
@@ -122,7 +122,9 @@ public class AIClient : MonoBehaviour
                     try{packet=JsonUtility.FromJson<Packet>(line);}catch(Exception e){error="Could not read the local reply: "+e.Message;}
                     if(packet==null)continue;
                     if(packet.@event=="delta"){partial+=packet.text;onPartial?.Invoke(partial);}
-                    else if(packet.@event=="sentence"&&onSentence!=null){onSentence(packet.text);spoken=true;}
+                    // Hybrid sends one complete, locally authored answer to Gemini TTS.
+                    // Text still streams immediately; local speech keeps sentence playback.
+                    else if(packet.@event=="sentence"&&onSentence!=null&&(live==null||!live.VoiceOnly)){onSentence(packet.text);spoken=true;}
                     else if(packet.@event=="done")final=packet.result;
                     else if(packet.@event=="error")error=packet.text;
                 }

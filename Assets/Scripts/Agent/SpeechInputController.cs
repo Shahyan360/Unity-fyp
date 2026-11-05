@@ -134,7 +134,7 @@ public sealed class SpeechInputController:MonoBehaviour
         float energy=0;foreach(float value in samples)energy+=value*value;
         InputLevel=Mathf.Sqrt(energy/samples.Length);
         var live=GeminiLiveConversation.Instance;
-        if(live!=null&&live.Selected&&live.Ready&&!voiced)
+        if(live!=null&&live.Selected&&!live.VoiceOnly&&live.Ready&&!voiced)
         {
             if(forced&&!held)
             {

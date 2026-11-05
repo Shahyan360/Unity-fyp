@@ -34,7 +34,7 @@ def main():
                 if packet['event'] == 'delta' and first is None: first = time.perf_counter()-started
                 if packet['event'] == 'sentence' and sentence is None: sentence = time.perf_counter()-started
                 if packet['event'] == 'done': final = packet['result']
-        assert final and final['response_source'] in {'ollama', 'local-memory'}, final
+        assert final and final['response_source'] in {'ollama', 'local-memory', 'local-reference'}, final
         session = final['session_id']
         row = dict(query=query, first_token_s=first, first_sentence_s=sentence, total_s=time.perf_counter()-started,
                    answer=final['response'], source=final['response_source'], model=final.get('model','state lookup'))

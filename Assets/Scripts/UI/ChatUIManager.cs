@@ -329,7 +329,7 @@ public class ChatUIManager : MonoBehaviour
 
     private void HandleChatSuccess(ChatResponse response)
     {
-        if(response.spoken_stream)pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;
+        if(response.response_source=="gemini-live")pendingResponseSpeaker=GeminiLiveConversation.Instance?.Partner;
         if(streamingLine>=0&&streamingLine<chatLines.Count)chatLines.RemoveAt(streamingLine);streamingLine=-1;
         SetLoadingState(false);
         string speakerName = pendingResponseSpeaker != null && pendingResponseSpeaker.category == "Person"
@@ -353,6 +353,8 @@ public class ChatUIManager : MonoBehaviour
 
     private void HandleChatError(string errorMessage)
     {
+        // Keep any partial reply, but ensure the next turn gets its own line.
+        streamingLine = -1;
         pendingResponseSpeaker = null;
         explicitResponseSpeaker = null;
         SetLoadingState(false);

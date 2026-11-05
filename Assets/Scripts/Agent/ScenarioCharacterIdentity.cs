@@ -21,6 +21,7 @@ public sealed class ScenarioCharacterIdentity : MonoBehaviour
     public int SpeechRate => speechRate;
     public float VoicePitch => voicePitch;
     public string NeuralSpeakerLabel=>definition?.neuralVoice??(voiceName.Contains("Zira")?"p229":"p226");
+    public string CloudVoiceName=>definition?.cloudVoice??"Puck";
 
     public static ScenarioCharacterIdentity InstallOnGuide(GameObject guide, string scenario)
     {

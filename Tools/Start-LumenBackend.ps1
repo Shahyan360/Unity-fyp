@@ -26,7 +26,7 @@ if ($CheckOnly) {
     }
     return
 }
-if ($env:LUMEN_CONVERSATION_PROVIDER -eq 'gemini' -and -not ($env:GEMINI_API_KEY -or $env:GOOGLE_API_KEY)) {
+if ($env:LUMEN_CONVERSATION_PROVIDER -in @('gemini','hybrid') -and -not ($env:GEMINI_API_KEY -or $env:GOOGLE_API_KEY)) {
     throw 'Save GEMINI_API_KEY in your Windows user environment before starting. Never put it in Unity or source files.'
 }
 if (Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue) {

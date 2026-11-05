@@ -21,14 +21,26 @@ only `requirements.txt` does not install everything needed to start this service
 If `.venv/Scripts/python.exe` already exists, use it directly; Python does not
 need reinstalling just because the Windows Python launcher cannot find it.
 
-## Optional Gemini Live voice
+## Optional Gemini speech
 
-Set `LUMEN_CONVERSATION_PROVIDER=hybrid` for native Gemini microphone
-conversations and distinct guide voices. Typed answers still go to local Ollama.
-Gemini handles the spoken exchange while Unity executes world actions and
-displays images. If Live cannot connect, voice input uses local faster-whisper.
-The default `local` mode keeps speech and text local. The existing `gemini`
-mode also routes typed conversation through Live.
+Set `LUMEN_CONVERSATION_PROVIDER=hybrid` for **local LLM answers with Gemini voices**.
+Both typed questions and microphone transcripts go to local Ollama. Microphone
+recognition uses local faster-whisper. Gemini's dedicated TTS endpoint receives
+only the generated reply text and the chosen character voice; it does not receive
+the question/history or generate the answer. Text still streams into chat, and
+each completed answer is synthesized in one speech request. No Gemini Live session opens in hybrid.
+If cloud synthesis is unavailable, Unity keeps the local answer and uses a Windows voice.
+
+The TTS model defaults to `gemini-3.8-flash-tts`; override it with
+`LUMEN_GEMINI_TTS_MODEL` if needed. `/conversation/config` reports
+`answer_engine=ollama`, `voice_engine=gemini-tts`, `recognition_engine=faster-whisper`,
+and `cloud_answers=false`. `/speech/config` reports speech configuration.
+Gemini speech requires internet and the saved API key.
+To start it without setting shell variables, double-click `Start-Lumen-Hybrid.cmd`
+in the repository root and leave that backend window open.
+
+The default `local` mode keeps speech and text local. The separate `gemini`
+mode retains Gemini Live for both typed and microphone conversations.
 
 Create a key in [Google AI Studio](https://aistudio.google.com/apikey).
 Use PowerShell to save it without displaying it or recording its value in history:
@@ -78,8 +90,8 @@ Override the selected model with `OLLAMA_MODEL`; install it using `ollama pull`.
 The launcher warms the selected model on a separate CUDA 12 Ollama server at
 127.0.0.1:11435 on this machine. Original Ollama on 11434 is preserved.
 
-Gemini microphone audio is sent through the live connection. The separate
-local `/transcribe` feature needs a faster-whisper model in
+In `gemini` mode microphone audio is sent through the live connection. In `local`
+and `hybrid`, the local `/transcribe` feature needs a faster-whisper model in
 `embodied-ai-backend/runtime/models/base.en`, or a directory selected by
 `LUMEN_STT_MODEL`. These model files are not included in this checkout.
 Optional Piper files belong in `Runtime/Piper`, or `LUMEN_PIPER_HOME`;

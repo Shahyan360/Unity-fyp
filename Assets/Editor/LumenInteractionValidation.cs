@@ -10,6 +10,11 @@ public static class LumenInteractionValidation
         EditorSceneManager.OpenScene("Assets/Scenes/HomeScene.unity");
         EditorApplication.isPlaying=true;
     }
+    public static void RunHybrid()
+    {
+        EditorSceneManager.OpenScene("Assets/Scenes/HomeScene.unity");
+        EditorApplication.isPlaying=true;
+    }
     private static void Changed(PlayModeStateChange state)
     {
         if(state==PlayModeStateChange.EnteredPlayMode&&SessionState.GetBool("Lumen.InteractionValidation",false))
