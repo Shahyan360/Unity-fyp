@@ -300,6 +300,7 @@ public sealed class WorldExperienceDirector : MonoBehaviour
         topBar.gameObject.SetActive(false);
         WorldVisitControls.Install(canvas,"HomeScene");
         CharacterSelectionControl.Install(canvas,"HomeScene");
+        LumenFrontPage.Install();
     }
 
     private static void SubmitHomeMessage(HomeUIManager home)
