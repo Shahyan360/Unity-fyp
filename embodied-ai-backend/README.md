@@ -95,3 +95,10 @@ From the repository root:
 
 Tests use local fixtures. Passing tests alone do not verify a real Gemini key,
 microphone permission, Unity compilation, or visual behavior.
+
+
+## Consistent local neural speech
+
+Run `powershell -NoProfile -ExecutionPolicy Bypass -File ./Tools/Install-LumenNeuralVoice.ps1 -IncludeRecognition` from the repository root once, then restart the backend. It keeps Piper loaded and exposes `/speech/config` and `/speech/synthesize`. Typed and microphone questions use the same character voice. Models and runtime files stay outside Git. The model card is downloaded alongside the voice.
+
+The microphone starts off. Press M or click its control for a 12-second listening window, or hold V to speak. The visible countdown bounds the capture. This requires deliberate activation instead of attempting to infer who background speech addresses. The optional `-IncludeRecognition` switch also installs the local English recognition model.

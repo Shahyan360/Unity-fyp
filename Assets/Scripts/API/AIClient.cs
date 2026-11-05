@@ -93,14 +93,17 @@ public class AIClient : MonoBehaviour
         {onSuccess?.Invoke(new ChatResponse{response=acknowledgement,action="idle",emotion="friendly",scenario=scenario,response_source="local-action"});yield break;}
         if(live!=null&&live.Images!=null)
         {
-            live.Images.BeginQuestion(query,false);
-            if(ConversationImagePanel.RequestsVisual(query))live.Images.RequestImage(query,BackendUrl);
+            live.Images.BeginQuestion(!string.IsNullOrWhiteSpace(objectName) && System.Text.RegularExpressions.Regex.IsMatch(query,@"(?i)\b(this|that|looking at)\b") ? "What is " + objectName : query,true);
+            live.Images.CompleteAnswer("",BackendUrl);
         }
         string memoryContext=VisitorConversationMemory.Context(string.IsNullOrWhiteSpace(objectName)?identity?.ConversationId??"kai":objectName);
-        string worldContext=WorldStateContext.Snapshot();
+        var gaze=FindAnyObjectByType<ObjectRaycaster>();
+        var target=gaze!=null?gaze.RefreshTarget():null;
+        string worldContext=(target!=null?"Looking at: "+target.ToAIContext()+". ":"")+WorldStateContext.Snapshot();
         if(memoryContext.Length>800)memoryContext=memoryContext.Substring(0,800);
         if(worldContext.Length>650)worldContext=worldContext.Substring(0,650);
         var body=new ChatRequest{query=query,scenario=scenario,object_name=objectName,object_description=objectDescription,
+            object_category=live!=null&&live.Partner!=null&&live.Partner.GetDisplayName()==objectName?"Person":target!=null&&target.GetDisplayName()==objectName?target.category:"",
             session_id=SessionId,speaker_id=string.IsNullOrWhiteSpace(objectName)&&identity!=null?identity.ConversationId:"",
             interrupted_response=interrupted,world_context=memoryContext+" "+worldContext,coaching_active=FindAnyObjectByType<SocialCoachingController>()?.IsActive??false};interrupted="";
         using(var request=new UnityWebRequest(BackendUrl+"/chat/stream","POST"))
@@ -129,6 +132,7 @@ public class AIClient : MonoBehaviour
             activeRequest=null;
             if(final!=null&&!string.IsNullOrWhiteSpace(final.response))
             {
+                live?.Images?.CompleteAnswer(final.response,BackendUrl);
                 final.spoken_stream=spoken;
                 if(!string.IsNullOrWhiteSpace(final.session_id))SessionId=sharedSessionId=final.session_id;
                 VisitorConversationMemory.Record(!string.IsNullOrWhiteSpace(objectName)?objectName:identity!=null?identity.ConversationId:"kai",query,final.response);FindAnyObjectByType<SocialCoachingController>()?.CompleteTurn(query,System.Guid.NewGuid().ToString("N"));partial="";onSuccess?.Invoke(final);

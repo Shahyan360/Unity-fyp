@@ -263,7 +263,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
                 !System.Text.RegularExpressions.Regex.IsMatch(heard, @"(?i)\b(?:3d|three.dimension(?:al)?|interactive model)\b") &&
                 System.Text.RegularExpressions.Regex.IsMatch(heard, @"(?i)\b(?:eiffel|ifel|eyeful)\s+tow(?:er|el)\b"))
             {
-                Images.BeginQuestion(e.text, false);
+                Images.BeginQuestion(e.text, true);
                 Images.RequestImage("Eiffel Tower", backend);
             }
             return;
@@ -288,7 +288,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
             }
             turnActive=true;awaitingTypedOutput=false;LastHeard=e.text;currentQuestion=e.text;VisitorConversationMemory.ObservePreference(e.text);State="Assistant processing";if(!receivingVoiceQuestion){activeTurnId=Guid.NewGuid().ToString("N");SendWorldContext();}
             if(completed!=null){error?.Invoke("Reply interrupted; listening to you.");ClearCallbacks();ResetTranscriptTurn();}
-            if(!receivingVoiceQuestion){receivingVoiceQuestion=true;Images.BeginQuestion(e.text,scenario!="cafe");}
+            if(!receivingVoiceQuestion){receivingVoiceQuestion=true;Images.BeginQuestion(e.text,true);}
             Images.UpdateQuestion(e.text);
             ApplyInputEmotion(e.text);
             if(completed==null){var chat=FindAnyObjectByType<ChatUIManager>();if(chat!=null)chat.ShowLiveInput(e.text);else FindAnyObjectByType<HomeUIManager>()?.ShowLiveInput(e.text);}
@@ -386,7 +386,7 @@ public sealed class GeminiLiveConversation:MonoBehaviour
     }
     private bool SendReadyText(string text,Action<ChatResponse> onDone,Action<string> onPartial,Action<string> onError)
     {
-        if(!Ready)return false;ClearCallbacks();StopPlayback();activeTurnId=Guid.NewGuid().ToString("N");currentQuestion=text;VisitorConversationMemory.ObservePreference(text);SendWorldContext();receivingVoiceQuestion=false;Images.BeginQuestion(text,scenario!="cafe");ApplyInputEmotion(text);awaitingTypedOutput=true;completed=onDone;partial=onPartial;error=onError;sentAt=Time.realtimeSinceStartup;FirstAudioSeconds=-1;
+        if(!Ready)return false;ClearCallbacks();StopPlayback();activeTurnId=Guid.NewGuid().ToString("N");currentQuestion=text;VisitorConversationMemory.ObservePreference(text);SendWorldContext();receivingVoiceQuestion=false;Images.BeginQuestion(text,true);ApplyInputEmotion(text);awaitingTypedOutput=true;completed=onDone;partial=onPartial;error=onError;sentAt=Time.realtimeSinceStartup;FirstAudioSeconds=-1;
         Send(new Event{@event="text",text=text,turn_id=activeTurnId});State="Assistant processing";return true;
     }
     public void Reconnect(){Disconnect();Selected=false;ResetTranscriptTurn();failed=false;retryCount=0;retryAt=0;fingerprint="";State=LumenPreferences.GetInt("Lumen.Offline",0)!=0?"Offline / exhibit labels available":"Assistant reconnecting";}
@@ -409,7 +409,13 @@ public sealed class GeminiLiveConversation:MonoBehaviour
         // This is deliberate turn cancellation, not a claim that the provider supports timed phonemes.
         if(pending){Disconnect();failed=false;retryAt=0;State="Assistant reconnecting after stop";}
     }
-    private void SendWorldContext()=>Send(new Event{@event="world_context",text=WorldStateContext.Snapshot()+" "+VisitorConversationMemory.Context(speaker)+" "+(Partner==null?FindAnyObjectByType<SocialCoachingController>()?.ConversationContext:"Structured practice is paused while speaking to another person. Do not share other people's conversations.")});
+    private string GazeContext()
+    {
+        var gaze=FindAnyObjectByType<ObjectRaycaster>();
+        var target=gaze!=null?gaze.RefreshTarget():null;
+        return target!=null?"The visitor is looking at: "+target.ToAIContext():"";
+    }
+    private void SendWorldContext()=>Send(new Event{@event="world_context",text=WorldStateContext.Snapshot()+" "+GazeContext()+" "+VisitorConversationMemory.Context(speaker)+" "+(Partner==null?FindAnyObjectByType<SocialCoachingController>()?.ConversationContext:"Structured practice is paused while speaking to another person. Do not share other people's conversations.")});
     private void ScheduleRetry()
     {
         retryCount++;

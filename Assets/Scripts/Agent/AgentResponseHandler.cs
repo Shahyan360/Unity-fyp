@@ -124,18 +124,23 @@ public class AgentResponseHandler : MonoBehaviour
             speechOutput.SpeakAs(response.response, voice, caption, agentAnimator, identity != null ? identity.SpeechRate : 0, identity != null ? identity.VoicePitch : 1f);
         }
 
-        if (changingScene) ScenarioTransitionService.LoadScenario(response.next_scenario);
+        if (changingScene)
+        {
+            if(ScenarioRuntimeManager.NormalizeScenario(response.next_scenario)!=ScenarioRuntimeManager.NormalizeScenario(response.scenario))
+                GeminiLiveConversation.Instance?.Images?.CarryToNextScene();
+            ScenarioTransitionService.LoadScenario(response.next_scenario);
+        }
     }
 
     public void SpeakIncremental(string text,ObjectMetadata person=null)
     {
         var guide=FindAnyObjectByType<ScenarioCharacterIdentity>();
-        var actor=person!=null?person.GetComponentInParent<AgentAnimator>():guide!=null?guide.GetComponent<AgentAnimator>():null;
+        var actor=person!=null?(person.GetComponentInParent<AgentAnimator>()??person.GetComponentInChildren<AgentAnimator>()):guide!=null?guide.GetComponent<AgentAnimator>():null;
         if(speechOutput==null)speechOutput=FindAnyObjectByType<SpeechOutputController>();
         if(speechOutput==null)return;
         var identity=actor!=null?actor.GetComponent<ScenarioCharacterIdentity>():null;
         if(actor!=null){actor.ApplyEmotion("friendly");actor.GetComponent<AgentCompanionController>()?.AttendToVisitor(20);}
-        speechOutput.EnqueueAs(text,identity!=null?identity.VoiceName:"",identity!=null?identity.DisplayName:person!=null?person.GetDisplayName():"Kai",actor,
+        speechOutput.EnqueueAs(text,identity!=null?identity.VoiceName:person!=null?SelectPersonVoice(person):"",identity!=null?identity.DisplayName:person!=null?person.GetDisplayName():"Kai",actor,
             identity!=null?identity.SpeechRate:0,identity!=null?identity.VoicePitch:1);
     }
 

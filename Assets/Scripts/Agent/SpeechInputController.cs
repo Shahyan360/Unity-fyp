@@ -23,6 +23,8 @@ public sealed class SpeechInputController:MonoBehaviour
     [SerializeField] private float minimumLevel=.006f;
     private AudioClip microphone;private string device;
     private bool listening,voiced,held,recognizing;
+    private float listenUntil;
+    private const float ListeningSeconds = 12f;
     private int readAt,preAt,voicedFrames,bargeFrames;
     private float noise=.0015f,silence,micStarted,nextCheck;
     private int lastPosition=-1;private float lastCaptureAt;
@@ -40,7 +42,7 @@ public sealed class SpeechInputController:MonoBehaviour
     private void Awake()
     {
         if(Instance!=null&&Instance!=this){Destroy(this);return;}Instance=this;
-        listening=PlayerPrefs.GetInt("Lumen.VoiceEnabled",0)!=0;
+        listening=false;
         if(GetComponent<GeminiLiveConversation>()==null)gameObject.AddComponent<GeminiLiveConversation>();
     }
     private IEnumerator Start()
@@ -52,13 +54,14 @@ public sealed class SpeechInputController:MonoBehaviour
     public void ToggleListening(){SetListening(!listening);}
     public void SetListening(bool value)
     {
+        listenUntil=value?Time.unscaledTime+ListeningSeconds:0;
         listening=value;PlayerPrefs.SetInt("Lumen.VoiceEnabled",listening?1:0);PlayerPrefs.Save();
         if(listening)StartMicrophone();else{StopMicrophone();state="Microphone off";}
     }
     public void SelectMicrophone(string name)
     {
         if(Array.IndexOf(Microphone.devices,name)<0)return;
-        StopMicrophone();PlayerPrefs.SetString("Lumen.Microphone",name);listening=true;StartMicrophone();
+        StopMicrophone();PlayerPrefs.SetString("Lumen.Microphone",name);listening=true;listenUntil=Time.unscaledTime+ListeningSeconds;StartMicrophone();
     }
     private void StartMicrophone()
     {
@@ -79,6 +82,10 @@ public sealed class SpeechInputController:MonoBehaviour
     private void Update()
     {
         if(Instance!=this||!enabledForThisBuild)return;
+        if(listening && Time.unscaledTime>=listenUntil)
+        {
+            Flush(true); listening=false; GeminiLiveConversation.Instance?.PauseMicrophone();
+        }
         bool forced=false;
 #if ENABLE_INPUT_SYSTEM
         var key=Keyboard.current;
@@ -90,6 +97,9 @@ public sealed class SpeechInputController:MonoBehaviour
             forced=Enum.TryParse(pushToTalkKey.ToString(),true,out Key binding)&&key[binding].isPressed;
         }
 #endif
+        bool keyHeld=forced;
+        if(keyHeld && !held) listenUntil=Time.unscaledTime+ListeningSeconds;
+        forced=forced && Time.unscaledTime<listenUntil;
         if(forced&&microphone==null)StartMicrophone();
         if(!listening&&!forced&&held)Flush(true);
         if(microphone!=null&&(listening||forced))
@@ -110,13 +120,13 @@ public sealed class SpeechInputController:MonoBehaviour
             if(voiced)Flush(true);
             else if(listening)GeminiLiveConversation.Instance?.PauseMicrophone();
         }
-        held=forced;
+        held=keyHeld;
         if(!recognizing&&pending.Count>0)StartCoroutine(Recognize(pending.Dequeue()));
         if(!listening&&!forced&&!recognizing&&pending.Count==0&&microphone!=null)StopMicrophone();
         if(statusText!=null&&Time.unscaledTime>=nextCheck)
         {
             nextCheck=Time.unscaledTime+.15f;
-            statusText.text="M / MIC "+(listening?"ON":"OFF")+"  |  "+state+(string.IsNullOrEmpty(lastHeard)?"":"  |  Heard: "+lastHeard);
+            statusText.text="M / MIC "+(listening||forced?Mathf.CeilToInt(Mathf.Max(0,listenUntil-Time.unscaledTime))+"s":"OFF — M to talk or hold V")+"  |  "+state+(string.IsNullOrEmpty(lastHeard)?"":"  |  Heard: "+lastHeard);
         }
     }
     private void Consume(float[] samples,bool forced)

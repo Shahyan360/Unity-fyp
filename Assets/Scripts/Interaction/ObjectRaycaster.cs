@@ -14,6 +14,11 @@ public class ObjectRaycaster : MonoBehaviour
     [SerializeField] private Text detectedObjectLegacyLabel;
 
     public ObjectMetadata CurrentObject { get; private set; }
+    private ObjectMetadata lastViewed;
+    private float lastViewedAt;
+    private TextMeshPro talkPrompt;
+    public ObjectMetadata ConversationTarget => CurrentObject != null ? CurrentObject
+        : Time.unscaledTime - lastViewedAt < 6f ? lastViewed : null;
 
     private void Awake()
     {
@@ -26,11 +31,35 @@ public class ObjectRaycaster : MonoBehaviour
     private void Update()
     {
         UpdateCurrentObject();
+        if (talkPrompt != null) talkPrompt.gameObject.SetActive(false);
+        if (CurrentObject != null && CurrentObject.category == "Person")
+        {
+            if (talkPrompt == null)
+            {
+                var prompt = new GameObject("Talk to this person", typeof(TextMeshPro));
+                prompt.transform.SetParent(transform, false);
+                talkPrompt = prompt.GetComponent<TextMeshPro>();
+                talkPrompt.fontSize = 2.5f;
+                talkPrompt.alignment = TextAlignmentOptions.Center;
+                talkPrompt.rectTransform.sizeDelta = new Vector2(3, .65f);
+            }
+            talkPrompt.gameObject.SetActive(true);
+            talkPrompt.text = CurrentObject.GetDisplayName() + "\n[E] Talk";
+            talkPrompt.transform.position = CurrentObject.transform.position + Vector3.up * 2.15f;
+            if (raycastCamera != null) talkPrompt.transform.rotation = raycastCamera.transform.rotation;
+        }
+    }
+
+    public ObjectMetadata RefreshTarget()
+    {
+        UpdateCurrentObject();
+        return ConversationTarget;
     }
 
     private void UpdateCurrentObject()
     {
         CurrentObject = null;
+        if (raycastCamera == null || !raycastCamera.isActiveAndEnabled) raycastCamera = Camera.main;
 
         if (raycastCamera == null)
         {
@@ -47,6 +76,7 @@ public class ObjectRaycaster : MonoBehaviour
 
         if (CurrentObject != null)
         {
+            lastViewed=CurrentObject;lastViewedAt=Time.unscaledTime;
             CurrentObject.GetComponentInParent<LearningModelInspection>()?.Select();
             SetDetectedObjectLabel(CurrentObject.GetDisplayName());
         }

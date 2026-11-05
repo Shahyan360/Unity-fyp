@@ -34,3 +34,8 @@ Thumbs.db
 # Local IDE solution files
 *.slnx
 .vscode/
+
+# Downloaded local neural voice engine and models
+Runtime/Piper/
+embodied-ai-backend/runtime/neural-speech*.wav
+embodied-ai-backend/runtime/models/

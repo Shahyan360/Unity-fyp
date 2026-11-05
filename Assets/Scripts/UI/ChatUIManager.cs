@@ -207,12 +207,28 @@ public class ChatUIManager : MonoBehaviour
             return;
         }
 
-        ObjectMetadata currentObject = explicitResponseSpeaker != null ? explicitResponseSpeaker
-            : objectRaycaster != null ? objectRaycaster.CurrentObject : null;
-        pendingResponseSpeaker = explicitResponseSpeaker != null ? explicitResponseSpeaker : currentObject;
+        FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
+        if (objectRaycaster == null) objectRaycaster = FindAnyObjectByType<ObjectRaycaster>();
+        ObjectMetadata lookedAt = objectRaycaster != null ? objectRaycaster.RefreshTarget() : null;
+        ObjectMetadata partner = GeminiLiveConversation.Instance != null ? GeminiLiveConversation.Instance.Partner : null;
+        ObjectMetadata currentObject = explicitResponseSpeaker != null ? explicitResponseSpeaker : lookedAt != null ? lookedAt : partner;
+        pendingResponseSpeaker = explicitResponseSpeaker != null ? explicitResponseSpeaker
+            : lookedAt != null && lookedAt.category == "Person" ? lookedAt : partner;
+        bool askingAboutObject = lookedAt != null && lookedAt.category != "Person"
+            && System.Text.RegularExpressions.Regex.IsMatch(userMessage, @"(?i)\b(this|that|looking at)\b");
+        if (askingAboutObject)
+        {
+            currentObject = lookedAt;
+            pendingResponseSpeaker = null;
+        }
+        else if (pendingResponseSpeaker != null) currentObject = pendingResponseSpeaker;
+        ObjectMetadata selectedSpeaker = pendingResponseSpeaker;
+        if (selectedSpeaker != null && GeminiLiveConversation.Instance?.Partner != selectedSpeaker)
+            GeminiLiveConversation.Instance?.SelectPartner(selectedSpeaker);
+        pendingResponseSpeaker = selectedSpeaker;
         explicitResponseSpeaker = null;
         string objectName = currentObject != null ? currentObject.GetDisplayName() : "";
-        string objectDescription = currentObject != null ? currentObject.description : "";
+        string objectDescription = currentObject != null ? (!string.IsNullOrWhiteSpace(currentObject.descriptionSummary) ? currentObject.descriptionSummary : currentObject.description) : "";
         string scenario = GetScenario(currentObject);
 
         AppendChatLine($"You: {userMessage}");

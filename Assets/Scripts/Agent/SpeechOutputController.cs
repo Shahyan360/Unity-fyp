@@ -126,8 +126,60 @@ public sealed class SpeechOutputController : MonoBehaviour
     }
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+    [Serializable] private sealed class NeuralVoiceConfig { public bool ready; }
+    [Serializable] private sealed class NeuralVoiceRequest { public string text, speaker; }
+    private bool neuralReady;
+    private IEnumerator Start()
+    {
+        var client=GetComponent<AIClient>();
+        if(client==null)client=FindAnyObjectByType<AIClient>();
+        while(enabled)
+        {
+            using(var request=UnityWebRequest.Get((client!=null?client.BackendUrl:"http://127.0.0.1:5000")+"/speech/config"))
+            {
+                request.timeout=2;
+                yield return request.SendWebRequest();
+                neuralReady=false;
+                if(request.result==UnityWebRequest.Result.Success)
+                {
+                    NeuralVoiceConfig config=null;
+                    try { config=JsonUtility.FromJson<NeuralVoiceConfig>(request.downloadHandler.text); } catch(Exception) {}
+                    neuralReady=config!=null&&config.ready;
+                }
+            }
+            yield return new WaitForSecondsRealtime(10);
+        }
+    }
     private IEnumerator SynthesizeAndPlay(string text, string voiceName, int rate)
     {
+        if(neuralReady)
+        {
+            var identity=activeCharacter!=null?activeCharacter.GetComponent<ScenarioCharacterIdentity>():null;
+            string voice=identity!=null?identity.NeuralSpeakerLabel:(voiceName??"").Contains("Zira")?"p229":"p226";
+            var client=FindAnyObjectByType<AIClient>();
+            string url=(client!=null?client.BackendUrl:"http://127.0.0.1:5000")+"/speech/synthesize";
+            using(var request=UnityWebRequestMultimedia.GetAudioClip(url,AudioType.WAV))
+            {
+                request.method="POST";
+                request.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(new NeuralVoiceRequest{text=text,speaker=voice})));
+                request.SetRequestHeader("Content-Type","application/json");
+                request.timeout=12;
+                PlaybackStage="Local neural synthesis";
+                yield return request.SendWebRequest();
+                if(request.result==UnityWebRequest.Result.Success)
+                {
+                    activeClip=DownloadHandlerAudioClip.GetContent(request);
+                    speaker.clip=activeClip;speaker.pitch=1f;speaker.Play();
+                    if(activeCharacter!=null)activeCharacter.BeginSpeech(speaker);
+                    PlaybackStage="Playing local neural voice";
+                    while(speaker.isPlaying)yield return null;
+                    if(activeCharacter!=null)activeCharacter.EndSpeech();
+                    speaker.clip=null;Destroy(activeClip);activeClip=null;
+                    yield break;
+                }
+            }
+        }
+
         PlaybackStage = "Starting local synthesis";
         activeWavePath = Path.Combine(Path.GetTempPath(), "LumenSpeech-" + Guid.NewGuid().ToString("N") + ".wav");
         string textBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
@@ -154,27 +206,6 @@ public sealed class SpeechOutputController : MonoBehaviour
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        // Optional portable neural speech install. Keep large models outside the Unity project.
-        string piperRoot = Environment.GetEnvironmentVariable("LUMEN_PIPER_HOME");
-        if (string.IsNullOrWhiteSpace(piperRoot)) piperRoot = Path.Combine(Application.dataPath,"../Runtime/Piper");
-        string piper = Path.Combine(piperRoot, "piper", "piper.exe");
-        string model = Path.Combine(piperRoot, "voices", "en_GB-vctk-medium.onnx");
-        bool neural = File.Exists(piper) && File.Exists(model) && File.Exists(model + ".json");
-        if (neural)
-        {
-            ScenarioCharacterIdentity identity = activeCharacter != null ? activeCharacter.GetComponent<ScenarioCharacterIdentity>() : null;
-            string voiceLabel=identity!=null?identity.NeuralSpeakerLabel:(voiceName??string.Empty).Contains("Zira")?"p229":"p226";
-            int voiceId=voiceLabel=="p229"?85:95;
-            // Resolve stable corpus labels from the installed model's own map.
-            // Visual host selection can differ from the deferred backend persona.
-            var match=System.Text.RegularExpressions.Regex.Match(File.ReadAllText(model+".json"),"\""+voiceLabel+"\"\\s*:\\s*(\\d+)");
-            if(match.Success)int.TryParse(match.Groups[1].Value,out voiceId);
-            start.FileName = piper;
-            start.Arguments = "--model \"" + model + "\" --speaker " + voiceId + " --output_file \"" + activeWavePath + "\"";
-            start.WorkingDirectory = Path.GetDirectoryName(piper);
-            start.RedirectStandardInput = true;
-            speaker.pitch = 1f;
-        }
         string startError = string.Empty;
         System.Threading.Tasks.Task<string> stderr = null;
         System.Threading.Tasks.Task<string> stdout = null;
@@ -185,7 +216,7 @@ public sealed class SpeechOutputController : MonoBehaviour
             {
                 stderr = synthesisProcess.StandardError.ReadToEndAsync();
                 stdout = synthesisProcess.StandardOutput.ReadToEndAsync();
-                if (neural) { synthesisProcess.StandardInput.WriteLine(text.Replace('\n', ' ')); synthesisProcess.StandardInput.Close(); }
+
             }
         }
         catch (Exception exception) { startError = exception.Message; }

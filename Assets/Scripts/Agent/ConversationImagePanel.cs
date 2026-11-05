@@ -47,6 +47,21 @@ public sealed class ConversationImagePanel : MonoBehaviour
         return System.Text.RegularExpressions.Regex.IsMatch(q,@"(?i)\b(show|display|find|fetch|search|get|give|bring|open|see|want|need|use|include|with)\b.{0,65}\b(images?|pictures?|photos?|photographs?|diagrams?|illustrations?|visuals?|visual aid)\b|\b(images?|pictures?|photos?|diagrams?)\s+(of|please)\b|\bvisuali[sz]e\b|\bvisual explanation\b|\b(show|display)\s+me\s+(?!how\b|where\b|the menu\b|menu\b)");
     }
 
+    private static string carriedQuestion,carriedTopic,carriedBackend;
+    public void CarryToNextScene()
+    {
+        if(!CanShowForQuestion||string.IsNullOrWhiteSpace(topic)||string.IsNullOrWhiteSpace(backend))return;
+        carriedQuestion=question;carriedTopic=topic;carriedBackend=backend;
+    }
+    private IEnumerator Start()
+    {
+        if(string.IsNullOrWhiteSpace(carriedQuestion))yield break;
+        string text=carriedQuestion,query=carriedTopic,url=carriedBackend;
+        carriedQuestion=carriedTopic=carriedBackend=null;
+        yield return null;
+        BeginQuestion(text,true);
+        if(CanShowForQuestion)RequestImage(query,url);
+    }
     private void EnsureUi()
     {
         if(canvas!=null)return;

@@ -81,7 +81,7 @@ for _scenario,_id in {"general_assistant":"kai","classroom":"theo","academic_tut
         invitation="We can explore together at your pace. What catches your interest?")
 
 
-def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", object_description: str = "") -> dict[str, str]:
+def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", object_description: str = "", object_category: str = "") -> dict[str, str]:
     """The active world owns the main speaker; recognized ambient people keep their role."""
     persona = dict(PERSONAS[scenario])
     host_id = speaker_id.lower().strip()
@@ -114,7 +114,7 @@ def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", o
             "introduction": f"I'm {object_name[:80]}, a virtual guest here for conversation practice. We can start with something simple, like how your day is going.",
             "invitation": "Let's start casually. What's one thing you've enjoyed today?",
         })
-    elif scenario == "ancient_rome" and object_name and re.search(r"\b(resident|citizen|neighbor|neighbour|vendor|storyteller)\b", selected) and "marcus" not in object_name.lower():
+    elif scenario == "ancient_rome" and object_name and re.search(r"\b(resident|citizen|neighbor|neighbour|vendor|merchant|guard|soldier|storyteller)\b", selected) and "marcus" not in object_name.lower():
         persona.update({
             "id": "roman_resident_" + re.sub(r"[^a-z0-9]+", "_", object_name.lower()).strip("_")[:48],
             "name": object_name[:80], "role": "Roman resident · Historical role-play",
@@ -122,6 +122,24 @@ def select_persona(scenario: str, speaker_id: str = "", object_name: str = "", o
             "greeting": "Salve! Welcome to the Forum. Are you here to explore the market, hear about daily life, or investigate the city's buildings?",
             "introduction": f"I'm {object_name[:80]}, a fictional resident in this Roman reconstruction. We can use this role-play to explore daily life, while Aurelius can help distinguish evidence from interpretation.",
             "invitation": "Would you like to talk about the market, public life in the Forum, or how water reached the city?",
+        })
+    elif scenario == "museum" and object_name and re.search(r"\b(visitor|guest|curator|docent)\b", selected):
+        persona.update({
+            "id": "museum_visitor_" + re.sub(r"[^a-z0-9]+", "_", object_name.lower()).strip("_")[:48],
+            "name": object_name[:80], "role": "Museum visitor",
+            "direction": "Respond as this named fictional museum visitor, not the guide. Discuss the displayed exhibits using the supplied context. Admit what you do not know.",
+            "greeting": f"Hello, I'm {object_name[:80]}. What caught your eye in the gallery?",
+            "introduction": f"I'm {object_name[:80]}, a virtual visitor exploring this museum. We can compare what we notice in the exhibits together.",
+            "invitation": "Which exhibit would you like to look at together?",
+        })
+    elif object_category == "Person" and object_name:
+        persona.update({
+            "id": "world_person_" + re.sub(r"[^a-z0-9]+", "_", object_name.lower()).strip("_")[:48],
+            "name": object_name[:80], "role": "Virtual world character",
+            "direction": "Respond as this named fictional person, not the companion. Use their supplied description and the active world. Do not invent private memories.",
+            "greeting": f"Hello, I'm {object_name[:80]}. What would you like to talk about?",
+            "introduction": f"I'm {object_name[:80]}, a virtual character here in Lumen. We can talk about what you notice around us.",
+            "invitation": "What caught your attention here?",
         })
     return persona
 

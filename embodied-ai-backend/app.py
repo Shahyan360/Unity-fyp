@@ -336,10 +336,10 @@ def detect_requested_scenario(query: str) -> str:
     destinations = {
         "museum": r"(?:museum|gallery|artifact\s+hall)",
         "ancient_rome": r"(?:ancient\s+rome|rome|roman\s+forum)",
-        "classroom": r"(?:classroom|science\s+room|learning\s+studio)",
+        "classroom": r"(?:classroom|science\s+(?:room|studio)|learning\s+studio)",
         "cafe": r"(?:café|cafe|coffee\s+shop|coffee\s+house)",
     }
-    action = r"(?:take\s+me|bring\s+me|move\s+me|go|head|switch|change|open|enter|visit|return|back\s+to|let'?s\s+go)"
+    action = r"(?:take\s+me|bring\s+me|move\s+me|go|head|switch|change|open|enter|visit|navigate|travel|transport\s+me|back\s+to|let'?s\s+go)"
     for scenario, destination in destinations.items():
         if re.search(rf"{prefix}{action}\b[^.!?]{{0,48}}\b{destination}\b", text):
             return scenario
@@ -628,6 +628,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             return jsonify({"error": "This desktop service accepts native and loopback clients only."}), 403
     from gemini_live import register_live
     register_live(app)
+    from neural_voice import register_neural_voice
+    register_neural_voice(app)
     from live_images import register_images
     register_images(app)
     store = LocalStore()
@@ -807,7 +809,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             from coaching_state import end
             with store.lock:
                 end(session)
-        persona = select_persona(scenario, str(payload.get("speaker_id", "")), object_name, object_description)
+        persona = select_persona(scenario, str(payload.get("speaker_id", "")), object_name, object_description, str(payload.get("object_category", "")))
         active_coaching = "" if persona["id"].startswith(("cafe_guest_", "cafe_staff_")) else session.coaching_mode
         character_state = session.character_state.setdefault(persona["id"], {})
         context = read_knowledge(scenario, f"{query} {object_name} {object_description}")
@@ -841,7 +843,30 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if facts:
                 return finish({"response": " ".join(facts), "action": "nod", "emotion": "friendly"}, "local-memory")
 
+        if re.search(r"\b(?:who|what) are you\b|\bwhat can you do\b|\bhow can you help(?: me)?\b", query, re.I):
+            introduction = (f"I'm {persona['name']}, your companion in Lumen. "
+                            "Ask me a question and we can explore it together with clear explanations and relevant pictures. "
+                            "I can guide you through science in the classroom, history in Ancient Rome and the museum, "
+                            "or relaxed conversation in the café. Look at an object and ask what it is, "
+                            "or look at a person and press E to keep talking with them. What would you like to discover?")
+            if persona["id"].startswith(("cafe_staff_", "cafe_guest_", "roman_resident_", "museum_visitor_", "world_person_")):
+                introduction = persona["introduction"]
+            return finish({"response": introduction, "action": "gesture", "emotion": "friendly"}, "local-introduction")
+
+        if object_name and object_description and re.search(r"\b(?:what(?:'s| is) (?:this|that)|what am i looking at|tell me about (?:this|that))\b", query, re.I):
+            return finish({"response": f"You're looking at {object_name}. {object_description[:900]}",
+                           "action": "explain", "emotion": "friendly", "intent": "object_explanation"}, "local-object")
+
         destination = detect_requested_scenario(query)
+        if not destination and not object_name and not has_negated_navigation(query):
+            topic_routes = {
+                "classroom": r"\b(atom|molecule|gravity|science|planet|solar system|photosynthesis|electricity|dna)\b",
+                "ancient_rome": r"\b(ancient rome|roman forum|colosseum|roman empire)\b",
+                "museum": r"\b(museum|artifact|artefact|archaeology)\b",
+                "cafe": r"\b(practi[cs]e (?:ordering|conversation)|order (?:a )?coffee|cafe|café)\b",
+            }
+            destination = next((world for world, pattern in topic_routes.items()
+                                if world != scenario and re.search(pattern, query, re.I)), "")
         if destination:
             titles = {"ancient_rome": "Ancient Rome", "classroom": "the classroom", "cafe": "the café", "museum": "the museum", "home": "the lobby"}
             destination_model = detect_learning_model(query) if destination == "classroom" else None

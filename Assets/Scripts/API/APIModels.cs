@@ -10,6 +10,7 @@ public class ChatRequest
     public string scenario;
     public string object_name;
     public string object_description;
+    public string object_category;
     public string session_id;
     public string speaker_id;
     public string interrupted_response;
