@@ -148,8 +148,10 @@ public sealed class CafeWalkController : MonoBehaviour
         if (view != null && (Cursor.lockState == CursorLockMode.Locked || lookInput.sqrMagnitude>0))
         {
             lookInput = Vector2.ClampMagnitude(lookInput, 40f);
-            transform.Rotate(Vector3.up, lookInput.x * lookSensitivity, Space.World);
-            pitch = Mathf.Clamp(pitch - lookInput.y * lookSensitivity, -80f, 80f);
+            int sensitivityTier = Mathf.Clamp(LumenPreferences.GetInt("Lumen.PointerSensitivity",1),0,2);
+            float sensitivity = lookSensitivity * (sensitivityTier == 0 ? .65f : sensitivityTier == 2 ? 1.5f : 1f);
+            transform.Rotate(Vector3.up, lookInput.x * sensitivity, Space.World);
+            pitch = Mathf.Clamp(pitch - lookInput.y * sensitivity, -80f, 80f);
             view.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 

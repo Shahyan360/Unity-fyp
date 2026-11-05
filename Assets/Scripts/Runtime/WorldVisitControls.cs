@@ -5,6 +5,9 @@ using UnityEngine;
 public sealed class WorldVisitControls:MonoBehaviour
 {
     private GameObject drawer;
+    private GameObject displayOptions;
+    public GameObject SettingsPanel=>drawer;
+    public void ShowSettings(){drawer.SetActive(true);if(displayOptions!=null)displayOptions.SetActive(false);LumenAccessibility.MenuOpen=true;StartCoroutine(RefreshNotes());}
     private TMP_Text notes;
     private RectTransform notesViewport;
     public static void Install(Canvas canvas,string scene)
@@ -17,7 +20,8 @@ public sealed class WorldVisitControls:MonoBehaviour
         var open=Button(header.transform,"VISIT",new Vector2(.76f,.08f),new Vector2(.97f,.92f));
         drawer=Panel(root,"VisitSettings",new Vector2(.025f,.075f),new Vector2(.59f,.915f));
         Label(drawer.transform,"YOUR VISIT",new Vector2(.045f,.92f),new Vector2(.95f,.985f),25);
-        Label(drawer.transform,"Tab: focus · Enter: choose · Esc: close\nRight-click or Numpad: look · E: interact",new Vector2(.045f,.82f),new Vector2(.95f,.92f),17);
+        var display=Button(drawer.transform,"DISPLAY, SOUND & POINTER",new Vector2(.045f,.825f),new Vector2(.95f,.91f));
+        display.onClick.AddListener(()=>displayOptions.SetActive(true));
         var quality=Button(drawer.transform,"Graphics: "+WorldPresentationQuality.SelectedQuality,new Vector2(.045f,.73f),new Vector2(.49f,.81f));
         quality.onClick.AddListener(()=>quality.GetComponentInChildren<TMP_Text>().text="Graphics: "+WorldPresentationQuality.CycleQuality());
         var cues=Button(drawer.transform,"UI cues: "+LumenPreferences.GetInt("Lumen.UIVolume",80)+"%",new Vector2(.51f,.73f),new Vector2(.95f,.81f));
@@ -60,8 +64,55 @@ public sealed class WorldVisitControls:MonoBehaviour
         content.GetComponent<UnityEngine.UI.ContentSizeFitter>().verticalFit=UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
         notes=Label(content.transform,ExplorationNotebook.Summary(),Vector2.zero,Vector2.one,18);notes.overflowMode=TextOverflowModes.Overflow;notes.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
         open.onClick.AddListener(()=>{GameObject.Find("Guide choices")?.SetActive(false);drawer.SetActive(!drawer.activeSelf);LumenAccessibility.MenuOpen=drawer.activeSelf;if(drawer.activeSelf)StartCoroutine(RefreshNotes());});
+        BuildDisplayOptions();
         drawer.SetActive(false);
     }
+    private void BuildDisplayOptions()
+    {
+        displayOptions=Panel(drawer.transform,"Display sound and pointer",Vector2.zero,Vector2.one);
+        Label(displayOptions.transform,"DISPLAY & SOUND",new Vector2(.06f,.87f),new Vector2(.94f,.97f),24);
+        var master=Button(displayOptions.transform,"Master volume: "+LumenPreferences.GetInt("Lumen.MasterVolume",100)+"%",new Vector2(.06f,.73f),new Vector2(.94f,.83f));
+        master.onClick.AddListener(()=>
+        {
+            int level=(LumenPreferences.GetInt("Lumen.MasterVolume",100)+25)%125;
+            LumenPreferences.SetInt("Lumen.MasterVolume",level);LumenPreferences.Save();AudioListener.volume=level/100f;
+            master.GetComponentInChildren<TMP_Text>().text="Master volume: "+level+"%";
+        });
+        var sensitivity=Button(displayOptions.transform,SensitivityLabel(),new Vector2(.06f,.60f),new Vector2(.94f,.70f));
+        sensitivity.onClick.AddListener(()=>
+        {
+            int tier=(LumenPreferences.GetInt("Lumen.PointerSensitivity",1)+1)%3;
+            LumenPreferences.SetInt("Lumen.PointerSensitivity",tier);LumenPreferences.Save();
+            sensitivity.GetComponentInChildren<TMP_Text>().text=SensitivityLabel();
+        });
+        var fullscreen=Button(displayOptions.transform,"Fullscreen: "+(Screen.fullScreen?"on":"off"),new Vector2(.06f,.47f),new Vector2(.94f,.57f));
+        fullscreen.onClick.AddListener(()=>
+        {
+            bool enabled=!Screen.fullScreen;
+            LumenPreferences.SetInt("Lumen.Fullscreen",enabled?1:0);LumenPreferences.Save();Screen.fullScreen=enabled;
+            fullscreen.GetComponentInChildren<TMP_Text>().text="Fullscreen: "+(enabled?"on":"off");
+        });
+        var resolution=Button(displayOptions.transform,"Resolution: "+Screen.width+" × "+Screen.height,new Vector2(.06f,.34f),new Vector2(.94f,.44f));
+        var modes=new System.Collections.Generic.List<Vector2Int>();
+        foreach(var mode in Screen.resolutions)
+        {
+            var dimensions=new Vector2Int(mode.width,mode.height);
+            if(!modes.Contains(dimensions))modes.Add(dimensions);
+        }
+        resolution.interactable=modes.Count>0;
+        resolution.onClick.AddListener(()=>
+        {
+            int index=modes.FindIndex(m=>m.x==Screen.width&&m.y==Screen.height);
+            Vector2Int next=modes[(index+1)%modes.Count];
+            LumenPreferences.SetInt("Lumen.DisplayWidth",next.x);LumenPreferences.SetInt("Lumen.DisplayHeight",next.y);LumenPreferences.Save();
+            Screen.SetResolution(next.x,next.y,Screen.fullScreenMode);
+            resolution.GetComponentInChildren<TMP_Text>().text="Resolution: "+next.x+" × "+next.y;
+        });
+        Label(displayOptions.transform,"Speech and UI cue levels are available in Your Visit.\nTab: focus · Enter: choose · Esc: close",new Vector2(.06f,.17f),new Vector2(.94f,.30f),17);
+        Button(displayOptions.transform,"BACK TO YOUR VISIT",new Vector2(.06f,.04f),new Vector2(.94f,.14f)).onClick.AddListener(()=>displayOptions.SetActive(false));
+        displayOptions.SetActive(false);
+    }
+    private static string SensitivityLabel()=>"Pointer sensitivity: "+new[]{"gentle","standard","quick"}[Mathf.Clamp(LumenPreferences.GetInt("Lumen.PointerSensitivity",1),0,2)];
     private System.Collections.IEnumerator RefreshNotes()
     {
         notes.text=ExplorationNotebook.Summary();yield return null;Canvas.ForceUpdateCanvases();

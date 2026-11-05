@@ -41,6 +41,31 @@ public sealed class LumenHybridVoiceVerification : MonoBehaviour
         LumenPreferences.SetInt("Lumen.Offline",0);LumenPreferences.SetInt("Lumen.VisualAids",0);
         LumenPreferences.SetInt("Lumen.VoiceChoiceSeen",1);LumenPreferences.SetInt("Lumen.MuteVoice",0);
         yield return new WaitForSecondsRealtime(6);
+        var front=FindAnyObjectByType<LumenFrontPage>();
+        if(front!=null)
+        {
+            Check(LumenFrontPage.IsOpen&&LumenAccessibility.MenuOpen,"Merged front page opens and owns menu input");
+            Check(FindObjectsByType<HomeHubPortal>(FindObjectsInactive.Exclude).Length>=4,"All existing courtyard destinations remain available");
+            yield return Capture("front-page");
+            front.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(button=>button.name=="CHOOSE ENVIRONMENT").onClick.Invoke();
+            Check(GameObject.Find("Choose environment")!=null&&GameObject.Find("World atlas")==null,"Environment chooser remains separate from the atlas");
+            front.ShowMenu();
+            front.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(button=>button.name=="WORLD MAP").onClick.Invoke();
+            yield return null;Canvas.ForceUpdateCanvases();
+            var terrain=front.GetComponentInChildren<LumenAtlasTerrain>();
+            var mesh=terrain!=null?terrain.GetComponent<CanvasRenderer>()?.GetMesh():null;
+            Check(mesh!=null&&mesh.vertexCount>0,"Merged atlas renders its terrain mesh");
+            foreach(string destination in new[]{"cafe","classroom","ancient_rome"})
+                Check(Resources.Load<Texture2D>("DestinationPreviews/"+destination)!=null,"Incoming scene preview is present: "+destination);
+            front.SelectDestination(1);
+            yield return Capture("world-atlas");
+            front.ShowMenu();
+            front.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(button=>button.name=="SETTINGS").onClick.Invoke();
+            Check(GameObject.Find("VisitSettings")!=null,"Front-page settings retain the existing visit controls");
+            front.ShowMenu();front.StartExperience();
+            yield return new WaitForSecondsRealtime(.7f);
+            Check(!LumenFrontPage.IsOpen&&!LumenAccessibility.MenuOpen,"Start Experience restores the existing conversation and movement flow");
+        }
         var output=FindAnyObjectByType<SpeechOutputController>();
         Check(FindObjectsByType<SpeechOutputController>(FindObjectsInactive.Exclude).Length==1,"Playback and cancellation share one speech controller");
         Check(output!=null&&output.ConfiguredSpeechEngine=="gemini-tts","Hybrid uses the Gemini TTS speech endpoint");
@@ -99,6 +124,12 @@ public sealed class LumenHybridVoiceVerification : MonoBehaviour
         Check(response!=null&&!response.spoken_stream,"Hybrid voices one completed local reply rather than separate sentence requests");
         Check(geminiPlayed&&peak>.001f,(voice?"Voice":"Typed")+" answer plays non-silent Gemini audio");
         if(response!=null)report.answers.Add(response.response);
+    }
+    private IEnumerator Capture(string name)
+    {
+        yield return new WaitForEndOfFrame();
+        var image=ScreenCapture.CaptureScreenshotAsTexture();
+        File.WriteAllBytes(Path.Combine(directory,name+".png"),image.EncodeToPNG());Destroy(image);
     }
     private void Finish()
     {

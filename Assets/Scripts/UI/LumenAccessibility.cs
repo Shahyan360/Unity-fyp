@@ -17,6 +17,8 @@ public sealed class LumenAccessibility : MonoBehaviour
     public static int TextTier=>LumenPreferences.GetInt("Lumen.TextTier",0);
     public static string MovementLabel=>MovementLayout==1?"Arrow keys":MovementLayout==2?"I J K L":"W A S D";
     private readonly Dictionary<TMP_Text,float> baseSizes=new Dictionary<TMP_Text,float>();
+    private readonly HashSet<UnityEngine.UI.Button> styledButtons=new HashSet<UnityEngine.UI.Button>();
+    private int previousTier=-1, previousWidth=-1, previousHeight=-1;
     private float nextRefresh;
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -46,22 +48,30 @@ public sealed class LumenAccessibility : MonoBehaviour
         if(Time.unscaledTime>=nextRefresh)
         {
             nextRefresh=Time.unscaledTime+1;
+            bool layoutChanged=previousTier!=TextTier||previousWidth!=Screen.width||previousHeight!=Screen.height;
+            previousTier=TextTier;previousWidth=Screen.width;previousHeight=Screen.height;
             foreach(var label in FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include))
             {
                 if(!baseSizes.TryGetValue(label,out float size)){size=label.fontSize;baseSizes[label]=size;}
                 var canvas=label.canvas;if(canvas==null)continue;
                 float scale=TextTier==1?1.18f:TextTier==2?1.35f:1;
-                label.enableAutoSizing=false;
-                label.fontSize=Mathf.Max(size,16/Mathf.Max(.4f,canvas.scaleFactor))*scale;
+                float desiredSize=Mathf.Max(size,16/Mathf.Max(.4f,canvas.scaleFactor))*scale;
+                if(label.enableAutoSizing)label.enableAutoSizing=false;
+                if(!Mathf.Approximately(label.fontSize,desiredSize))label.fontSize=desiredSize;
             }
-            FindAnyObjectByType<HomeUIManager>()?.RefreshReadability();
-            FindAnyObjectByType<ChatUIManager>()?.RefreshReadability();
+            if(layoutChanged)
+            {
+                FindAnyObjectByType<HomeUIManager>()?.RefreshReadability();
+                FindAnyObjectByType<ChatUIManager>()?.RefreshReadability();
+            }
             foreach(var button in FindObjectsByType<UnityEngine.UI.Button>(FindObjectsInactive.Include))
             {
+                if(!styledButtons.Add(button))continue;
                 var colors=button.colors;colors.highlightedColor=new Color(.42f,.68f,.67f);colors.selectedColor=new Color(.46f,.72f,.70f);colors.pressedColor=new Color(.24f,.45f,.44f);colors.disabledColor=new Color(.25f,.29f,.29f,.55f);button.colors=colors;
                 if(button.GetComponent<LumenKeyboardFocus>()==null)button.gameObject.AddComponent<LumenKeyboardFocus>();
             }
             foreach(var dead in baseSizes.Keys.Where(t=>t==null).ToArray())baseSizes.Remove(dead);
+            styledButtons.RemoveWhere(button=>button==null);
         }
 #if ENABLE_INPUT_SYSTEM
         var keyboard=Keyboard.current;
@@ -86,6 +96,7 @@ public sealed class LumenAccessibility : MonoBehaviour
         }
         if(keyboard!=null&&keyboard.escapeKey.wasPressedThisFrame&&MenuOpen)
         {
+            if(LumenFrontPage.HandleEscape())return;
             GameObject.Find("Guide choices")?.SetActive(false);GameObject.Find("VisitSettings")?.SetActive(false);MenuOpen=false;
         }
 #endif

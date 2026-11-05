@@ -713,7 +713,7 @@ public sealed class WalkableHubInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (view == null) return;
+        if (view == null || LumenAccessibility.MenuOpen) return;
         if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
         {
             TMP_InputField selectedInput = EventSystem.current.currentSelectedGameObject.GetComponentInParent<TMP_InputField>();
