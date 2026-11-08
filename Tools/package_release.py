@@ -134,13 +134,13 @@ def main():
     shutil.copy2(PROJECT / 'Docs/AI/PerformanceFindings-2026-10-22.md', dest / 'PERFORMANCE_FINDINGS.md')
     (dest / 'Notices').mkdir()
     shutil.copy2(PROJECT / 'Assets/Art/Rocketbox/LICENSE.md', dest / 'Notices/Microsoft-Rocketbox-MIT.md')
-    shutil.copy2(PROJECT / 'Assets/UnityTechnologies/license.txt', dest / 'Notices/UnityTechnologies-license.txt')
+    shutil.copy2(PROJECT / 'Assets/ThirdParty/UnityTechnologies/license.txt', dest / 'Notices/UnityTechnologies-license.txt')
     for source, name in (
         ('Assets/TextMesh Pro/Fonts/LiberationSans - OFL.txt', 'LiberationSans-OFL.txt'),
-        ('Assets/ImportedAssets/Quaternius/Animations/License.txt', 'Quaternius-Animations-CC0.txt'),
-        ('Assets/ImportedAssets/Quaternius/BaseCharacters/License_Standard.txt', 'Quaternius-Standard-CC0.txt'),
+        ('Assets/ThirdParty/ImportedModels/Quaternius/Animations/License.txt', 'Quaternius-Animations-CC0.txt'),
+        ('Assets/ThirdParty/ImportedModels/Quaternius/BaseCharacters/License_Standard.txt', 'Quaternius-Standard-CC0.txt'),
         ('Assets/Resources/MuseumPaintings/manifest.json', 'Met-Painting-Credits.json'),
-        ('Assets/ImportedAssets/OnlineModels/README.md', 'NASA-Smithsonian-Source-Notes.md'),
+        ('Assets/ThirdParty/ImportedModels/OnlineModels/README.md', 'NASA-Smithsonian-Source-Notes.md'),
         ('Docs/AI/Met-Provenance-2026-10-22.json', 'Met-Current-API-Evidence.json'),
         ('Docs/AI/AssetStoreSourceEvidence-2026-10-22.md', 'Asset-Store-Source-Evidence.md'),
         ('Docs/AI/ShippedAssetFamilies-2026-10-22.csv', 'Supporting-Shipped-Asset-Families.csv'),

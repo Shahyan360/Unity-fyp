@@ -65,3 +65,32 @@ def test_explicit_person_category_preserves_arbitrary_character_identity():
             "object_category": "Person"}).get_json()
         assert result["speaker_name"] == name
         assert name in result["response"]
+
+
+def test_gaze_contractions_and_empty_focus_are_grounded():
+    client = create_app({"TESTING": True}).test_client()
+    for question in ("whats this", "what’s that?", "What is it?"):
+        result = client.post("/chat", json={"query": question, "scenario": "classroom",
+            "object_name": "Earth", "object_description": "The third planet from the Sun."}).get_json()
+        assert result["response_source"] == "local-object"
+        assert "Earth" in result["response"]
+    result = client.post("/chat", json={"query": "What am I looking at?", "scenario": "ancient_rome"}).get_json()
+    assert result["response_source"] == "local-object"
+    assert "don’t have an object in view" in result["response"]
+
+
+def test_guidance_and_uncertain_provenance_answer_the_actual_question():
+    client = create_app({"TESTING": True}).test_client()
+    guidance = client.post("/chat", json={"query": "How do I get started?", "scenario": "cafe"}).get_json()
+    assert guidance["response_source"] == "local-guidance"
+    assert all(word in guidance["response"] for word in ("Menu", "Talk", "Worlds"))
+    provenance = client.post("/chat", json={"query": "Who carved the Rosetta Stone?", "scenario": "museum"}).get_json()
+    assert "can’t confirm" in provenance["response"] and "196 BCE" in provenance["response"]
+    assert not provenance["next_scenario"]
+
+
+def test_web_origin_requires_the_configured_host():
+    client = create_app({"TESTING": True, "WEB_ORIGIN": "https://lumen.example"}).test_client()
+    payload = {"query": "What should I do here?", "scenario": "museum"}
+    assert client.post("/chat", json=payload, headers={"Origin": "https://lumen.example"}).status_code == 200
+    assert client.post("/chat", json=payload, headers={"Origin": "https://other.example"}).status_code == 403

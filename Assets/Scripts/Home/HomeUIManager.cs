@@ -53,9 +53,6 @@ public class HomeUIManager : MonoBehaviour
     public Button historicalGuideButton;
     public Button socialCoachButton;
 
-    [Header("Scene")]
-    public string demoSceneName = "Phase1_DemoScene";
-
     private string pendingScenario;
     private readonly List<string> chatLines = new List<string>();
     private bool isWaitingForBackend;
@@ -123,7 +120,7 @@ public class HomeUIManager : MonoBehaviour
 
         if (startButton != null)
         {
-            startButton.onClick.AddListener(StartDemoScene);
+            startButton.onClick.AddListener(StartSelectedScenario);
         }
 
         if (signUpButton != null)
@@ -151,7 +148,7 @@ public class HomeUIManager : MonoBehaviour
 
         if (startButton != null)
         {
-            startButton.onClick.RemoveListener(StartDemoScene);
+            startButton.onClick.RemoveListener(StartSelectedScenario);
         }
     }
 
@@ -266,15 +263,16 @@ public class HomeUIManager : MonoBehaviour
         AddAssistantMessage("Thinking…");
         backendReplyIndex = chatLines.Count - 1;
 
+        var target = FindAnyObjectByType<ObjectRaycaster>()?.RefreshTarget();
         StartCoroutine(aiClient.SendChatMessage(
             userMessage,
             scenario,
-            homeChatObjectName,
-            homeChatObjectDescription,
+            target != null ? target.GetDisplayName() : homeChatObjectName,
+            target != null ? target.ToAIContext() : homeChatObjectDescription,
             HandleBackendSuccess,
             HandleBackendError,
             text=>FindAnyObjectByType<AgentResponseHandler>()?.SpeakIncremental(text),
-            UpdateBackendLine));
+            UpdateBackendLine, target, describingTarget: target != null));
     }
 
     private void HandleBackendSuccess(ChatResponse response)
@@ -339,10 +337,10 @@ public class HomeUIManager : MonoBehaviour
         PlayerPrefs.SetString(SelectedScenarioKey, scenario);
         PlayerPrefs.Save();
         UpdateSelectedPersonalityLabel();
-        LoadDemoScene();
+        ScenarioTransitionService.LoadScenario(scenario);
     }
 
-    public void StartDemoScene()
+    public void StartSelectedScenario()
     {
         string selectedScenario = PlayerPrefs.GetString(SelectedScenarioKey, AcademicTutorScenario);
 
@@ -353,18 +351,7 @@ public class HomeUIManager : MonoBehaviour
             PlayerPrefs.Save();
         }
 
-        LoadDemoScene();
-    }
-
-    private void LoadDemoScene()
-    {
-        if (string.IsNullOrWhiteSpace(demoSceneName))
-        {
-            AddAssistantMessage("Demo scene name is missing.");
-            return;
-        }
-
-        ScenarioTransitionService.LoadScenario(PlayerPrefs.GetString(SelectedScenarioKey, AcademicTutorScenario));
+        ScenarioTransitionService.LoadScenario(selectedScenario);
     }
 
     private void UpdateSelectedPersonalityLabel()

@@ -199,7 +199,7 @@ def custom(character,style):
         # A tailored curator coat replaces the previous rigid shoulder mantle.
         draped_skirt('Fitted split curator coat',hip-.23,hip+.10,cloth,split=.055)
         for side in (-1,1):ribbon('Curved teal coat lapel',[(side*.045,neck-.05),(side*.092,neck-.16),(side*.034,hip+.17)],.020,trim)
-        top=eye+.14;head='Bip01 Head'
+        top=eye+.097;head='Bip01 Head'
         for name,levels,mat in [('Restrained top hat brim',[(top-.025,.14,.125),(top-.015,.142,.127)],leather),('Shaped top hat crown',[(top-.02,.101,.094),(top+.07,.094,.088),(top+.15,.106,.097)],cloth),('Muted teal hat ribbon',[(top-.012,.102,.095),(top+.020,.100,.094)],trim)]:
             o=shell(name,levels,mat);o.vertex_groups.clear();g=o.vertex_groups.new(name=head);g.add(list(range(len(o.data.vertices))),1,'REPLACE')
         ellipsoid('Closed cloth hat top',(0,0,top+.15),(.106,.097,.006),cloth,head)

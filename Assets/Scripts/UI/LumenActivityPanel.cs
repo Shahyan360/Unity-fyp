@@ -42,7 +42,12 @@ public sealed class LumenActivityPanel:MonoBehaviour
         {
             welcome=Panel(root,"Choose how to converse",new Vector2(.025f,.40f),new Vector2(.535f,.74f));
             Label(welcome.transform,"WELCOME TO LUMEN",new Vector2(.05f,.82f),new Vector2(.95f,.97f),24);
-            Label(welcome.transform,"Start with text or enable your microphone. Captions stay visible.\n\nLocal mode processes speech on this device. You can turn the microphone off at any time.",new Vector2(.05f,.24f),new Vector2(.95f,.81f),18);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            string audioNotice = "If you enable the microphone, Lumen sends your recorded question to its server for transcription.";
+#else
+            string audioNotice = "Local mode processes speech on this device. You can turn the microphone off at any time.";
+#endif
+            Label(welcome.transform,"Start with text or enable your microphone. Captions stay visible.\n\n" + audioNotice,new Vector2(.05f,.24f),new Vector2(.95f,.81f),18);
             var text=Button(welcome.transform,"Explore with text",new Vector2(.05f,.04f),new Vector2(.49f,.21f));text.onClick.AddListener(()=>ChooseVoice(false));
             var mic=Button(welcome.transform,"Enable microphone",new Vector2(.51f,.04f),new Vector2(.95f,.21f));mic.onClick.AddListener(()=>ChooseVoice(true));
         }

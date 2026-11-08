@@ -14,11 +14,8 @@ public class ObjectRaycaster : MonoBehaviour
     [SerializeField] private Text detectedObjectLegacyLabel;
 
     public ObjectMetadata CurrentObject { get; private set; }
-    private ObjectMetadata lastViewed;
-    private float lastViewedAt;
-    private TextMeshPro talkPrompt;
-    public ObjectMetadata ConversationTarget => CurrentObject != null ? CurrentObject
-        : Time.unscaledTime - lastViewedAt < 6f ? lastViewed : null;
+    private readonly RaycastHit[] hits = new RaycastHit[24];
+    private static readonly Vector2[] AimOffsets = { Vector2.zero, new(.018f, 0), new(-.018f, 0), new(0, .018f), new(0, -.018f) };
 
     private void Awake()
     {
@@ -28,32 +25,12 @@ public class ObjectRaycaster : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        UpdateCurrentObject();
-        if (talkPrompt != null) talkPrompt.gameObject.SetActive(false);
-        if (CurrentObject != null && CurrentObject.category == "Person")
-        {
-            if (talkPrompt == null)
-            {
-                var prompt = new GameObject("Talk to this person", typeof(TextMeshPro));
-                prompt.transform.SetParent(transform, false);
-                talkPrompt = prompt.GetComponent<TextMeshPro>();
-                talkPrompt.fontSize = 2.5f;
-                talkPrompt.alignment = TextAlignmentOptions.Center;
-                talkPrompt.rectTransform.sizeDelta = new Vector2(3, .65f);
-            }
-            talkPrompt.gameObject.SetActive(true);
-            talkPrompt.text = CurrentObject.GetDisplayName() + "\n[E] Talk";
-            talkPrompt.transform.position = CurrentObject.transform.position + Vector3.up * 2.15f;
-            if (raycastCamera != null) talkPrompt.transform.rotation = raycastCamera.transform.rotation;
-        }
-    }
+    private void LateUpdate() => UpdateCurrentObject();
 
     public ObjectMetadata RefreshTarget()
     {
         UpdateCurrentObject();
-        return ConversationTarget;
+        return CurrentObject;
     }
 
     private void UpdateCurrentObject()
@@ -67,16 +44,16 @@ public class ObjectRaycaster : MonoBehaviour
             return;
         }
 
-        Ray ray = raycastCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-
-        if (Physics.Raycast(ray, out RaycastHit hit, raycastDistance, raycastLayers, QueryTriggerInteraction.Collide))
+        if (LumenFrontPage.IsOpen) return;
+        foreach (Vector2 offset in AimOffsets)
         {
-            CurrentObject = hit.collider.GetComponentInParent<ObjectMetadata>();
+            Ray ray = raycastCamera.ViewportPointToRay(new Vector3(.5f + offset.x, .5f + offset.y, 0f));
+            CurrentObject = FindVisibleTarget(ray);
+            if (CurrentObject != null) break;
         }
 
         if (CurrentObject != null)
         {
-            lastViewed=CurrentObject;lastViewedAt=Time.unscaledTime;
             CurrentObject.GetComponentInParent<LearningModelInspection>()?.Select();
             SetDetectedObjectLabel(CurrentObject.GetDisplayName());
         }
@@ -84,6 +61,24 @@ public class ObjectRaycaster : MonoBehaviour
         {
             SetDetectedObjectLabel("No object selected");
         }
+    }
+
+    private ObjectMetadata FindVisibleTarget(Ray ray)
+    {
+        int count = Physics.RaycastNonAlloc(ray, hits, Mathf.Max(8f, raycastDistance), raycastLayers, QueryTriggerInteraction.Collide);
+        var visitor = raycastCamera.GetComponentInParent<CharacterController>();
+        float nearest = float.PositiveInfinity;
+        ObjectMetadata selected = null;
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = hits[i];
+            if (hit.distance >= nearest || hit.collider == visitor) continue;
+            var metadata = hit.collider.GetComponentInParent<ObjectMetadata>();
+            if (metadata == null && hit.collider.isTrigger) continue;
+            nearest = hit.distance;
+            selected = metadata;
+        }
+        return selected;
     }
 
     private void SetDetectedObjectLabel(string message)

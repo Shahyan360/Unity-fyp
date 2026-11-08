@@ -1,21 +1,43 @@
-# Embodied AI Unity Experience
+# Lumen
 
-Conversation now defaults to a local Ollama LLM, with streamed text and local
-speech. Start `Tools/Start-LumenBackend.ps1` before pressing Play. A saved Gemini
-key no longer selects cloud conversation automatically. See
-[local-first setup, research and measurements](Docs/AI/LocalFirstInference-2026-11-02.md).
-Set `LUMEN_CONVERSATION_PROVIDER=hybrid` to keep answers and microphone recognition
-local while Gemini TTS supplies character voices. See [hybrid voice setup](embodied-ai-backend/README.md#optional-gemini-speech).
+Lumen is a Unity experience with a walkable hub and four guided destinations. It uses Unity 6000.6.2f1 and a local Python backend.
 
-Current development and verified results are tracked in [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md). The older completion guide contains historical results. The current upgrade includes Ada (science), Marcus (history), and Maya (café), optional local Piper neural speech, and a Blender-authored prop collection; broader environment and release work remains in progress.
+## Run locally
 
-Unity `6000.6.2f1` project with three locally guided worlds: Ancient Rome, a science classroom, and a café conversation/order-practice scene.
+1. Open this folder in Unity 6000.6.2f1. The startup scene is `Assets/Scenes/HomeScene.unity`.
+2. Start `Start-Lumen-Backend.cmd` for local conversation and speech, or `Start-Lumen-Hybrid.cmd` for local conversation with Gemini speech. See the [backend setup guide](embodied-ai-backend/README.md) for Python, Ollama, and voice configuration.
+3. Press Play in Unity and choose a destination. Use WASD to move, right-click to look around, Esc to release the cursor, and E to interact. Use **Worlds** to return to the hub.
 
-## Run
+## Project layout
 
-1. Open this folder in Unity `6000.6.2f1` and wait for the initial import and script compile to finish.
-2. Start the services using [`embodied-ai-backend/README.md`](embodied-ai-backend/README.md). Local mode needs no cloud key; hybrid uses your saved Gemini key for speech.
-3. Open `Assets/Scenes/HomeScene.unity` if the Lumen hub is not already open, then press Play.
-4. Choose a world card. Use WASD to move. The cursor starts free so you can use the guide; right-click on the 3D world to enter mouse-look, then press `Esc` to release it. Left-click remains available for buttons. Press `E` while looking at an object/person to ask about it. The Worlds button returns to the hub.
+| Folder | What belongs there |
+| --- | --- |
+| `Assets/Scenes` | The hub, science classroom, café, and Ancient Rome. The museum uses the classroom scene with its own runtime setup. |
+| `Assets/Scripts/Worlds` | Hub, café, classroom, museum, and Rome behavior. `Shared` contains setup, scene transitions, and navigation used across worlds. |
+| `Assets/Scripts/Agent` | Guide appearance, conversation, voice, and navigation. |
+| `Assets/Scripts/Home`, `UI`, `Player`, `Interaction` | Home chat, menus and in-world UI, player controls, and object interactions. |
+| `Assets/Scripts/Backend`, `Settings`, `Audio` | Unity API client and message models, preferences, and audio mixing. |
+| `Assets/Scripts/Validation` | Opt-in player verification routines. Recorded test inputs are in `Assets/StreamingAssets/Verification`. |
+| `Assets/Editor` | Editor-only art, build, world setup, and validation tools. |
+| `Assets/Art`, `Materials`, `Navigation`, `Prefabs` | Character and prop source art, scene materials, baked navigation, and authoring prefabs. |
+| `Assets/Resources` | Named assets loaded at runtime, including characters, destination previews, exhibits, and audio. |
+| `Assets/ThirdParty`, `Assets/TextMesh Pro` | Imported models, textures, animations, licenses, and text rendering assets. |
+| `Assets/Settings`, `Packages`, `ProjectSettings` | Input and rendering assets, Unity package versions, and project configuration. |
+| `embodied-ai-backend` | Flask service, Ollama and speech integrations, knowledge data, and backend tests. |
+| `Tools`, `Docs` | Launch, release, test and asset tooling, plus project documentation. |
 
-The café menu is a simulation and does not charge money. See [`PROJECT_COMPLETION.md`](PROJECT_COMPLETION.md) for feature coverage, controls, test results, and remaining production work.
+Unity regenerates `Library`, `Logs`, and IDE files as needed. The backend's `.venv` is local to this checkout. Keep an asset and its `.meta` together when moving either from the filesystem.
+
+## Build and test
+
+Use `LumenReleaseBuild.Build` for a Windows x64 player. See the [release runbook](Docs/AI/ReleaseRunbook.md) for build and packaging commands.
+
+Run the backend suite from this folder after installing the voice requirements.
+
+```powershell
+.\embodied-ai-backend\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider
+```
+
+See [Unity project context](Docs/AI/UnityProjectContext.md) for the scene routes and runtime entry points. [Project progress](PROJECT_PROGRESS.md) and the [completion guide](PROJECT_COMPLETION.md) record earlier milestones.
+
+For the browser target, see the [web release handoff](Docs/AI/WebRelease.md).

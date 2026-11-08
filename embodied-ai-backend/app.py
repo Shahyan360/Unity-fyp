@@ -481,7 +481,7 @@ def fast_cafe_answer(query: str) -> str | None:
             article = "an" if name in {"espresso", "americano"} else "a"
             milk = " with oat milk" if re.search(r"\boat\s+milk\b", text) else ""
             return f"Of course — try: ‘Hi! Could I have {article} {name}{milk}, please?’ Add any other preference, then say thanks. Use the café menu to practise the simulated order."
-        return "Sure — open the menu to choose a drink, then I can help you phrase the order politely."
+        return "Try: ‘Hi, could I have a coffee, please?’ Then thank the barista. Open the café menu if you’d like to practise an order."
     if re.search(r"\b(start|open|begin)\b.*\b(conversation|chat|talk)\b|\b(conversation starter|small talk)\b", text):
         return "Try a low-pressure opener: ‘Hi, have you tried anything good here?’ Then listen for a detail in their answer and ask one natural follow-up."
     if re.search(r"\b(role.?play|pretend|practice|practise)\b", text):
@@ -616,6 +616,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         LOCAL_FIRST=True,
         OLLAMA_NUM_GPU=int(os.getenv("LUMEN_NUM_GPU", "0")),
         CONVERSATION_PROVIDER=os.getenv("LUMEN_CONVERSATION_PROVIDER", "local"),
+        WEB_ORIGIN=os.getenv("LUMEN_WEB_ORIGIN", "").strip().rstrip("/"),
     )
     if test_config:
         app.config.update(test_config)
@@ -624,8 +625,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @app.before_request
     def desktop_origin_boundary():
         from gemini_live import allowed_origin
-        if not allowed_origin(request.headers.get("Origin", "")):
-            return jsonify({"error": "This desktop service accepts native and loopback clients only."}), 403
+        origin = request.headers.get("Origin", "")
+        web_origin = app.config["WEB_ORIGIN"]
+        if not allowed_origin(origin) and not (web_origin and origin == web_origin):
+            return jsonify({"error": "This origin is not authorized to access Lumen."}), 403
     from gemini_live import register_live
     register_live(app)
     from neural_voice import register_neural_voice
@@ -854,9 +857,37 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 introduction = persona["introduction"]
             return finish({"response": introduction, "action": "gesture", "emotion": "friendly"}, "local-introduction")
 
-        if object_name and object_description and re.search(r"\b(?:what(?:'s| is) (?:this|that)|what am i looking at|tell me about (?:this|that))\b", query, re.I):
-            return finish({"response": f"You're looking at {object_name}. {object_description[:900]}",
-                           "action": "explain", "emotion": "friendly", "intent": "object_explanation"}, "local-object")
+        gaze_question = re.fullmatch(
+            r"(?:please\s+)?(?:what(?:['’]?s|\s+is)\s+(?:this|that|it)|what am i looking at|tell me about (?:this|that))[?.! ]*",
+            query, re.I,
+        )
+        if gaze_question:
+            if object_name:
+                details = " " + object_description[:900] if object_description else " I can see its name, but I don’t have details about it yet."
+                answer = f"You’re looking at {object_name}.{details}"
+            else:
+                answer = "I don’t have an object in view. Look at the exhibit until its name appears, then ask again or press E."
+            return finish({"response": answer, "action": "explain", "emotion": "friendly",
+                           "intent": "object_explanation", "offline": bool(object_name and not object_description)}, "local-object")
+
+        if re.fullmatch(r"(?:what (?:should|can|do) i do(?: here| next)?|how do i (?:get started|use this|move around)|help me get started|show me the controls)[?.! ]*", query, re.I):
+            first_step = {
+                "general_assistant": "Choose a destination under Explore destinations, or walk to a portal in the courtyard.",
+                "classroom": "Start with a science exhibit. Try asking me to show the Earth or explain the Solar System.",
+                "ancient_rome": "Start in the Forum. Ask me about the market or follow the signed path to the arena.",
+                "museum": "Start with one of the galleries. Look at a painting or ask me to show the Rosetta Stone.",
+                "cafe": "Open Menu for a practice order, or look at a guest and select Talk to start a conversation.",
+            }[scenario]
+            return finish({"response": first_step + " Use WASD to move and right-click to look around. "
+                           "Press E to interact with an exhibit or person. Select Worlds to return to the hub.",
+                           "action": "gesture", "emotion": "friendly"}, "local-guidance")
+
+        if re.search(r"\brosetta stone\b", query, re.I) and re.search(
+            r"\b(?:who (?:made|carved|engraved|created)|(?:name|identity) of (?:the )?(?:unknown )?(?:maker|carver|engraver))\b",
+            query, re.I,
+        ):
+            return finish({"response": "I can’t confirm an individual carver’s name. A council of Egyptian priests drafted the decree in Memphis in 196 BCE during the reign of Ptolemy V.",
+                           "action": "explain", "emotion": "friendly"}, "local-reference")
 
         destination = detect_requested_scenario(query)
         if not destination and not object_name and not has_negated_navigation(query):
@@ -886,6 +917,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 "sources": [],
             }
             return finish(response, "curated")
+
+        if scenario == "cafe" and re.search(r"\b(?:how (?:do|can|should) i order|polite(?:ly)? (?:way|order)|(?:example|phrase) (?:for|to) order)\b", query, re.I):
+            order_tip = fast_cafe_answer(query)
+            if order_tip:
+                return finish({"response": order_tip, "action": "explain", "emotion": "friendly"}, "local-guidance")
 
         if streaming and app.config["LOCAL_FIRST"] and not active_coaching:
             plan = timed_study_plan(query)
@@ -994,10 +1030,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     if remembered_topic:
                         visitor_facts += " The human visitor's favourite topic is " + remembered_topic[1].strip()[:60] + "."
                     dialogue_request = re.search(
-                        r"\b(?:what (?:can|should|could) i say|way to welcome|help me introduce myself|example greeting)\b",
+                        r"\b(?:what (?:can|should|could) i say|(?:things?|words?) i can say|way to welcome|help me introduce myself|example greeting)\b",
                         query, re.I,
                     )
-                    role = ("Give the visitor a natural line they can say aloud as written. Omit unknown names and bracketed placeholders. "
+                    role = ("Give the visitor natural quoted lines they can say aloud as written. If they ask for two options, give two distinct quoted lines. Omit unknown names and placeholders. "
                             if dialogue_request else
                             f"You are {persona['name']}, a fictional {persona['role']}. {persona['direction']} ")
                     system = (role +

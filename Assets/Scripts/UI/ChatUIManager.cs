@@ -40,6 +40,7 @@ public class ChatUIManager : MonoBehaviour
 
     private bool isWaitingForResponse;
     private readonly List<string> chatLines = new List<string>();
+    private ObjectMetadata chatFocus;
     private ObjectMetadata explicitResponseSpeaker;
     private ObjectMetadata pendingResponseSpeaker;
     private int streamingLine=-1;
@@ -209,13 +210,15 @@ public class ChatUIManager : MonoBehaviour
 
         FindAnyObjectByType<SpeechOutputController>()?.CancelSpeech();
         if (objectRaycaster == null) objectRaycaster = FindAnyObjectByType<ObjectRaycaster>();
-        ObjectMetadata lookedAt = objectRaycaster != null ? objectRaycaster.RefreshTarget() : null;
+        ObjectMetadata lookedAt = explicitResponseSpeaker != null ? explicitResponseSpeaker
+            : chatFocus != null ? chatFocus : objectRaycaster?.RefreshTarget();
+        chatFocus = null;
         ObjectMetadata partner = GeminiLiveConversation.Instance != null ? GeminiLiveConversation.Instance.Partner : null;
         ObjectMetadata currentObject = explicitResponseSpeaker != null ? explicitResponseSpeaker : lookedAt != null ? lookedAt : partner;
         pendingResponseSpeaker = explicitResponseSpeaker != null ? explicitResponseSpeaker
             : lookedAt != null && lookedAt.category == "Person" ? lookedAt : partner;
-        bool askingAboutObject = lookedAt != null && lookedAt.category != "Person"
-            && System.Text.RegularExpressions.Regex.IsMatch(userMessage, @"(?i)\b(this|that|looking at)\b");
+        bool askingAboutObject = lookedAt != null && System.Text.RegularExpressions.Regex.IsMatch(userMessage,
+            @"(?i)\b(?:what(?:['’]?s| is) (?:this|that|it)|looking at|(?:explain|about|describe) (?:this|that)|how (?:this|that))\b");
         if (askingAboutObject)
         {
             currentObject = lookedAt;
@@ -243,7 +246,7 @@ public class ChatUIManager : MonoBehaviour
             HandleChatSuccess,
             HandleChatError,
             text=>agentResponseHandler?.SpeakIncremental(text,pendingResponseSpeaker),
-            ShowStreamingText));
+            ShowStreamingText, currentObject, askingAboutObject));
     }
 
     /// <summary>Entry point for platform speech-to-text adapters.</summary>
@@ -310,6 +313,11 @@ public class ChatUIManager : MonoBehaviour
         }
 
         return ScenarioRuntimeManager.GetScenarioForScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void CaptureConversationFocus()
+    {
+        chatFocus = objectRaycaster?.RefreshTarget();
     }
 
     /// <summary>Submits a contextual prompt from an in-world interaction control.</summary>

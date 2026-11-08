@@ -2979,7 +2979,6 @@ MonoBehaviour:
   academicTutorButton: {fileID: 951947914}
   historicalGuideButton: {fileID: 1735188839}
   socialCoachButton: {fileID: 1207808543}
-  demoSceneName: Phase1_DemoScene
 --- !u!4 &1300119019
 Transform:
   m_ObjectHideFlags: 0

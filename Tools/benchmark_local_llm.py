@@ -15,7 +15,7 @@ QUESTIONS = [
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--models", nargs="+", default=["llama3.2:1b", "qwen3:0.6b", "qwen2.5:1.5b"])
+    parser.add_argument("--models", nargs="+", default=["qwen3.5:2b-q4_K_M", "qwen3:0.6b", "qwen2.5:1.5b"])
     parser.add_argument("--output", required=True)
     parser.add_argument("--gpu-layers", type=int, default=-1)
     parser.add_argument("--url", default="http://127.0.0.1:11434")

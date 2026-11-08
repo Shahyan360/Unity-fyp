@@ -13,20 +13,21 @@ public sealed class LumenFrontPage : MonoBehaviour
     public static bool IsOpen => instance != null && instance.menu != null && !instance.exploring;
     private static readonly Color Ink = new Color(.025f, .047f, .065f, .98f);
     private static readonly Color Paper = new Color(.95f, .94f, .88f);
-    private readonly string[] destinations = { "cafe", "classroom", "ancient_rome" };
-    private readonly string[] titles = { "CAFÉ", "CLASSROOM", "ANCIENT PLACE" };
-    private readonly string[] roles = { "SOCIAL COACH", "VIRTUAL TUTOR", "HISTORICAL GUIDE" };
+    private readonly string[] destinations = { "cafe", "classroom", "ancient_rome", "museum" };
+    private readonly string[] titles = { "CAFÉ", "CLASSROOM", "ANCIENT ROME", "MUSEUM" };
+    private readonly string[] roles = { "SOCIAL COACH", "VIRTUAL TUTOR", "HISTORICAL GUIDE", "GALLERY GUIDE" };
     private readonly string[] descriptions = {
         "A welcoming space for relaxed conversation, social practice and everyday confidence.",
         "Explore science and academic ideas with a virtual tutor, interactive objects and clear explanations.",
-        "Walk through Ancient Rome with a virtual guide and discover the stories behind its landmarks." };
-    private readonly Color[] accents = { new Color(.45f,.78f,.60f), new Color(.46f,.72f,.90f), new Color(.95f,.66f,.39f) };
-    private readonly Texture2D[] previews = new Texture2D[3];
+        "Walk through Ancient Rome with a virtual guide and discover the stories behind its landmarks.",
+        "Explore art, archaeology and natural history with a guide." };
+    private readonly Color[] accents = { new Color(.45f,.78f,.60f), new Color(.46f,.72f,.90f), new Color(.95f,.66f,.39f), new Color(.78f,.66f,.95f) };
+    private readonly Texture2D[] previews = new Texture2D[4];
     private readonly List<Button> markers = new List<Button>();
     private Canvas canvas, legacy;
     private CanvasGroup legacyGroup;
     private GameObject menu, map, chooser, about, settings, reopen, presentationLights;
-    private TMP_Text destinationTitle, destinationDescription, previewCaption, notice;
+    private TMP_Text destinationTitle, destinationDescription, previewCaption;
     private RawImage preview;
     private Image previewFrame;
     private Sprite rounded;
@@ -89,22 +90,20 @@ public sealed class LumenFrontPage : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1440, 900);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-        menu = Panel(root.transform, "Main menu", Vector2.zero, new Vector2(.43f, 1), new Color(.025f,.045f,.065f,.94f), false);
-        Label(menu.transform, "L U M E N", new Vector2(.10f,.855f), new Vector2(.94f,.94f), 36);
-        var eyebrow = Label(menu.transform, "EMBODIED AI  /  DISCOVER TOGETHER", new Vector2(.10f,.79f), new Vector2(.94f,.845f), 14);
-        eyebrow.color = accents[0];
-        string[] actions = { "START EXPERIENCE", "CHOOSE ENVIRONMENT", "WORLD MAP", "RESUME SESSION", "SETTINGS", "ABOUT", "EXIT APPLICATION" };
-        Action[] callbacks = { StartExperience, () => ShowMap(false), () => ShowMap(true), Resume, OpenSettings, ShowAbout, Exit };
-        for (int i = 0; i < actions.Length; i++)
-        {
-            int index = i;
-            float top = .735f - i * .078f;
-            var button = Button(menu.transform, actions[i], new Vector2(.10f,top-.062f), new Vector2(.92f,top), () => callbacks[index]());
-            if (i == 0) button.GetComponent<Image>().color = new Color(.17f,.36f,.35f);
-        }
-        notice = Label(menu.transform, "Welcome. Where would you like to explore today?", new Vector2(.10f,.035f), new Vector2(.92f,.16f), 16);
-        var signature = Label(menu.transform, "LEARN  ·  EXPLORE  ·  CONNECT", new Vector2(.10f,.17f), new Vector2(.92f,.205f), 12);
-        signature.color = new Color(.63f,.74f,.75f);
+        menu = Panel(root.transform, "Main menu", new Vector2(.025f,.09f), new Vector2(.455f,.91f), new Color(.025f,.052f,.075f,.96f));
+        Label(menu.transform, "Lumen", new Vector2(.08f,.85f), new Vector2(.94f,.94f), 32);
+        Label(menu.transform, "GUIDED LEARNING  /  FOUR INTERACTIVE WORLDS", new Vector2(.08f,.76f), new Vector2(.94f,.84f), 13).color = accents[0];
+        Label(menu.transform, "Explore with a guide", new Vector2(.08f,.63f), new Vector2(.94f,.76f), 34);
+        Label(menu.transform, "Ask a question, look closely at an exhibit, or meet someone in one of Lumen’s four destinations.",
+            new Vector2(.08f,.46f), new Vector2(.91f,.63f), 17);
+        var enter = Button(menu.transform, "START EXPERIENCE", new Vector2(.08f,.34f), new Vector2(.92f,.44f), StartExperience);
+        enter.GetComponentInChildren<TMP_Text>().text = "Open the courtyard";
+        enter.GetComponent<UnityEngine.UI.Image>().color = new Color(.16f,.40f,.37f);
+        Button(menu.transform, "CHOOSE ENVIRONMENT", new Vector2(.08f,.22f), new Vector2(.92f,.32f), () => ShowMap(false))
+            .GetComponentInChildren<TMP_Text>().text = "Explore destinations";
+        Button(menu.transform, "WORLD MAP", new Vector2(.08f,.09f), new Vector2(.37f,.18f), () => ShowMap(true)).GetComponentInChildren<TMP_Text>().text = "Atlas";
+        Button(menu.transform, "SETTINGS", new Vector2(.39f,.09f), new Vector2(.66f,.18f), OpenSettings).GetComponentInChildren<TMP_Text>().text = "Settings";
+        Button(menu.transform, "ABOUT", new Vector2(.68f,.09f), new Vector2(.92f,.18f), ShowAbout).GetComponentInChildren<TMP_Text>().text = "About";
 
         map = Panel(root.transform, "World atlas", new Vector2(.025f,.04f), new Vector2(.975f,.96f), Ink);
         Label(map.transform, "THE WORLD AT YOUR OWN PACE", new Vector2(.035f,.87f), new Vector2(.80f,.97f), 28);
@@ -115,15 +114,15 @@ public sealed class LumenFrontPage : MonoBehaviour
         terrainObject.transform.SetParent(sea.transform, false);
         Place((RectTransform)terrainObject.transform, Vector2.zero, Vector2.one);
         terrainObject.GetComponent<LumenAtlasTerrain>().raycastTarget = false;
-        Vector2[] positions = { new Vector2(.23f,.33f), new Vector2(.53f,.71f), new Vector2(.80f,.32f) };
-        for (int i = 0; i < 3; i++)
+        Vector2[] positions = { new Vector2(.23f,.28f), new Vector2(.48f,.73f), new Vector2(.79f,.32f), new Vector2(.24f,.64f) };
+        for (int i = 0; i < destinations.Length; i++)
         {
             int destination = i;
             Vector2 p = positions[i];
             markers.Add(Button(sea.transform, titles[i], p-new Vector2(.16f,.045f), p+new Vector2(.16f,.045f), () => SelectDestination(destination)));
         }
         Label(sea.transform, "N\n│", new Vector2(.91f,.78f), new Vector2(.98f,.95f), 18).alignment = TextAlignmentOptions.Center;
-        Label(sea.transform, "A SCHEMATIC ATLAS OF THREE EXPERIENCES", new Vector2(.035f,.018f), new Vector2(.92f,.075f), 12);
+        Label(sea.transform, "FOUR PLACES TO EXPLORE", new Vector2(.035f,.018f), new Vector2(.92f,.075f), 12);
         destinationTitle = Label(map.transform, "", new Vector2(.69f,.68f), new Vector2(.96f,.77f), 25);
         var image = new GameObject("Environment preview", typeof(RectTransform), typeof(RawImage));
         image.transform.SetParent(map.transform, false);
@@ -137,22 +136,24 @@ public sealed class LumenFrontPage : MonoBehaviour
         chooser = Panel(root.transform, "Choose environment", new Vector2(.04f,.10f), new Vector2(.96f,.90f), Ink);
         Label(chooser.transform, "WHERE SHALL WE BEGIN?", new Vector2(.04f,.80f), new Vector2(.82f,.96f), 30);
         Button(chooser.transform, "BACK", new Vector2(.86f,.85f), new Vector2(.96f,.95f), ShowMenu);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < destinations.Length; i++)
         {
-            int destination = i; float left = .035f + i * .32f;
-            var card = Panel(chooser.transform, titles[i], new Vector2(left,.10f), new Vector2(left+.29f,.76f), new Color(.06f,.11f,.14f));
+            int destination = i;
+            float left = .035f + (i % 2) * .47f;
+            float bottom = i < 2 ? .44f : .065f;
+            var card = Panel(chooser.transform, titles[i], new Vector2(left,bottom), new Vector2(left+.45f,bottom+.34f), new Color(.06f,.11f,.14f));
             var photo = new GameObject("Scene preview", typeof(RectTransform), typeof(RawImage));
             photo.transform.SetParent(card.transform, false);
-            Place((RectTransform)photo.transform, new Vector2(.04f,.53f), new Vector2(.96f,.97f));
+            Place((RectTransform)photo.transform, new Vector2(.035f,.12f), new Vector2(.39f,.88f));
             photo.GetComponent<RawImage>().texture = previews[i];
             photo.GetComponent<RawImage>().color = previews[i] != null ? Color.white : accents[i] * .5f;
             photo.GetComponent<RawImage>().raycastTarget = false;
             if(previews[i]==null)
                 Label(photo.transform,"SCENE PREVIEW PENDING",new Vector2(.07f,.1f),new Vector2(.93f,.9f),14).alignment=TextAlignmentOptions.Center;
-            Label(card.transform, roles[i], new Vector2(.06f,.44f), new Vector2(.94f,.51f), 13).color = accents[i];
-            Label(card.transform, titles[i], new Vector2(.06f,.34f), new Vector2(.94f,.44f), 23);
-            Label(card.transform, descriptions[i], new Vector2(.06f,.14f), new Vector2(.94f,.33f), 16);
-            Button(card.transform, "EXPLORE DESTINATION", new Vector2(.06f,.035f), new Vector2(.94f,.125f), () => { ShowMap(true); SelectDestination(destination); });
+            Label(card.transform, roles[i], new Vector2(.43f,.79f), new Vector2(.94f,.92f), 13).color = accents[i];
+            Label(card.transform, titles[i], new Vector2(.43f,.61f), new Vector2(.94f,.79f), 23);
+            Label(card.transform, descriptions[i], new Vector2(.43f,.29f), new Vector2(.94f,.61f), 14);
+            Button(card.transform, "EXPLORE DESTINATION", new Vector2(.43f,.06f), new Vector2(.95f,.27f), () => { ShowMap(true); SelectDestination(destination); });
         }
         about = Panel(root.transform, "About Embodied AI", new Vector2(.13f,.12f), new Vector2(.87f,.88f), Ink);
         Label(about.transform, "EMBODIED AI", new Vector2(.07f,.80f), new Vector2(.93f,.94f), 32);
@@ -194,15 +195,15 @@ public sealed class LumenFrontPage : MonoBehaviour
             if (guide != null)
             {
                 presentationLights.transform.position=guide.position;
-                guide.rotation=Quaternion.Euler(0,180,0);
+                guide.rotation = Quaternion.LookRotation(new Vector3(-.2f, 0f, -1f));
                 var animator = guide.GetComponent<AgentAnimator>();
                 animator?.ApplyEmotion("friendly");
-                if(!LumenAccessibility.ReducedMotion)animator?.PlayAction("nod");
+                if (!LumenAccessibility.ReducedMotion) animator?.PlayAction(hasExplored ? "nod" : "gesture");
                 if (cameraView != null)
                 {
-                    Vector3 eye = guide.position + new Vector3(-1.25f,1.35f,-3.8f);
-                    Quaternion angle = Quaternion.LookRotation(guide.position + new Vector3(-1.25f,1.05f,0) - eye);
-                    MoveCamera(eye, angle, 43f, false);
+                    Vector3 eye = guide.position + new Vector3(-1.36f,1.42f,-3.70f);
+                    Quaternion angle = Quaternion.LookRotation(guide.position + new Vector3(-1.24f,1.07f,0) - eye);
+                    MoveCamera(eye, angle, 47f, false);
                 }
             }
         }
@@ -299,7 +300,6 @@ public sealed class LumenFrontPage : MonoBehaviour
         if(!result.accepted)destinationDescription.text=result.reason;
     }
     private void ShowAbout() => ShowOnly(about);
-    private void Resume() => notice.text="Full saved-session restoration is not supported. Choose a destination to begin a new visit.";
     private void OpenSettings()
     {
         ShowOnly(settings);
@@ -348,14 +348,6 @@ public sealed class LumenFrontPage : MonoBehaviour
     {
         if(instance!=this)return;
         instance=null; LumenAccessibility.MenuOpen=false;
-    }
-    private static void Exit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying=false;
-#else
-        Application.Quit();
-#endif
     }
     private GameObject Panel(Transform parent,string name,Vector2 min,Vector2 max,Color color,bool round=true)
     {
