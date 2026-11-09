@@ -3,6 +3,7 @@
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
+!/Assets/Editor/Build/
 [Bb]uilds/
 [Ll]ogs/
 UserSettings/
